@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // LOG DI DEBUG: Se non vedi questo nel terminale quando vai su /admin, 
   // il file è nella cartella sbagliata.
-  console.log("Middleware in esecuzione su percorso:", request.nextUrl.pathname);
+  console.log("proxy in esecuzione su percorso:", request.nextUrl.pathname);
 
   // 1. Intercetta solo le rotte che iniziano con /admin
   if (request.nextUrl.pathname.startsWith('/admin')) {
