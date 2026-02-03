@@ -52,7 +52,7 @@ export default function Home() {
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-6">
                   <Link 
-                    href="/prenota-box" 
+                    href="/coming-soon" 
                     className="inline-flex justify-center items-center px-8 py-3.5 text-base font-bold text-white bg-brand-red rounded-xl shadow-lg hover:bg-red-700 transition-all hover:-translate-y-1"
                   >
                     Prenota Box San Valentino
@@ -155,7 +155,7 @@ export default function Home() {
                     className="w-full flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 hover:border-brand-cyan transition-all group/btn"
                   >
                     <span className={clsx("font-mono text-sm font-bold", showWifiPass ? "text-brand-dark" : "text-slate-400")}>
-                        {showWifiPass ? "TSC-WIFI-GUEST" : "Clicca per mostrare"}
+                        {showWifiPass ? "TSCAP2025" : "Clicca per mostrare"}
                     </span>
                     <Eye size={16} className="text-slate-400 group-hover/btn:text-brand-cyan" />
                   </button>
