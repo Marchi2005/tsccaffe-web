@@ -104,7 +104,7 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
     if (match) {
         const parts = match[1].split(", ");
         if (parts.includes("Deca")) coffee = "Deca";
-        if (parts.includes("Zymil")) milk = "Zymil";
+        if (parts.includes("Senza Lattosio")) milk = "Senza Lattosio";
         if (parts.includes("Soia")) milk = "Soia";
         if (parts.includes("Grande")) size = "Grande";
         const foundFlavor = parts.find((p: string) => drinkData.subOptions?.includes(p));
@@ -131,7 +131,7 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
   };
 
   const isDeca = currentSelection.includes("Deca");
-  const milkType = currentSelection.includes("Soia") ? "Soia" : (currentSelection.includes("Zymil") ? "Zymil" : "Intero");
+  const milkType = currentSelection.includes("Soia") ? "Soia" : (currentSelection.includes("Senza Lattosio") ? "Senza Lattosio" : "Intero");
   const sizeType = currentSelection.includes("Grande") ? "Grande" : "Standard";
 
   return (
@@ -194,7 +194,7 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
                    <div className="w-6 flex justify-center"><Milk size={14} className="text-slate-400" /></div>
                    <div className="flex flex-wrap gap-1">
                       <button type="button" onClick={() => updateVariant('milk', 'Intero')} className={clsx("px-2 py-1.5 rounded-lg border text-[10px] font-bold transition-colors", milkType === 'Intero' ? "bg-brand-cyan text-white border-brand-cyan" : "bg-white text-slate-600 border-slate-300")}>Intero</button>
-                      <button type="button" onClick={() => updateVariant('milk', 'Zymil')} className={clsx("px-2 py-1.5 rounded-lg border text-[10px] font-bold transition-colors", milkType === 'Zymil' ? "bg-brand-cyan text-white border-brand-cyan" : "bg-white text-slate-600 border-slate-300")}>Zymil</button>
+                      <button type="button" onClick={() => updateVariant('milk', 'Senza Lattosio')} className={clsx("px-2 py-1.5 rounded-lg border text-[10px] font-bold transition-colors", milkType === 'Senza Lattosio' ? "bg-brand-cyan text-white border-brand-cyan" : "bg-white text-slate-600 border-slate-300")}>Senza Lattosio</button>
                       <button type="button" onClick={() => updateVariant('milk', 'Soia')} className={clsx("px-2 py-1.5 rounded-lg border text-[10px] font-bold transition-colors", milkType === 'Soia' ? "bg-brand-cyan text-white border-brand-cyan" : "bg-white text-slate-600 border-slate-300")}>Soia</button>
                    </div>
                 </div>
