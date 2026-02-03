@@ -14,16 +14,16 @@ export default function Footer() {
           {/* COLONNA 1: BRAND & STORY */}
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative h-12 w-12 bg-white/10 rounded-xl p-1 transition-transform group-hover:scale-105">
+              <div className="relative h-12 w-12 p-1 transition-transform group-hover:scale-150">
                  <Image 
-                    src="/icons/logo-navbar.svg" 
+                    src="/icons/logo-footbar.svg" 
                     alt="Logo TSC" 
                     fill
                     className="object-contain p-1"
                  />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-white font-bold text-sm uppercase tracking-wide group-hover:text-brand-cyan transition-colors">
+                <span className="text-white font-bold text-sm uppercase tracking-wide group-hover:text-brand-red transition-colors">
                   Tabacchi San Clemente
                 </span>
                 <span className="text-brand-red font-serif italic text-lg">

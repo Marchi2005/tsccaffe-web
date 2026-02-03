@@ -15,15 +15,15 @@ const categories = [
     imageSrc: "/images/caffe-placeholder.jpg",
     items: [
       // Aggiunto "isIlly: true" per mostrare il logo accanto al nome
-      { name: "Caffè Espresso", price: "1.20€", desc: "", isIlly: true }, // [cite: 5]
-      { name: "Cappuccino", price: "1.70€", desc: "Disponibile anche Senza Lattosio / Soia", isIlly: true }, // [cite: 13, 14, 17]
-      { name: "Latte Macchiato", price: "2.00€", desc: "", isIlly: true }, // [cite: 18, 19]
-      { name: "Marocchino", price: "1.30€", desc: "", isIlly: true }, // [cite: 25, 26]
-      { name: "Americano", price: "1.70€", desc: "", isIlly: true }, // [cite: 23, 24]
-      { name: "Caffè Ginseng / Orzo", price: "1.50€", desc: "Tazza piccola o grande" }, // [cite: 32, 33, 34, 35]
-      { name: "Crema Caffè", price: "1.50€", desc: "Fredda artigianale", isIlly: true }, // [cite: 30, 31]
-      { name: "Cioccolata Calda", price: "3.30€", desc: "Miscela densa" }, // [cite: 50, 51]
-      { name: "Thè Caldo / Camomilla", price: "2.50€", desc: "Vari gusti" }, // [cite: 40, 41, 48, 49]
+      { name: "Caffè Espresso", price: "1.20€", desc: "", isIlly: true }, 
+      { name: "Cappuccino", price: "1.50€", desc: "Disponibile anche Senza Lattosio / Soia", isIlly: true },
+      { name: "Latte Macchiato", price: "1.80€", desc: "", isIlly: true },
+      { name: "Marocchino", price: "1.50€", desc: "", isIlly: true },
+      { name: "Americano", price: "1.50€", desc: "", isIlly: true },
+      { name: "Caffè Ginseng / Orzo", price: "1.20€", desc: "Tazza piccola o grande (+ 0.30€)" },
+      { name: "Crema Caffè", price: "1.50€", desc: "Il piacere di Illy anche freddo", isIlly: true },
+      { name: "Cioccolata Calda", price: "3.00€", desc: "Miscela densa" },
+      { name: "Twinings Thè Caldo / Camomilla", price: "2.50€", desc: "Vari gusti" },
     ]
   },
   {
@@ -33,27 +33,27 @@ const categories = [
     icon: <Croissant className="w-6 h-6" />,
     imageSrc: "/images/colazione-placeholder.jpg",
     items: [
-      { name: "Cornetto Vuoto", price: "1.20€", desc: "Semplice e fragrante" }, // [cite: 71, 72]
-      { name: "Cornetto Farcito", price: "1.50€", desc: "Albicocca, Frutti di Bosco, Cacao, Crema" }, // [cite: 59, 60, 62]
-      { name: "Cornetto Nutella®", price: "1.70€", desc: "Il classico goloso", highlight: true }, // [cite: 66, 67]
-      { name: "Cornetto Special", price: "1.80€", desc: "Farciture speciali" }, // [cite: 78, 79]
-      { name: "Cornetto Vegano", price: "1.50€", desc: "Senza derivati animali" }, // [cite: 76, 77]
-      { name: "Senza Glutine", price: "", desc: "Disponibili varie opzioni su richiesta" }, // [cite: 65, 69, 74]
+      { name: "Cornetto Vuoto", price: "1.10€", desc: "Semplice e fragrante" },
+      { name: "Cornetto Farcito", price: "1.30€", desc: "Albicocca, Frutti di Bosco, Pistacchio, Cioccolato Bianco" },
+      { name: "Cornetto Nutella®", price: "1.50€", desc: "Il classico goloso di nutella", highlight: true },
+      { name: "Altra Pasticceria", price: "1.50€", desc: "Farciture speciali" },
+      { name: "Cornetto Vegano*", price: "1.20€", desc: "Senza derivati animali *non sempre disponibile" },
+      { name: "Senza Glutine", price: "", desc: "Disponibili varie opzioni su richiesta" },
     ]
   },
   {
     id: "aperitivi",
     title: "Aperidrink & Cocktail",
-    description: "Ogni drink è accompagnato da una selezione di sfiziosità (Patatine, Olive, Pizzette, ecc).", // [cite: 8, 12]
+    description: "Ogni drink è accompagnato da una selezione di sfiziosità (Patatine, Olive, Pizzette, ecc).",
     icon: <Wine className="w-6 h-6" />,
     imageSrc: "/images/aperitivo-placeholder.jpg",
     items: [
-      { name: "Aperol Spritz", price: "7.00€", desc: "Prosecco, Aperol, Soda", highlight: true }, // [cite: 12]
-      { name: "Gin Tonic / Lemon", price: "7.00€", desc: "Gin premium e tonica/lemon" }, // [cite: 12]
-      { name: "Crodino / SanBitter", price: "5.00€", desc: "Analcolico biondo o rosso" }, // [cite: 12]
-      { name: "Campari Soda / Bitter", price: "5.00€", desc: "" }, // [cite: 12]
-      { name: "Prosecco", price: "5.00€", desc: "Calice" }, // [cite: 12]
-      { name: "Martini", price: "7.00€", desc: "Bianco o Rosso" }, // [cite: 12]
+      { name: "Aperol Spritz", price: "5.00€", desc: "Prosecco, Aperol, Soda"},
+      { name: "Gin Tonic / Lemon", price: "6.00€", desc: "Gin premium e tonica/lemon" },
+      { name: "Crodino / SanBitter", price: "2.50€", desc: "Analcolico biondo o rosso" },
+      { name: "Campari Soda / Bitter", price: "2.50€", desc: "" },
+      { name: "Prosecco", price: "3.00€", desc: "Flute" },
+      { name: "Martini", price: "5.00€", desc: "Bianco o Rosso" },
     ]
   },
   {
@@ -63,11 +63,12 @@ const categories = [
     icon: <Beer className="w-6 h-6" />,
     imageSrc: "/images/beverage-placeholder.jpg",
     items: [
-      { name: "Acqua", price: "1.20€", desc: "Naturale o Frizzante" }, // [cite: 7]
-      { name: "Coca Cola / Fanta / Sprite", price: "2.00€", desc: "In vetro" }, // [cite: 7]
-      { name: "Birra Peroni / Nastro Azzurro", price: "2.00€ - 3.00€", desc: "" }, // [cite: 53]
-      { name: "Birre Speciali", price: "3.50€", desc: "Corona, Ceres, Tennent's" }, // [cite: 53]
-      { name: "Amari e Liquori", price: "3.00€", desc: "Averna, Jägermeister, Limoncello, Sambuca, ecc." }, // [cite: 46]
+      { name: "Acqua", price: "0.80€", desc: "Naturale o Frizzante" },
+      { name: "Coca Cola / Fanta / Sprite", price: "1.00€", desc: "In vetro o in lattina" },
+      { name: "Birra Peroni", price: "1.50€", desc: "33cl. o 66cl. (+1€)" },
+      { name: "Nastro Azzurro", price: "2.00€", desc: "" },
+      { name: "Corona, Ceres, Tennent's", price: "2.50€", desc: "Altre opzioni" },
+      { name: "Amari e Liquori", price: "da 1.50€", desc: "Averna, Jägermeister, Limoncello, Sambuca, ecc." },
     ]
   }
 ];
