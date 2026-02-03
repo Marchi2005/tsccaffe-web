@@ -52,7 +52,7 @@ export default function Home() {
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-6">
                   <Link 
-                    href="/coming-soon" 
+                    href="/prenota-box" 
                     className="inline-flex justify-center items-center px-8 py-3.5 text-base font-bold text-white bg-brand-red rounded-xl shadow-lg hover:bg-red-700 transition-all hover:-translate-y-1"
                   >
                     Prenota Box San Valentino

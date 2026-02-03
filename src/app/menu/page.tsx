@@ -232,7 +232,7 @@ export default function MenuPage() {
           </p>
           <div className="pt-4">
                         <Link 
-              href="/coming-soon" 
+              href="/prenota-box" 
               className="inline-flex items-center gap-2 bg-brand-red text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-red-700 hover:shadow-brand-red/40 transition-all transform hover:-translate-y-0.5"
             >
               <ShoppingBag size={18} />

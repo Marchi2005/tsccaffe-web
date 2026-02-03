@@ -89,7 +89,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/coming-soon" className="text-brand-red font-bold hover:text-red-400 transition-colors flex items-center gap-2">
+                <Link href="/prenota-box" className="text-brand-red font-bold hover:text-red-400 transition-colors flex items-center gap-2">
                    San Valentino ❤️
                 </Link>
               </li>

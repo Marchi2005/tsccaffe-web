@@ -1,80 +1,97 @@
 "use server";
 
 import { supabase } from "@/lib/supabase";
-import { OrderSchema, BOX_TYPES } from "@/lib/schemas";
+import { BOX_TYPES } from "@/lib/schemas";
 import { revalidatePath } from "next/cache";
 
 export async function submitOrder(prevState: any, formData: FormData) {
-  // CORREZIONE QUI: Se il tipo è ritiro, forziamo l'indirizzo a "RITIRO IN SEDE" se non arriva dal form
+  // 1. GESTIONE INDIRIZZO E DATI BASE
   const deliveryType = formData.get("deliveryType");
-  const address = deliveryType === 'ritiro' 
-    ? "RITIRO IN SEDE" 
-    : formData.get("address");
+  const address = deliveryType === 'ritiro' ? "RITIRO IN SEDE" : formData.get("address");
 
+  // Dati grezzi dal form
   const rawData = {
     fullName: formData.get("fullName"),
     phone: formData.get("phone"),
-    address: address, // Usiamo la variabile calcolata
+    address: address,
     deliveryType: deliveryType,
     preferredTime: formData.get("preferredTime"),
-    boxType: formData.get("boxType"),
+    
+    // Configurazione Box
+    boxType: formData.get("boxType") as string,
+    boxFormat: formData.get("variant") as string,
+    boxSize: formData.get("boxSize") as string,
+    
+    // Contenuto Colazione
     drink1: formData.get("drink1"),
     croissant1: formData.get("croissant1"),
     drink2: formData.get("drink2"),
     croissant2: formData.get("croissant2"),
+    
+    // Extra e Accessori
     includeSpremuta: formData.get("includeSpremuta"),
-    includePeluche: formData.get("includePeluche"), 
-    quantity: formData.get("quantity"),
+    includeSucco: formData.get("includeSucco"),
+    succoFlavor: formData.get("succoFlavor"), // NUOVO CAMPO
+    
+    addPelucheL: formData.get("addPelucheL"),
+    addPelucheM: formData.get("addPelucheM"),
+    addRosa: formData.get("addRosa"),
+    
+    quantity: formData.get("quantity") || 1,
+    totalPrice: formData.get("totalPrice"),
   };
 
-  const validatedFields = OrderSchema.safeParse(rawData);
-
-  if (!validatedFields.success) {
-    return { success: false, message: "Compila tutti i campi obbligatori." };
-  }
-
-  const data = validatedFields.data;
-  const selectedBox = BOX_TYPES.find(b => b.id === data.boxType);
+  const selectedBox = BOX_TYPES.find(b => b.id === rawData.boxType);
   if (!selectedBox) return { success: false, message: "Box non valida." };
 
-  let singleBoxPrice = selectedBox.price;
+  // Costruzione Descrizione Box (es. "Red Love Medium (Doppia)")
+  let boxDescription = `${selectedBox.name}`;
+  if (rawData.boxSize) boxDescription += ` ${rawData.boxSize.toUpperCase()}`;
+  boxDescription += ` (${rawData.boxFormat})`;
 
-  // 1. Supplementi Bevande
-  if (data.drink1.includes("Succo")) singleBoxPrice += 1.30;
-  if (data.drink2.includes("Succo")) singleBoxPrice += 1.30;
-  if (data.drink1.includes("Grande")) singleBoxPrice += 0.20;
-  if (data.drink2.includes("Grande")) singleBoxPrice += 0.20;
-
-  // 2. Supplemento Peluche
-  if (data.includePeluche === "on") singleBoxPrice += 9.50;
-
-  // Costruzione Note
+  // Costruzione Note Ordine (Per salvare i dettagli extra che non hanno colonne dedicate)
   let notesArray = [];
-  if (data.includeSpremuta === "on") notesArray.push("CON SPREMUTA");
-  if (data.includePeluche === "on") notesArray.push("CON PELUCHE (+9.50€)");
-  
-  const notesString = notesArray.length > 0 ? notesArray.join(" + ") : "Standard";
+  if (rawData.includeSpremuta === "on") notesArray.push("Con Spremuta");
+  if (rawData.includeSucco === "on") {
+      notesArray.push(`Con Succo Extra (${rawData.succoFlavor})`); // Salviamo il gusto qui!
+  }
+  const notesString = notesArray.join(" + ");
 
+  const isSingle = rawData.boxFormat === "singola";
+  
   const { error } = await supabase.from("web_orders").insert({
-    full_name: data.fullName,
-    phone: data.phone,
-    address: data.deliveryType === 'domicilio' ? data.address : "RITIRO IN SEDE",
-    delivery_type: data.deliveryType,
-    preferred_time: data.preferredTime,
-    box_type: selectedBox.name,
-    drink_1: data.drink1,
-    croissant_1: data.croissant1,
-    drink_2: data.drink2,
-    croissant_2: data.croissant2,
-    notes: notesString,
-    quantity: data.quantity,
-    total_price: singleBoxPrice * data.quantity,
+    full_name: rawData.fullName,
+    phone: rawData.phone,
+    address: rawData.address,
+    delivery_type: rawData.deliveryType,
+    preferred_time: rawData.preferredTime,
+    
+    box_type: boxDescription, 
+    box_format: rawData.boxFormat, 
+    
+    drink_1: rawData.drink1,
+    croissant_1: rawData.croissant1,
+    drink_2: isSingle ? null : rawData.drink2,
+    croissant_2: isSingle ? null : rawData.croissant2,
+    
+    // Se hai colonne booleane
+    include_spremuta: rawData.includeSpremuta === "on",
+    include_succo_extra: rawData.includeSucco === "on",
+    include_peluche_l: rawData.addPelucheL === "on",
+    include_peluche_m: rawData.addPelucheM === "on",
+    include_rosa: rawData.addRosa === "on",
+
+    // Salviamo le note (gusto succo, etc)
+    notes: notesString, 
+    
+    quantity: Number(rawData.quantity),
+    total_price: Number(rawData.totalPrice),
     status: "pending",
   });
 
   if (error) {
-    console.error("Supabase Error:", error);
-    return { success: false, message: `Errore DB: ${error.message} (${error.details})` };
+    console.error("Errore Supabase:", error);
+    return { success: false, message: "Si è verificato un errore tecnico. Riprova." };
   }
 
   revalidatePath("/admin"); 

@@ -13,7 +13,6 @@ export default function Navbar() {
     { name: "Home", href: "/" },
     { name: "Menu", href: "menu" },
     { name: "Servizi & Shop", href: "servizi" },
-    { name: "Dove Siamo", href: "/" },
   ];
 
   return (
@@ -76,7 +75,7 @@ export default function Navbar() {
             ))}
             
             <Link 
-              href="/coming-soon" 
+              href="/prenota-box" 
               className="inline-flex items-center gap-2 bg-brand-red text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-red-700 hover:shadow-brand-red/40 transition-all transform hover:-translate-y-0.5"
             >
               <ShoppingBag size={18} />
@@ -128,7 +127,7 @@ export default function Navbar() {
                 ))}
                 
                 <Link
-                    href="/coming-soon"
+                    href="/prenota-box"
                     onClick={() => setIsOpen(false)}
                     className="mt-4 block w-full text-center rounded-xl bg-brand-red px-4 py-3 text-base font-bold text-white shadow-md hover:bg-red-700"
                 >
