@@ -128,7 +128,7 @@ export default function Navbar() {
                 ))}
                 
                 <Link
-                    href="/prenota-box"
+                    href="/coming-soon"
                     onClick={() => setIsOpen(false)}
                     className="mt-4 block w-full text-center rounded-xl bg-brand-red px-4 py-3 text-base font-bold text-white shadow-md hover:bg-red-700"
                 >
