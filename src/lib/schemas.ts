@@ -6,7 +6,7 @@ export const BOX_TYPES = [
   { 
     id: "royal", 
     name: "Royal Desire", 
-    desc: "Lusso puro. Un'esperienza indimenticabile.",
+    desc: "Esclusiva. Regale. Eterna. Lusso puro, un classico intramontabile.",
     spremutaIncluded: true, // Spremuta inclusa nel prezzo
     succoPrice: 1.70,       // Prezzo Succo Extra specifico per questa box
     variants: [
@@ -22,7 +22,7 @@ export const BOX_TYPES = [
   { 
     id: "velvet", 
     name: "Velvet Dream", 
-    desc: "Preziosa ed elegante. Un tocco di classe.",
+    desc: "Preziosa. Elegante. Esclusiva. Un tocco di classe",
     spremutaIncluded: true,
     succoPrice: 1.20,
     variants: [
@@ -38,7 +38,7 @@ export const BOX_TYPES = [
   { 
     id: "red_love", 
     name: "Red Love", 
-    desc: "Il classico intramontabile. Romantica ed essenziale.",
+    desc: "Iconica. Romantica. Essenziale. Senza compromessi.",
     // Logica complessa: Spremuta inclusa SOLO nella Medium. Gestita via codice.
     succoPrice: 1.20, 
     // Qui le varianti dipendono anche dalla Size, definiremo i prezzi base
@@ -69,9 +69,9 @@ export const BOX_TYPES = [
     }
   },
   { 
-    id: "sparkling", 
-    name: "Sparkling Love", 
-    desc: "Frizzante e unica. Solo versione singola.",
+    id: "sparkly", 
+    name: "Sparkly Valentine", 
+    desc: "Radiosa. Unica. Solo versione singola.",
     spremutaIncluded: false,
     succoPrice: 1.70,
     variants: [

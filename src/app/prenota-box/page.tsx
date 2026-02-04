@@ -5,7 +5,11 @@ import Footer from "@/components/layout/Footer";
 import { 
   Bike, Check, CheckCircle2, Citrus, Heart, Info, Store, Bean, Milk, 
   ArrowRight, Banknote, CreditCard, GlassWater, Sparkles, 
-  ChevronLeft, ChevronRight, MessageCircle, AlertTriangle
+  ChevronLeft, ChevronRight, MessageCircle, AlertTriangle,
+  PhoneCall,
+  RefreshCw,
+  MapPin,
+  CalendarClock
 } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, useActionState, useCallback } from "react";
@@ -28,7 +32,7 @@ const IMAGE_PREFIXES: Record<string, string> = {
   royal: "royal-desire",
   velvet: "velvet-dream",
   red_love: "red-love",
-  sparkling: "sparkling-love"
+  sparkly: "sparkly valentine"
 };
 
 // --- COMPONENTS ---
@@ -413,7 +417,7 @@ export default function PrenotaBoxPage() {
 
   // RESET
   useEffect(() => {
-    if (box.id === "sparkling") {
+    if (box.id === "sparkly") {
       setVariantId("singola");
     } else {
       setVariantId("doppia"); 
@@ -453,7 +457,7 @@ export default function PrenotaBoxPage() {
         
         if (!isIncluded) {
             if (box.id === "red_love" && sizeId === "small") final += 1.50; 
-            else if (box.id === "sparkling") final += 1.50; 
+            else if (box.id === "sparkly") final += 1.50; 
             else final += (2.50 * (isSingle ? 1 : 2)); 
         }
     }
@@ -505,53 +509,97 @@ export default function PrenotaBoxPage() {
               </div>
           </div>
 
-          {/* CONFIGURATOR */}
-          {/* AUMENTATO PADDING BOTTOM a pb-32 per evitare che il bottone copra il contenuto */}
-          <div className="pb-32">
+          {/* CONFIGURATOR O SUCCESS */}
+          <div className="pb-12">
             {state.success ? (
-               // SUCCESS STATE
-               <div className="animate-fade-in py-6">
-                 <div className="bg-white p-5 rounded-[2rem] shadow-xl border border-slate-100 text-center relative overflow-hidden">
+               // --- THANK YOU PAGE RIDISEGNATA ---
+               <div className="animate-fade-in py-10">
+                 <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100 text-center relative overflow-hidden">
+                    {/* Background decorativo */}
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-rose-400 to-rose-600" />
+                    
+                    {/* CUORE PULSANTE */}
                     <div className="relative z-10 flex flex-col items-center">
-                        <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mb-4 shadow-inner">
-                            <Heart size={40} fill="#f43f5e" className="text-rose-500" />
+                        <div className="w-24 h-24 bg-rose-50 rounded-full flex items-center justify-center mb-6 shadow-inner ring-8 ring-rose-50/50">
+                            <div className="animate-pulse">
+                                <Heart size={48} fill="#f43f5e" className="text-rose-500 drop-shadow-md" />
+                            </div>
                         </div>
-                        <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Grazie di Cuore!</h2>
-                        <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
-                            Prenotazione ricevuta. <br/> Completa il pagamento in sede.
-                        </p>
                         
-                        <div className="bg-red-50 border border-red-200 p-4 rounded-xl mb-6 text-left w-full">
-                            <h3 className="text-sm font-black text-red-700 uppercase tracking-wide mb-1 flex items-center gap-2">
-                                <AlertTriangle size={16} /> Pagamento Obbligatorio
-                            </h3>
-                            <p className="text-red-900 text-xs leading-relaxed">
-                                Versa l'acconto o il saldo in negozio entro il 13/02/26.
-                            </p>
+                        <h2 className="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">Grazie di Cuore!</h2>
+                        <p className="text-slate-500 text-lg mb-8 leading-relaxed max-w-sm mx-auto">
+                            Abbiamo ricevuto la tua prenotazione.<br/>
+                            Ora manca solo l'ultimo passaggio.
+                        </p>
+
+                        {/* AVVISO PAGAMENTO CRITICO */}
+                        <div className="bg-red-50 border-2 border-red-200 p-6 rounded-2xl mb-8 relative overflow-hidden shadow-lg shadow-red-100/50 text-left w-full">
+                            <div className="flex items-start gap-4 relative z-10">
+                                <div className="bg-red-500 text-white p-2 rounded-lg shrink-0 shadow-md">
+                                    <AlertTriangle size={24} strokeWidth={2.5} />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-black text-red-700 uppercase tracking-wide mb-1">Pagamento Richiesto</h3>
+                                    <p className="text-red-900 font-medium text-sm leading-relaxed mb-3">
+                                        Per confermare l'ordine è <strong>obbligatorio</strong> versare il saldo in negozio.
+                                        <span className="block mt-1 font-bold">Senza pagamento, la box non verrà preparata.</span>
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        <span className="inline-flex items-center gap-1 bg-white px-2 py-1 rounded-md text-xs font-bold text-red-800 border border-red-200">
+                                            <CalendarClock size={12} /> Entro le 18:00 del 13/02/26
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 bg-white px-2 py-1 rounded-md text-xs font-bold text-red-800 border border-red-200">
+                                            <MapPin size={12} /> Saldo in Sede
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Texture sfondo */}
+                            <div className="absolute -right-4 -bottom-4 opacity-10 text-red-900 rotate-12">
+                                <Store size={120} />
+                            </div>
                         </div>
 
-                        <div className="border-t border-slate-100 pt-4 mb-6 w-full">
-                           <div className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        {/* Riepilogo Veloce */}
+                        <div className="border-t border-slate-100 pt-6 mb-8 w-full">
+                           <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
                                <div className="text-left">
-                                   <p className="text-[10px] text-slate-400 uppercase font-bold">Box</p>
-                                   <p className="font-bold text-sm text-slate-800">{box.name}</p>
+                                   <p className="text-xs text-slate-400 uppercase font-bold">Hai scelto</p>
+                                   <p className="font-bold text-slate-800">{box.name}</p>
                                </div>
                                <div className="text-right">
-                                   <p className="text-[10px] text-slate-400 uppercase font-bold">Totale</p>
-                                   <p className="text-lg font-extrabold text-rose-500">{totalPrice.toFixed(2)}€</p>
+                                   <p className="text-xs text-slate-400 uppercase font-bold">Totale</p>
+                                   <p className="text-xl font-extrabold text-rose-500">{totalPrice.toFixed(2)}€</p>
                                </div>
                            </div>
                         </div>
 
+                        {/* Pulsanti Azione */}
                         <div className="space-y-3 w-full">
                             <a 
                                 href={`https://wa.me/${SHOP_PHONE_NUMBER}?text=${encodeURIComponent(`Ciao! Ho prenotato una Box ${box.name} a nome di... Vorrei confermare per il pagamento.`)}`}
-                                className="w-full bg-[#25D366] text-white py-3.5 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 text-sm"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full bg-[#25D366] text-white py-4 rounded-2xl font-bold shadow-xl shadow-green-100 hover:bg-[#20bd5a] hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
                             >
-                                <MessageCircle size={20} fill="white" /> Avvisaci su WhatsApp
+                                <MessageCircle size={22} fill="white" className="text-white" />
+                                Avvisaci su WhatsApp
                             </a>
-                            <button onClick={() => window.location.reload()} className="w-full text-slate-400 text-xs font-bold py-2">Nuovo ordine</button>
+
+                            <a 
+                                href={`tel:${SHOP_PHONE_NUMBER}`}
+                                className="w-full bg-white text-slate-700 border-2 border-slate-100 py-4 rounded-2xl font-bold hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center justify-center gap-2"
+                            >
+                                <PhoneCall size={20} />
+                                Chiamaci per dubbi
+                            </a>
+                            
+                            <button 
+                                onClick={() => window.location.reload()}
+                                className="w-full text-slate-400 text-sm font-bold py-3 hover:text-slate-600 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <RefreshCw size={14} /> Fai un nuovo ordine
+                            </button>
                         </div>
                     </div>
                  </div>
@@ -583,7 +631,7 @@ export default function PrenotaBoxPage() {
                     </h3>
                     
                     <div className="bg-white p-3 rounded-2xl shadow-sm border border-rose-100 space-y-4">
-                        {box.id === 'sparkling' ? (
+                        {box.id === 'sparkly' ? (
                             <div className="text-center py-3 bg-rose-50 rounded-xl border border-rose-100">
                                 <Sparkles className="mx-auto text-rose-500 mb-1" size={20} />
                                 <h4 className="font-bold text-sm text-rose-800">Edizione Limitata Singola</h4>
@@ -630,7 +678,7 @@ export default function PrenotaBoxPage() {
                             </div>
                         )}
                     </div>
-                    <input type="hidden" name="variant" value={box.id === 'sparkling' ? 'singola' : variantId} />
+                    <input type="hidden" name="variant" value={box.id === 'sparkly' ? 'singola' : variantId} />
                     <input type="hidden" name="boxSize" value={isRedLove ? sizeId : ""} />
                 </section>
 
@@ -695,7 +743,7 @@ export default function PrenotaBoxPage() {
                                    <p className="text-[10px] font-medium text-slate-500 mt-0.5">
                                        {((box as any).spremutaIncluded || (isRedLove && sizeId === 'medium')) 
                                            ? <span className="text-emerald-600 font-bold">INCLUSA</span> 
-                                           : <span className="text-orange-600 font-bold">+{(box.id === 'sparkling' || (isRedLove && sizeId === 'small')) ? "1,50€" : "2,50€"}</span>
+                                           : <span className="text-orange-600 font-bold">+{(box.id === 'sparkly' || (isRedLove && sizeId === 'small')) ? "1,50€" : "2,50€"}</span>
                                        }
                                    </p>
                                </div>
