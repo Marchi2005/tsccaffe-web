@@ -3,6 +3,23 @@ import Image from "next/image";
 import { Facebook, Instagram, MapPin, Phone, MessageCircle } from "lucide-react";
 import { StatusBadge } from '@/components/ui/status-badge';
 
+// Icona TikTok personalizzata stile Lucide
+const TikTokIcon = ({ size = 18 }: { size?: number }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+  </svg>
+);
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -16,10 +33,10 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative h-12 w-12 p-1 transition-transform group-hover:scale-150">
                  <Image 
-                    src="/icons/logo-footbar.svg" 
-                    alt="Logo TSC" 
-                    fill
-                    className="object-contain p-1"
+                   src="/icons/logo-footbar.svg" 
+                   alt="Logo TSC" 
+                   fill
+                   className="object-contain p-1"
                  />
               </div>
               <div className="flex flex-col leading-none">
@@ -38,6 +55,7 @@ export default function Footer() {
               ci prendiamo cura della tua giornata.
             </p>
 
+            {/* SOCIAL ICONS */}
             <div className="flex space-x-4">
               <a 
                 href="https://instagram.com/tabacchisanclementecaffe" 
@@ -57,6 +75,18 @@ export default function Footer() {
               >
                 <Facebook size={18} />
               </a>
+              
+              {/* TIKTOK AGGIUNTO QUI */}
+              <a 
+                href="https://www.tiktok.com/@tsccaffe" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="bg-slate-800 p-2 rounded-full hover:bg-[#ff0050] hover:text-white transition-all"
+                aria-label="TikTok"
+              >
+                <TikTokIcon size={18} />
+              </a>
+
               <a 
                 href="https://wa.me/393715428345" 
                 target="_blank" 
@@ -115,11 +145,11 @@ export default function Footer() {
             </ul>
           </div>
 
-           {/* COLONNA 4: ORARI DI APERTURA (CORRETTA) */}
+           {/* COLONNA 4: ORARI DI APERTURA */}
           <div>
             <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-6">Orari Apertura</h3>
             
-            {/* Card Orari: Sfondo chiaro per contrasto e leggibilità del LED */}
+            {/* Card Orari */}
             <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/10 shadow-lg text-slate-900">
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-start pb-3 border-b border-slate-200">

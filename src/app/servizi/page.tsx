@@ -9,12 +9,11 @@ import {
   Zap,
   Ticket,
   MapPin,
-  Flame,
   ShoppingBag
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // --- DATI DEI SERVIZI ---
 
@@ -51,12 +50,12 @@ const PAYMENT_SERVICES = [
   }
 ];
 
-// --- DATI AGGIORNATI CON SCONTI E LOGHI ---
+// --- DATI PRODOTTI ---
 
 const PRODUCT_OFFERS = [
   {
     id: "glo-hilo-plus",
-    isNew: true, // Questo avrà il badge
+    isNew: true,
     brandLogo: "/icons/glo-logo.svg",
     brandName: "GLO",
     model: "glo™ HILO PLUS",
@@ -64,7 +63,7 @@ const PRODUCT_OFFERS = [
     discountPrice: "49,00€",
     hasDiscount: true,
     colors: ["bg-[#751423]", "bg-[#F1BA94]", "bg-[#2B6651]", "bg-[#272727]", "bg-[#D5A596]", "bg-[#422E4D]", "bg-[#202843]"],
-    image: "/images/hilo-plus/ruby-hilo-plus-pen_charger_2.png", // Immagine principale per la card
+    image: "/images/hilo-plus/ruby-hilo-plus-pen_charger_2.png",
     images: [
       "/images/hilo-plus/ruby-hilo-plus_2.png",
       "/images/hilo-plus/ruby-hilo-plus-pen_2.png",
@@ -102,7 +101,7 @@ const PRODUCT_OFFERS = [
     discountPrice: "19,00€",
     hasDiscount: true,
     colors: ["bg-[#751423]", "bg-[#F1BA94]", "bg-[#2B6651]", "bg-[#272727]", "bg-[#D5A596]", "bg-[#422E4D]", "bg-[#202843]"],
-    image: "/images/hilo/ruby_2.png", // Immagine principale per la card
+    image: "/images/hilo/ruby_2.png",
     images: [
       "/images/hilo/ruby_1.png",
       "/images/hilo/amber.png",
@@ -134,7 +133,7 @@ const PRODUCT_OFFERS = [
     discountPrice: "59,00€",
     hasDiscount: false,
     colors: ["bg-[#D1F0F2]", "bg-[#575B69]"],
-    image: "/images/iqos-iluma-i/iqos-iluma-i-main.png", // Immagine principale per la card
+    image: "/images/iqos-iluma-i/iqos-iluma-i-main.png",
     images: [
       "/images/iqos-iluma-i/iqos-iluma-i-breezeblue-1.png",
       "/images/iqos-iluma-i/iqos-iluma-i-breezeblue-2.png",
@@ -156,7 +155,7 @@ const PRODUCT_OFFERS = [
     discountPrice: "29,00€",
     hasDiscount: false,
     colors: ["bg-[#D1F0F2]", "bg-[#575B69]"],
-    image: "/images/iqos-iluma-i-one/iqos-iluma-i-one-main.png", // Immagine principale per la card
+    image: "/images/iqos-iluma-i-one/iqos-iluma-i-one-main.png",
     images: [
       "/images/iqos-iluma-i-one/iqos-iluma-i-one-breezeblue-1.png",
       "/images/iqos-iluma-i-one/iqos-iluma-i-one-breezeblue-2.png",
@@ -169,7 +168,6 @@ const PRODUCT_OFFERS = [
     features: ["Accensione automatica", "Touch Screen", "Senza lamina, nessuna pulizia"],
     note: ""
   },
-
 ];
 
 // --- COMPONENTI UI ---
@@ -187,13 +185,57 @@ function ServiceCard({ service }: { service: typeof PAYMENT_SERVICES[0] }) {
   );
 }
 
+// LOGICA ORARI APERTURA AVANZATA
+const getShopStatus = () => {
+  const now = new Date();
+  const itTimeStr = now.toLocaleString("en-US", { timeZone: "Europe/Rome" });
+  const itDate = new Date(itTimeStr);
+
+  const day = itDate.getDay(); 
+  const minutes = itDate.getHours() * 60 + itDate.getMinutes();
+
+  const statusStyles = {
+    open: { text: "APERTO ORA", classes: "bg-emerald-500 shadow-emerald-500/20" },
+    closed: { text: "CHIUSO ORA", classes: "bg-rose-500 shadow-rose-500/20" },
+    closing: { text: "IN CHIUSURA", classes: "bg-amber-500 shadow-amber-500/20" }, 
+    opening: { text: "APRE TRA POCO", classes: "bg-blue-500 shadow-blue-500/20" }   
+  };
+
+  // Domenica
+  if (day === 0) {
+    if (minutes >= 435 && minutes < 450) return statusStyles.opening;
+    if (minutes >= 840 && minutes < 870) return statusStyles.closing;
+    if (minutes >= 450 && minutes < 870) return statusStyles.open;
+    return statusStyles.closed;
+  }
+
+  // Lun-Sab
+  if (minutes >= 375 && minutes < 390) return statusStyles.opening;
+  if (minutes >= 780 && minutes < 810) return statusStyles.closing;
+  if (minutes >= 390 && minutes < 810) return statusStyles.open;
+
+  if (minutes >= 915 && minutes < 930) return statusStyles.opening;
+  if (minutes >= 1170 && minutes < 1200) return statusStyles.closing;
+  if (minutes >= 930 && minutes < 1200) return statusStyles.open;
+
+  return statusStyles.closed;
+};
+
 export default function ServicesPage() {
   const [selectedProduct, setSelectedProduct] = useState<typeof PRODUCT_OFFERS[0] | null>(null);
-  const [currentImgIndex, setCurrentImgIndex] = useState(0); // Gestisce quale foto mostrare
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const [shopStatus, setShopStatus] = useState({ text: "", classes: "hidden" }); 
+
+  useEffect(() => {
+    setShopStatus(getShopStatus());
+    const interval = setInterval(() => {
+      setShopStatus(getShopStatus());
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans">
-
       <main className="flex-grow">
 
         {/* HEADER HERO */}
@@ -216,27 +258,83 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* SEZIONE 1: SERVIZI UTILI (GRID) */}
-        <section className="py-20 lg:py-28">
+        {/* SEZIONE 1: OFFERTE */}
+        <section className="py-24 bg-white overflow-hidden border-b border-slate-100">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
-              <div>
-                <h2 className="text-3xl font-bold text-slate-900">Servizi Rapidi</h2>
-                <p className="text-slate-500 mt-2">Salta la fila in posta. Gestisci tutto dal nostro terminale.</p>
-              </div>
+            <h2 className="text-4xl font-extrabold text-slate-900 mb-4">Le nostre offerte.</h2>
+            <p className="text-slate-500 mb-12">Clicca su una card per scoprire tutti i dettagli.</p>
+
+            <div className="flex overflow-x-auto pb-12 pt-4 gap-8 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+              {PRODUCT_OFFERS.map((product) => (
+                <div
+                  key={product.id}
+                  onClick={() => setSelectedProduct(product)}
+                  className={clsx(
+                    "snap-center shrink-0 w-[85vw] md:w-[400px] h-[500px] rounded-[2.5rem] cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 relative overflow-hidden group",
+                    product.bg
+                  )}
+                >
+                  {product.isNew && (
+                    <div className="absolute top-6 right-6 z-20">
+                      <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg animate-in fade-in zoom-in duration-300">
+                        NEW
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="absolute inset-0 flex items-center justify-center p-6">
+                    <img
+                      src={product.image}
+                      className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
+                      alt={product.model}
+                    />
+                  </div>
+
+                  <div className="relative z-10 p-8 bg-gradient-to-b from-white/40 via-transparent to-transparent">
+                    <div className="h-6 mb-3">
+                      <img src={product.brandLogo} alt={product.brandName} className="h-full opacity-80" />
+                    </div>
+                    <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{product.model}</h3>
+
+                    <div className="mt-1 flex items-center gap-3">
+                      <span className="text-xl font-bold text-slate-800">
+                        {product.discountPrice}
+                        {product.fullPrice && <span className="text-blue-500 ml-0.5">*</span>}
+                      </span>
+                      {product.fullPrice && (
+                        <span className="text-sm text-slate-400 line-through decoration-slate-300 font-medium">
+                          {product.fullPrice}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="absolute bottom-0 left-0 right-0 p-8 z-10 flex justify-between items-end bg-gradient-to-t from-white/20 to-transparent">
+                    <span className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border border-slate-100 transition-colors group-hover:bg-slate-900 group-hover:text-white">
+                      Scopri di più
+                    </span>
+                    <div className="flex gap-1.5 bg-white/50 backdrop-blur-md p-2 rounded-full border border-white/50">
+                      {product.colors.map((colorClass, i) => (
+                        <div key={i} className={clsx("w-3.5 h-3.5 rounded-full border border-white shadow-sm", colorClass)} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {PAYMENT_SERVICES.map((service, idx) => (
-                <ServiceCard key={idx} service={service} />
+            <div className="mt-8 space-y-2 border-t border-slate-100 pt-8">
+              {PRODUCT_OFFERS.map((p) => p.note && (
+                <p key={p.id} className="text-xs text-slate-400 font-medium">
+                  <span className="text-blue-500 font-bold mr-1">*</span> {p.note}
+                </p>
               ))}
             </div>
           </div>
         </section>
 
-        {/* SEZIONE 2: SPEDIZIONI (FEATURED) */}
+        {/* SEZIONE 2: SPEDIZIONI */}
         <section className="py-20 bg-slate-900 text-slate-300 relative overflow-hidden">
-          {/* Pattern sfondo opzionale */}
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
@@ -266,19 +364,27 @@ export default function ServicesPage() {
                 </div>
               </div>
 
-              {/* Box visivo / Illustrativo */}
-              <div className="bg-slate-800 rounded-3xl p-8 border border-slate-700 shadow-2xl relative">
-                <div className="absolute top-4 right-4 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
-                  APERTO ORA
+              {/* Box visivo con Badge Dinamico */}
+              <div className="bg-slate-800 rounded-3xl p-6 md:p-8 border border-slate-700 shadow-2xl relative flex flex-col">
+                
+                {/* Badge Container */}
+                <div className="flex justify-end mb-4 md:absolute md:top-6 md:right-6 md:mb-0 w-full md:w-auto z-20 pointer-events-none">
+                   <div className={clsx(
+                    "text-white text-[10px] font-black uppercase px-3 py-1.5 rounded-full animate-pulse shadow-lg transition-colors duration-500 inline-block pointer-events-auto",
+                    shopStatus.classes
+                  )}>
+                    {shopStatus.text}
+                  </div>
                 </div>
+
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
                       <MapPin className="text-emerald-400" size={20} />
                     </div>
                     <div>
-                      <h4 className="text-white font-bold">Punto Tabacchi San Clemente / Ricevitoria N.29</h4>
-                      <p className="text-sm text-slate-400">Utilizza il nostro indirizzo per i tuoi ordini online.</p>
+                      <h4 className="text-white font-bold pr-0 md:pr-24">Punto Tabacchi San Clemente / Ricevitoria N.29</h4>
+                      <p className="text-sm text-slate-400 mt-1">Utilizza il nostro indirizzo per i tuoi ordini online.</p>
                     </div>
                   </div>
                   <hr className="border-slate-700" />
@@ -301,91 +407,26 @@ export default function ServicesPage() {
             </div>
           </div>
         </section>
-        {/* SEZIONE OFFERTE */}
-        <section className="py-24 bg-white overflow-hidden">
+
+        {/* SEZIONE 3: SERVIZI RAPIDI */}
+        <section className="py-20 lg:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-4xl font-extrabold text-slate-900 mb-4">Le nostre offerte.</h2>
-            <p className="text-slate-500 mb-12">Clicca su una card per scoprire tutti i dettagli.</p>
-
-            {/* Container Carosello con padding per non tagliare l'ombra */}
-            <div className="flex overflow-x-auto pb-12 pt-4 gap-8 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
-              {PRODUCT_OFFERS.map((product) => (
-                <div
-                  key={product.id}
-                  onClick={() => setSelectedProduct(product)}
-                  className={clsx(
-                    "snap-center shrink-0 w-[85vw] md:w-[400px] h-[500px] rounded-[2.5rem] cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 relative overflow-hidden group",
-                    product.bg
-                  )}
-                >
-                  {/* Badge "NEW" - Appare solo se isNew è true */}
-                  {product.isNew && (
-                    <div className="absolute top-6 right-6 z-20">
-                      <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg animate-in fade-in zoom-in duration-300">
-                        NEW
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Immagine Main */}
-                  <div className="absolute inset-0 flex items-center justify-center p-6">
-                    <img
-                      src={product.image}
-                      className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
-                      alt={product.model}
-                    />
-                  </div>
-
-                  {/* Overlay Testuale Superiore */}
-                  <div className="relative z-10 p-8 bg-gradient-to-b from-white/40 via-transparent to-transparent">
-                    <div className="h-6 mb-3">
-                      <img src={product.brandLogo} alt={product.brandName} className="h-full opacity-80" />
-                    </div>
-                    <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{product.model}</h3>
-
-                    <div className="mt-1 flex items-center gap-3">
-                      <span className="text-xl font-bold text-slate-800">
-                        {product.discountPrice }
-                        {product.fullPrice && <span className="text-blue-500 ml-0.5">*</span>}
-                      </span>
-
-                      {/* Prezzo Pieno (Visualizzato solo se esiste) */}
-                      {product.fullPrice && (
-                        <span className="text-sm text-slate-400 line-through decoration-slate-300 font-medium">
-                          {product.fullPrice}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Info Inferiori */}
-                  <div className="absolute bottom-0 left-0 right-0 p-8 z-10 flex justify-between items-end bg-gradient-to-t from-white/20 to-transparent">
-                    <span className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border border-slate-100 transition-colors group-hover:bg-slate-900 group-hover:text-white">
-                      Scopri di più
-                    </span>
-
-                    <div className="flex gap-1.5 bg-white/50 backdrop-blur-md p-2 rounded-full border border-white/50">
-                      {product.colors.map((colorClass, i) => (
-                        <div key={i} className={clsx("w-3.5 h-3.5 rounded-full border border-white shadow-sm", colorClass)} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-900">Servizi Rapidi</h2>
+                <p className="text-slate-500 mt-2">Salta la fila in posta. Gestisci tutto dal nostro terminale.</p>
+              </div>
             </div>
 
-            {/* LEGENDA NOTE ESTERNA (Sotto il carosello) */}
-            <div className="mt-8 space-y-2 border-t border-slate-100 pt-8">
-              {PRODUCT_OFFERS.map((p) => p.note && (
-                <p key={p.id} className="text-xs text-slate-400 font-medium">
-                  <span className="text-blue-500 font-bold mr-1">*</span> {p.note}
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {PAYMENT_SERVICES.map((service, idx) => (
+                <ServiceCard key={idx} service={service} />
               ))}
             </div>
           </div>
         </section>
 
-        {/* --- OVERLAY DETTAGLI CON SLIDER IMMAGINI --- */}
+        {/* --- OVERLAY DETTAGLI CON SCROLL NATURALE (NO STICKY) --- */}
         {selectedProduct && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
             <div
@@ -395,7 +436,6 @@ export default function ServicesPage() {
 
             <div className="relative bg-white w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row animate-in zoom-in-95 duration-400">
 
-              {/* Bottone Chiudi */}
               <button
                 onClick={() => setSelectedProduct(null)}
                 className="absolute top-6 right-6 z-30 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-slate-100 transition-all shadow-sm"
@@ -403,10 +443,7 @@ export default function ServicesPage() {
                 <span className="text-xl">✕</span>
               </button>
 
-              {/* LATO SINISTRO: GALLERY CON FRECCE */}
               <div className={clsx("w-full md:w-3/5 relative group flex items-center justify-center overflow-hidden", selectedProduct.bg)}>
-
-                {/* Immagine Attuale con Animazione */}
                 <div className="relative w-full h-[400px] md:h-[600px] flex items-center justify-center p-12">
                   <img
                     key={currentImgIndex}
@@ -416,27 +453,13 @@ export default function ServicesPage() {
                   />
                 </div>
 
-                {/* Freccia Sinistra (appare al hover) */}
                 {currentImgIndex > 0 && (
-                  <button
-                    onClick={() => setCurrentImgIndex(prev => prev - 1)}
-                    className="absolute left-6 z-30 w-12 h-12 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white/50"
-                  >
-                    ←
-                  </button>
+                  <button onClick={() => setCurrentImgIndex(prev => prev - 1)} className="absolute left-6 z-30 w-12 h-12 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white/50">←</button>
                 )}
-
-                {/* Freccia Destra (appare al hover) */}
                 {currentImgIndex < selectedProduct.images.length - 1 && (
-                  <button
-                    onClick={() => setCurrentImgIndex(prev => prev + 1)}
-                    className="absolute right-6 z-30 w-12 h-12 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white/50"
-                  >
-                    →
-                  </button>
+                  <button onClick={() => setCurrentImgIndex(prev => prev + 1)} className="absolute right-6 z-30 w-12 h-12 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white/50">→</button>
                 )}
 
-                {/* Indicatori (Pallini cliccabili) */}
                 <div className="absolute bottom-8 flex gap-2.5 z-30">
                   {selectedProduct.images.map((_, idx) => (
                     <button
@@ -451,9 +474,9 @@ export default function ServicesPage() {
                 </div>
               </div>
 
-              {/* LATO DESTRO: INFO (Sticky su desktop) */}
               <div className="w-full md:w-2/5 p-8 md:p-12 overflow-y-auto max-h-[90vh]">
-                <div className="sticky top-0 bg-white z-10 pb-4">
+                {/* RIMOSSO STICKY QUI */}
+                <div className="pb-4">
                   <img src={selectedProduct.brandLogo} className="h-5 mb-6 opacity-40" alt="" />
                   <h2 className="text-4xl font-black text-slate-900 mb-2 leading-tight">{selectedProduct.model}</h2>
 
@@ -472,24 +495,18 @@ export default function ServicesPage() {
 
                 <div>
                   <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Dettagli Prodotto</h4>
-
                   <div className="space-y-6">
                     {Array.isArray(selectedProduct.description) ? (
                       selectedProduct.description.map((item, idx) => (
                         <div key={idx}>
                           {item.type === "title" ? (
-                            <h5 className="text-xl font-bold text-slate-900 mb-2 leading-tight">
-                              {item.content}
-                            </h5>
+                            <h5 className="text-xl font-bold text-slate-900 mb-2 leading-tight">{item.content}</h5>
                           ) : (
-                            <p className="text-slate-600 leading-relaxed text-lg mb-4">
-                              {item.content}
-                            </p>
+                            <p className="text-slate-600 leading-relaxed text-lg mb-4">{item.content}</p>
                           )}
                         </div>
                       ))
                     ) : (
-                      // Questo serve come "paracadute" se la descrizione è ancora una stringa semplice
                       <p className="text-slate-600 leading-relaxed text-lg">{selectedProduct.description}</p>
                     )}
                   </div>
@@ -511,7 +528,7 @@ export default function ServicesPage() {
 
                 <div className="pt-10 border-t border-slate-100 pb-4">
                   <Link
-                    href={`https://wa.me/39XXXXXXXXXX?text=Ciao! Vorrei informazioni su ${selectedProduct.brandName} ${selectedProduct.model}`}
+                    href={`https://wa.me/393715428345?text=Ciao! Vorrei informazioni su ${selectedProduct.brandName} ${selectedProduct.model}`}
                     target="_blank"
                     className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-lg"
                   >
