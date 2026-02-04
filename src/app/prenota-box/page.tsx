@@ -35,14 +35,14 @@ const IMAGE_PREFIXES: Record<string, string> = {
 
 function PaymentLogos() {
   return (
-    <div className="flex flex-wrap justify-center items-end gap-4 opacity-70 scale-90 mb-4">
-      <div className="flex flex-col items-center gap-1">
-        <Banknote size={20} className="text-slate-600" strokeWidth={1.5} />
-        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Contanti</span>
+    <div className="flex flex-wrap justify-center items-end gap-3 opacity-70 scale-90 mb-2">
+      <div className="flex flex-col items-center gap-0.5">
+        <Banknote size={16} className="text-slate-600" strokeWidth={1.5} />
+        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Contanti</span>
       </div>
-      <div className="flex flex-col items-center gap-1">
-        <CreditCard size={20} className="text-slate-600" strokeWidth={1.5} />
-        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Carta</span>
+      <div className="flex flex-col items-center gap-0.5">
+        <CreditCard size={16} className="text-slate-600" strokeWidth={1.5} />
+        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Carta</span>
       </div>
     </div>
   );
@@ -53,11 +53,11 @@ function SubmitButton({ label, price }: { label: string, price: number }) {
   const safePrice = (price && !isNaN(price)) ? price : 0;
 
   return (
-    <button disabled={pending} type="submit" className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-sm sm:text-lg shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex justify-between px-5 items-center disabled:opacity-70 disabled:cursor-not-allowed">
+    <button disabled={pending} type="submit" className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold text-sm shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex justify-between px-4 items-center disabled:opacity-70 disabled:cursor-not-allowed">
        <span className="flex items-center gap-2">
-         {pending ? <span className="animate-pulse">Invio...</span> : <>{label} <ArrowRight size={18} className="text-rose-300 hidden sm:block" /></>}
+         {pending ? <span className="animate-pulse">Invio...</span> : <>{label} <ArrowRight size={16} className="text-rose-300 hidden sm:block" /></>}
        </span>
-       <span className="bg-white/20 px-2 py-1 rounded-lg font-mono tracking-tight">{safePrice.toFixed(2)}€</span>
+       <span className="bg-white/20 px-2 py-0.5 rounded-md font-mono tracking-tight text-xs">{safePrice.toFixed(2)}€</span>
     </button>
   );
 }
@@ -108,7 +108,6 @@ function BoxCarousel({ boxId, boxName, price, compact = false }: { boxId: string
         </div>
       ))}
 
-      {/* Controlli solo Desktop */}
       {!compact && (
         <>
         <button onClick={(e) => { e.preventDefault(); prevSlide(); }} className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-md p-2 rounded-full text-white transition-all opacity-0 group-hover:opacity-100 hidden lg:block">
@@ -120,8 +119,7 @@ function BoxCarousel({ boxId, boxName, price, compact = false }: { boxId: string
         </>
       )}
 
-      {/* Indicatori */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
         {images.map((_, idx) => (
           <button
             key={idx}
@@ -135,9 +133,9 @@ function BoxCarousel({ boxId, boxName, price, compact = false }: { boxId: string
       </div>
 
       {compact && price !== undefined && (
-        <div className="absolute bottom-4 left-4 right-4 z-20 text-white pointer-events-none">
-           <h1 className="text-xl font-extrabold shadow-black drop-shadow-md">{boxName}</h1>
-           <div className="text-lg font-bold text-rose-500 bg-white px-2 py-0.5 rounded-lg shadow-lg inline-block mt-1">
+        <div className="absolute bottom-3 left-4 right-4 z-20 text-white pointer-events-none">
+           <h1 className="text-lg font-extrabold shadow-black drop-shadow-md">{boxName}</h1>
+           <div className="text-base font-bold text-rose-500 bg-white px-2 py-0.5 rounded-lg shadow-lg inline-block mt-0.5">
               {price.toFixed(2)}€
            </div>
         </div>
@@ -160,18 +158,14 @@ function BoxCarousel({ boxId, boxName, price, compact = false }: { boxId: string
   );
 }
 
-// --- DRINK SELECTOR (GRID STABILE CON TESTO A CAPO) ---
+// --- DRINK SELECTOR (RESPONSIVE) ---
 function DrinkSelector({ label, onSelect, currentSelection }: any) {
   const baseSelection = currentSelection ? currentSelection.split(" (")[0] : ""; 
   const drinkData = DRINKS_DATA.find(d => d.label === baseSelection) as any;
 
   const updateVariant = (type: 'coffee' | 'milk' | 'flavor' | 'size', value: string) => {
     if (!drinkData) return;
-    
-    let coffee = "Normale";
-    let milk = "Intero";
-    let flavor = drinkData.subOptions?.[0] || "";
-    let size = "Standard";
+    let coffee = "Normale"; let milk = "Intero"; let flavor = drinkData.subOptions?.[0] || ""; let size = "Standard";
     
     const match = currentSelection.match(/\((.*?)\)/);
     if (match) {
@@ -191,7 +185,6 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
 
     let finalString = drinkData.label;
     let extras = [];
-    
     if (coffee === "Deca") extras.push("Deca");
     if (milk !== "Intero" && drinkData.hasMilkVariant) extras.push(milk);
     if (drinkData.hasSub && flavor) extras.push(flavor);
@@ -208,11 +201,15 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
   const sizeType = currentSelection.includes("Grande") ? "Grande" : "Standard";
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5 w-full">
       <p className="font-bold text-slate-400 text-[10px] uppercase tracking-wider pl-1">{label}</p>
       
-      {/* GRID 3 COLONNE RIGIDE: w-full forza il contenimento */}
-      <div className="grid grid-cols-3 gap-2 w-full">
+      {/* GRID RESPONSIVE:
+          - Default (Mobile): 2 Colonne (i nomi sono corti)
+          - Screen minuscoli (<350px): 1 Colonna
+          - Tablet/Desktop (sm): 3 Colonne
+      */}
+      <div className="grid grid-cols-1 min-[350px]:grid-cols-2 sm:grid-cols-3 gap-1.5 w-full">
         {DRINKS_DATA.map((d: any) => {
           const isSelected = baseSelection === d.label;
           return (
@@ -221,64 +218,57 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
                  if (d.hasSub && d.subOptions && d.subOptions.length > 0) { initial += ` (${d.subOptions[0]})`; }
                  onSelect(initial);
               }}
-              // h-auto e min-h permettono al bottone di crescere in altezza se il testo va a capo
-              // whitespace-normal e break-words forzano il testo a stare dentro la larghezza
               className={clsx(
-                "relative flex flex-col items-center justify-center p-2 rounded-lg border transition-all h-auto min-h-[4rem] w-full", 
-                isSelected ? "bg-slate-800 text-white border-slate-800 shadow-md scale-[1.01]" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                "relative flex items-center justify-start px-3 py-2 rounded-lg border transition-all h-auto min-h-[3.5rem] w-full gap-3", 
+                isSelected ? "bg-slate-800 text-white border-slate-800 shadow-sm" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
               )}
             >
-              <span className="text-lg mb-1">{d.icon}</span>
-              <span className="text-[9px] font-bold leading-3 text-center w-full break-words whitespace-normal">{d.label}</span>
+              <span className="text-xl shrink-0">{d.icon}</span>
+              <span className="text-[10px] font-bold leading-tight text-left">{d.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* VARIANTI */}
+      {/* VARIANTI (FLEX WRAP = SI ADATTANO AL 100% DELLO SPAZIO) */}
       {drinkData && (drinkData.hasCoffeeVariant || drinkData.hasMilkVariant || drinkData.hasSub || drinkData.hasSize) && (
         <div className="bg-slate-50 p-2 rounded-lg border border-slate-200 relative mt-1 w-full">
            <div className="space-y-2">
-              {/* Caffè */}
               {drinkData.hasCoffeeVariant && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                    <div className="w-4 flex justify-center"><Bean size={12} className="text-slate-400" /></div>
-                   <div className="grid grid-cols-2 gap-1 w-full">
-                      <button type="button" onClick={() => updateVariant('coffee', 'Normale')} className={clsx("py-2 rounded text-[10px] font-bold border text-center", !isDeca ? "bg-rose-500 text-white border-rose-500" : "bg-white text-slate-500 border-slate-200")}>Normale</button>
-                      <button type="button" onClick={() => updateVariant('coffee', 'Deca')} className={clsx("py-2 rounded text-[10px] font-bold border text-center", isDeca ? "bg-rose-500 text-white border-rose-500" : "bg-white text-slate-500 border-slate-200")}>Deca</button>
+                   <div className="flex flex-wrap gap-1">
+                      <button type="button" onClick={() => updateVariant('coffee', 'Normale')} className={clsx("px-2 py-1.5 rounded text-[9px] font-bold border", !isDeca ? "bg-rose-500 text-white border-rose-500" : "bg-white text-slate-500 border-slate-200")}>Normale</button>
+                      <button type="button" onClick={() => updateVariant('coffee', 'Deca')} className={clsx("px-2 py-1.5 rounded text-[9px] font-bold border", isDeca ? "bg-rose-500 text-white border-rose-500" : "bg-white text-slate-500 border-slate-200")}>Deca</button>
                    </div>
                 </div>
               )}
-              {/* Latte */}
               {drinkData.hasMilkVariant && (
-                <div className="flex items-start gap-2">
-                   <div className="w-4 flex justify-center mt-2"><Milk size={12} className="text-slate-400" /></div>
-                   <div className="grid grid-cols-3 gap-1 w-full">
-                      <button type="button" onClick={() => updateVariant('milk', 'Intero')} className={clsx("px-1 py-2 rounded text-[10px] font-bold border text-center", milkType === 'Intero' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-200")}>Intero</button>
-                      <button type="button" onClick={() => updateVariant('milk', 'Senza Lattosio')} className={clsx("px-1 py-2 rounded text-[10px] font-bold border text-center leading-3 break-words whitespace-normal", milkType === 'Senza Lattosio' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-200")}>No Latt.</button>
-                      <button type="button" onClick={() => updateVariant('milk', 'Soia')} className={clsx("px-1 py-2 rounded text-[10px] font-bold border text-center", milkType === 'Soia' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-200")}>Soia</button>
+                <div className="flex flex-wrap items-center gap-2">
+                   <div className="w-4 flex justify-center"><Milk size={12} className="text-slate-400" /></div>
+                   <div className="flex flex-wrap gap-1">
+                      <button type="button" onClick={() => updateVariant('milk', 'Intero')} className={clsx("px-2 py-1.5 rounded text-[9px] font-bold border", milkType === 'Intero' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-200")}>Intero</button>
+                      <button type="button" onClick={() => updateVariant('milk', 'Senza Lattosio')} className={clsx("px-2 py-1.5 rounded text-[9px] font-bold border", milkType === 'Senza Lattosio' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-200")}>No Latt.</button>
+                      <button type="button" onClick={() => updateVariant('milk', 'Soia')} className={clsx("px-2 py-1.5 rounded text-[9px] font-bold border", milkType === 'Soia' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-200")}>Soia</button>
                    </div>
                 </div>
               )}
-              {/* Gusti */}
               {drinkData.hasSub && (
                 <div className="flex flex-col gap-1 w-full">
                    <p className="text-[9px] font-bold text-slate-400 ml-6">Gusto:</p>
-                   {/* 3 Colonne anche per i gusti per allineamento perfetto */}
-                   <div className="grid grid-cols-3 gap-1 pl-6 w-full">
+                   <div className="flex flex-wrap gap-1 pl-6">
                      {drinkData.subOptions?.map((opt: string) => (
-                        <button key={opt} type="button" onClick={() => updateVariant('flavor', opt)} className={clsx("px-1 py-2 rounded text-[10px] font-bold border text-center break-words whitespace-normal leading-3", currentSelection.includes(opt) ? "bg-slate-700 text-white border-slate-700" : "bg-white text-slate-600 border-slate-200")}>{opt}</button>
+                        <button key={opt} type="button" onClick={() => updateVariant('flavor', opt)} className={clsx("px-2 py-1.5 rounded text-[9px] font-bold border", currentSelection.includes(opt) ? "bg-slate-700 text-white border-slate-700" : "bg-white text-slate-600 border-slate-200")}>{opt}</button>
                      ))}
                    </div>
                 </div>
               )}
-              {/* Size */}
               {drinkData.hasSize && (
-                 <div className="flex items-center gap-2">
+                 <div className="flex flex-wrap items-center gap-2">
                     <div className="w-4 flex justify-center text-[9px] font-bold text-slate-400">Tg</div>
-                    <div className="grid grid-cols-2 gap-1 w-full">
-                       <button type="button" onClick={() => updateVariant('size', 'Standard')} className={clsx("py-2 rounded text-[10px] font-bold border transition-all text-center", sizeType === 'Standard' ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200")}>Standard</button>
-                       <button type="button" onClick={() => updateVariant('size', 'Grande')} className={clsx("py-2 rounded text-[10px] font-bold border transition-all text-center", sizeType === 'Grande' ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200")}>Grande</button>
+                    <div className="flex gap-1">
+                       <button type="button" onClick={() => updateVariant('size', 'Standard')} className={clsx("px-2 py-1.5 rounded text-[9px] font-bold border transition-all", sizeType === 'Standard' ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200")}>Std</button>
+                       <button type="button" onClick={() => updateVariant('size', 'Grande')} className={clsx("px-2 py-1.5 rounded text-[9px] font-bold border transition-all", sizeType === 'Grande' ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-500 border-slate-200")}>Grande</button>
                     </div>
                  </div>
               )}
@@ -289,7 +279,7 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
   );
 }
 
-// --- PASTRY SELECTOR (GRID 2 COLONNE PER NOMI LUNGHI) ---
+// --- PASTRY SELECTOR (RESPONSIVE: 1 COLONNA SU MOBILE) ---
 function PastrySelector({ label, onSelect, currentSelection }: any) {
   const specialitaKeywords = ['pasticciotto', 'graffa', 'bomba', 'polacca'];
   const cornetti = PASTRIES_DATA.filter((p: any) => !specialitaKeywords.some(k => p.id.includes(k)) && p.id !== 'nessuno');
@@ -297,8 +287,10 @@ function PastrySelector({ label, onSelect, currentSelection }: any) {
   const noGrazie = PASTRIES_DATA.find((p: any) => p.id === 'nessuno');
 
   const renderGrid = (items: any[]) => (
-    // GRID 2 COLONNE: Più spazio per "Cornetto Nutella" senza uscire
-    <div className="grid grid-cols-2 gap-2 w-full">
+    // GRID RESPONSIVE:
+    // - Default (Mobile): 1 Colonna (Lista verticale per far leggere tutto il testo)
+    // - Min 400px: 2 Colonne
+    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2 w-full">
        {items.map((p) => {
           const isSelected = currentSelection === p.label;
           const textColor = p.text || (p.id.includes('cioccolato') || p.id === 'nutella' || p.id === 'bomba_cioccolato' ? 'white' : '#334155');
@@ -309,14 +301,14 @@ function PastrySelector({ label, onSelect, currentSelection }: any) {
               onClick={() => onSelect(p.label)}
               style={isSelected ? { backgroundColor: p.bg, borderColor: p.border, color: textColor } : {}}
               className={clsx(
-                "p-2 rounded-lg border text-left transition-all relative overflow-hidden flex flex-col justify-center h-auto min-h-[3.5rem] w-full",
+                "p-3 rounded-lg border text-left transition-all relative overflow-hidden flex items-center justify-between min-h-[3rem] w-full",
                 isSelected ? "shadow-sm ring-1 ring-inset" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
               )}
             >
-               <span className={clsx("text-[10px] font-bold leading-3 z-10 break-words whitespace-normal pr-3 w-full", isSelected && "scale-105 origin-left")}>{p.label}</span>
+               <span className={clsx("text-[10px] font-bold leading-tight z-10 break-words pr-2", isSelected && "scale-105 origin-left")}>{p.label}</span>
                {isSelected && (
-                 <div className="absolute right-0.5 top-0.5 w-3 h-3 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <Check size={8} strokeWidth={3} color={textColor} />
+                 <div className="shrink-0 w-4 h-4 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <Check size={10} strokeWidth={3} color={textColor} />
                  </div>
                )}
             </button>
@@ -326,7 +318,7 @@ function PastrySelector({ label, onSelect, currentSelection }: any) {
   );
 
   return (
-    <div className="space-y-2 mt-3 w-full">
+    <div className="space-y-1.5 mt-3 w-full">
        <div className="flex items-center justify-between">
           <p className="font-bold text-slate-400 text-[10px] uppercase tracking-wider pl-1">{label}</p>
        </div>
@@ -361,13 +353,13 @@ function BoxCard({ box, selected, onClick }: any) {
   return (
     <div onClick={onClick} className={clsx("cursor-pointer rounded-xl p-3 border-2 transition-all relative overflow-hidden group h-full flex flex-col w-full", selected ? "border-rose-500 bg-rose-50/50 ring-1 ring-rose-500" : "border-slate-100 bg-white hover:border-rose-200")}>
       <div className="flex justify-between items-start mb-1">
-        <h4 className={clsx("font-bold text-base", selected ? "text-rose-600" : "text-slate-900")}>{box.name}</h4>
-        {selected && <div className="bg-rose-500 text-white p-0.5 rounded-full"><Check size={12} strokeWidth={3} /></div>}
+        <h4 className={clsx("font-bold text-sm", selected ? "text-rose-600" : "text-slate-900")}>{box.name}</h4>
+        {selected && <div className="bg-rose-500 text-white p-0.5 rounded-full"><Check size={10} strokeWidth={3} /></div>}
       </div>
-      <p className="text-[11px] text-slate-500 mb-2 leading-tight flex-grow">{box.desc}</p>
+      <p className="text-[10px] text-slate-500 mb-2 leading-tight flex-grow">{box.desc}</p>
       <div className="flex items-baseline gap-1 mt-auto">
          <span className="text-[9px] font-bold text-slate-400 uppercase">Da</span>
-         <span className="text-lg font-extrabold text-slate-800">{displayPrice.toFixed(2)}€</span>
+         <span className="text-base font-extrabold text-slate-800">{displayPrice.toFixed(2)}€</span>
       </div>
     </div>
   );
@@ -375,10 +367,10 @@ function BoxCard({ box, selected, onClick }: any) {
 
 function GiftCard({ label, price, icon, selected, onClick }: any) {
     return (
-        <div onClick={onClick} className={clsx("cursor-pointer rounded-lg p-1.5 border-2 transition-all relative flex flex-col items-center justify-center text-center gap-0.5 min-h-[5rem] w-full", selected ? "border-rose-500 bg-rose-50 ring-1 ring-rose-500" : "border-slate-100 bg-white hover:border-rose-200")}>
+        <div onClick={onClick} className={clsx("cursor-pointer rounded-lg p-1 border-2 transition-all relative flex flex-col items-center justify-center text-center gap-0.5 min-h-[4rem] w-full", selected ? "border-rose-500 bg-rose-50 ring-1 ring-rose-500" : "border-slate-100 bg-white hover:border-rose-200")}>
             <div className="text-lg">{icon}</div>
-            <div className="text-[9px] font-bold text-slate-700 leading-tight break-words w-full px-0.5">{label}</div>
-            <div className="text-[10px] font-extrabold text-rose-600">+{price.toFixed(2)}€</div>
+            <div className="text-[8px] font-bold text-slate-700 leading-tight break-words w-full px-0.5">{label}</div>
+            <div className="text-[9px] font-extrabold text-rose-600">+{price.toFixed(2)}€</div>
             {selected && <div className="absolute top-0.5 right-0.5 text-rose-500"><CheckCircle2 size={10} /></div>}
         </div>
     );
@@ -487,23 +479,20 @@ export default function PrenotaBoxPage() {
   const accessories = (box as any).accessories || {};
 
   return (
-    // MAIN WRAPPER: overflow-hidden fondamentale
+    // MAIN WRAPPER: max-w-full e overflow-hidden
     <div className="min-h-screen bg-slate-50 font-sans flex flex-col overflow-x-hidden w-full">
-      
-      {/* HEADER SPACER */}
       <main className="flex-grow pt-20 sm:pt-32 w-full">
         
-        {/* HERO MOBILE CON CAROSELLO - STESSO WIDTH DEL FORM */}
-        <div className="lg:hidden w-full max-w-md mx-auto px-4 mb-6">
-           <div className="relative h-[40vh] w-full rounded-[2rem] overflow-hidden shadow-lg bg-slate-200">
+        {/* HERO MOBILE CON CAROSELLO */}
+        <div className="lg:hidden w-full max-w-[400px] mx-auto px-4 mb-4">
+           <div className="relative h-[35vh] w-full rounded-[1.5rem] overflow-hidden shadow-lg bg-slate-200">
              <BoxCarousel boxId={box.id} boxName={box.name} price={totalPrice} compact={true} />
            </div>
         </div>
 
-        {/* CONTENITORE PRINCIPALE CENTRATO E LIMITATO */}
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 min-h-[calc(100vh-200px)] gap-8 px-4 sm:px-6">
           
-          {/* DESKTOP SIDEBAR CON CAROSELLO */}
+          {/* DESKTOP SIDEBAR */}
           <div className="hidden lg:block relative h-full">
               <div className="sticky top-32 p-4 h-[650px]">
                  <div className="relative h-full w-full rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-white">
@@ -512,10 +501,10 @@ export default function PrenotaBoxPage() {
               </div>
           </div>
 
-          {/* CONFIGURATOR (LIMITATO A MAX-W-MD SU MOBILE PER ALLINEARSI ALLA FOTO) */}
-          <div className="pb-32 w-full max-w-md mx-auto lg:max-w-none">
+          {/* CONFIGURATOR */}
+          <div className="pb-32 w-full max-w-[400px] mx-auto lg:max-w-none">
             {state.success ? (
-               // SUCCESS STATE
+               // SUCCESS
                <div className="animate-fade-in py-6">
                  <div className="bg-white p-5 rounded-[2rem] shadow-xl border border-slate-100 text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-rose-400 to-rose-600" />
@@ -523,29 +512,29 @@ export default function PrenotaBoxPage() {
                         <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mb-4 shadow-inner">
                             <Heart size={40} fill="#f43f5e" className="text-rose-500" />
                         </div>
-                        <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Grazie di Cuore!</h2>
+                        <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Grazie!</h2>
                         <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
-                            Prenotazione ricevuta. <br/> Completa il pagamento in sede.
+                            Ordine ricevuto. <br/> Paga in cassa.
                         </p>
                         
                         <div className="bg-red-50 border border-red-200 p-4 rounded-xl mb-6 text-left w-full">
-                            <h3 className="text-sm font-black text-red-700 uppercase tracking-wide mb-1 flex items-center gap-2">
-                                <AlertTriangle size={16} /> Pagamento Obbligatorio
+                            <h3 className="text-xs font-black text-red-700 uppercase tracking-wide mb-1 flex items-center gap-2">
+                                <AlertTriangle size={14} /> Pagamento
                             </h3>
-                            <p className="text-red-900 text-xs leading-relaxed">
-                                Versa l'acconto o il saldo in negozio entro il 13/02/26.
+                            <p className="text-red-900 text-[10px] leading-relaxed">
+                                Versa l'acconto o il saldo in negozio entro il 13/02.
                             </p>
                         </div>
-
+                        
                         <div className="border-t border-slate-100 pt-4 mb-6 w-full">
                            <div className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-100">
                                <div className="text-left">
                                    <p className="text-[10px] text-slate-400 uppercase font-bold">Box</p>
-                                   <p className="font-bold text-sm text-slate-800">{box.name}</p>
+                                   <p className="font-bold text-xs text-slate-800">{box.name}</p>
                                </div>
                                <div className="text-right">
                                    <p className="text-[10px] text-slate-400 uppercase font-bold">Totale</p>
-                                   <p className="text-lg font-extrabold text-rose-500">{totalPrice.toFixed(2)}€</p>
+                                   <p className="text-base font-extrabold text-rose-500">{totalPrice.toFixed(2)}€</p>
                                </div>
                            </div>
                         </div>
@@ -553,9 +542,9 @@ export default function PrenotaBoxPage() {
                         <div className="space-y-3 w-full">
                             <a 
                                 href={`https://wa.me/${SHOP_PHONE_NUMBER}?text=${encodeURIComponent(`Ciao! Ho prenotato una Box ${box.name} a nome di... Vorrei confermare per il pagamento.`)}`}
-                                className="w-full bg-[#25D366] text-white py-3.5 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 text-sm"
+                                className="w-full bg-[#25D366] text-white py-3 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 text-xs"
                             >
-                                <MessageCircle size={20} fill="white" /> Avvisaci su WhatsApp
+                                <MessageCircle size={18} fill="white" /> WhatsApp
                             </a>
                             <button onClick={() => window.location.reload()} className="w-full text-slate-400 text-xs font-bold py-2">Nuovo ordine</button>
                         </div>
@@ -563,12 +552,12 @@ export default function PrenotaBoxPage() {
                  </div>
                </div>
             ) : (
-              <form action={formAction} className="w-full space-y-6">
+              <form action={formAction} className="w-full space-y-4">
                 
                 {/* 1. SCELTA BOX */}
                 <section>
-                   <h3 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
-                     <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-bold">1</span>
+                   <h3 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                     <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-[10px] flex items-center justify-center font-bold">1</span>
                      Scegli la tua Box
                    </h3>
                    <div className="grid gap-2 w-full">
@@ -583,31 +572,31 @@ export default function PrenotaBoxPage() {
 
                 {/* 2. CONFIGURAZIONE DIMENSIONE */}
                 <section>
-                    <h3 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-bold">2</span>
+                    <h3 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-[10px] flex items-center justify-center font-bold">2</span>
                         Configura
                     </h3>
                     
-                    <div className="bg-white p-3 rounded-2xl shadow-sm border border-rose-100 space-y-4 w-full">
+                    <div className="bg-white p-3 rounded-2xl shadow-sm border border-rose-100 space-y-3 w-full">
                         {box.id === 'sparkling' ? (
-                            <div className="text-center py-3 bg-rose-50 rounded-xl border border-rose-100">
-                                <Sparkles className="mx-auto text-rose-500 mb-1" size={20} />
-                                <h4 className="font-bold text-sm text-rose-800">Edizione Limitata Singola</h4>
+                            <div className="text-center py-2 bg-rose-50 rounded-xl border border-rose-100">
+                                <Sparkles className="mx-auto text-rose-500 mb-1" size={18} />
+                                <h4 className="font-bold text-xs text-rose-800">Singola (Ltd. Ed.)</h4>
                             </div>
                         ) : (
                             <div>
-                                <label className="text-[10px] font-bold text-rose-400 uppercase tracking-wider mb-2 block flex items-center gap-1">
+                                <label className="text-[9px] font-bold text-rose-400 uppercase tracking-wider mb-2 block flex items-center gap-1">
                                     <Heart size={10} className="fill-rose-400" /> Per chi?
                                 </label>
                                 <div className="grid grid-cols-2 gap-2 w-full">
                                     <button type="button" onClick={() => setVariantId("singola")} 
-                                        className={clsx("py-3 rounded-xl border font-bold text-xs transition-all flex flex-col items-center gap-0.5 w-full", 
-                                        variantId === "singola" ? "bg-rose-500 text-white border-rose-500 shadow-md" : "bg-white text-slate-600 border-slate-100")}>
+                                        className={clsx("py-2.5 rounded-xl border font-bold text-[10px] transition-all flex flex-col items-center gap-0.5 w-full", 
+                                        variantId === "singola" ? "bg-rose-500 text-white border-rose-500 shadow-sm" : "bg-white text-slate-600 border-slate-100")}>
                                         <span>Singola 👤</span>
                                     </button>
                                     <button type="button" onClick={() => setVariantId("doppia")} 
-                                        className={clsx("py-3 rounded-xl border font-bold text-xs transition-all flex flex-col items-center gap-0.5 w-full", 
-                                        variantId === "doppia" ? "bg-rose-500 text-white border-rose-500 shadow-md" : "bg-white text-slate-600 border-slate-100")}>
+                                        className={clsx("py-2.5 rounded-xl border font-bold text-[10px] transition-all flex flex-col items-center gap-0.5 w-full", 
+                                        variantId === "doppia" ? "bg-rose-500 text-white border-rose-500 shadow-sm" : "bg-white text-slate-600 border-slate-100")}>
                                         <span>Doppia 👥</span>
                                     </button>
                                 </div>
@@ -616,22 +605,22 @@ export default function PrenotaBoxPage() {
 
                         {isRedLove && (
                             <div className="mt-2">
-                                <label className="text-[10px] font-bold text-rose-400 uppercase tracking-wider mb-2 block">Grandezza</label>
+                                <label className="text-[9px] font-bold text-rose-400 uppercase tracking-wider mb-2 block">Grandezza</label>
                                 <div className="grid grid-cols-2 gap-2 w-full">
                                     <button type="button" onClick={() => setSizeId("small")} 
-                                        className={clsx("py-2.5 rounded-xl border font-bold text-xs transition-all w-full", 
+                                        className={clsx("py-2 rounded-xl border font-bold text-[10px] transition-all w-full", 
                                         sizeId === "small" ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-100")}>
                                         Small
                                     </button>
                                     <button type="button" onClick={() => setSizeId("medium")} 
-                                        className={clsx("py-2.5 rounded-xl border font-bold text-xs transition-all w-full", 
+                                        className={clsx("py-2 rounded-xl border font-bold text-[10px] transition-all w-full", 
                                         sizeId === "medium" ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-100")}>
                                         Medium
                                     </button>
                                 </div>
-                                <div className="mt-2 p-2 bg-rose-50 rounded-lg text-[10px] text-rose-800 border border-rose-100 flex gap-2 items-center leading-tight">
-                                    <Info size={14} className="shrink-0" />
-                                    {sizeId === "medium" ? "Include Spremuta e più dolcetti!" : "Spremuta a parte."}
+                                <div className="mt-2 p-2 bg-rose-50 rounded-lg text-[9px] text-rose-800 border border-rose-100 flex gap-2 items-center leading-tight">
+                                    <Info size={12} className="shrink-0" />
+                                    {sizeId === "medium" ? "Con Spremuta!" : "No Spremuta."}
                                 </div>
                             </div>
                         )}
@@ -644,15 +633,15 @@ export default function PrenotaBoxPage() {
                 
                 {/* 3. MENÙ */}
                 <section>
-                   <h3 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
-                     <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-bold">3</span>
+                   <h3 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                     <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-[10px] flex items-center justify-center font-bold">3</span>
                      Menù
                    </h3>
-                   <div className="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-6 w-full">
+                   <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 space-y-5 w-full">
                       <div className="w-full">
                         <div className="flex items-center gap-2 mb-2">
-                           <div className="bg-rose-100 text-rose-600 p-1 rounded-md"><Heart size={12} className="fill-rose-600" /></div>
-                           <span className="font-bold text-xs text-slate-800">Per Te</span>
+                           <div className="bg-rose-100 text-rose-600 p-1 rounded-md"><Heart size={10} className="fill-rose-600" /></div>
+                           <span className="font-bold text-[10px] text-slate-800">Per Te</span>
                         </div>
                         <DrinkSelector label="Bevanda" currentSelection={d1} onSelect={setD1} />
                         <PastrySelector label="Dolce" currentSelection={c1} onSelect={setC1} />
@@ -661,8 +650,8 @@ export default function PrenotaBoxPage() {
                       {!isSingleMode && (
                           <div className="animate-fade-in pt-4 border-t border-dashed border-slate-200 w-full">
                             <div className="flex items-center gap-2 mb-2">
-                               <div className="bg-rose-100 text-rose-600 p-1 rounded-md"><Heart size={12} className="fill-rose-600" /></div>
-                               <span className="font-bold text-xs text-slate-800">Per la tua Dolce Metà</span>
+                               <div className="bg-rose-100 text-rose-600 p-1 rounded-md"><Heart size={10} className="fill-rose-600" /></div>
+                               <span className="font-bold text-[10px] text-slate-800">Per l'altro</span>
                             </div>
                             <DrinkSelector label="Bevanda" currentSelection={d2} onSelect={setD2} />
                             <PastrySelector label="Dolce" currentSelection={c2} onSelect={setC2} />
@@ -678,27 +667,27 @@ export default function PrenotaBoxPage() {
 
                 <hr className="border-slate-200/60" />
 
-                {/* 4. REGALI & EXTRA */}
+                {/* 4. EXTRA */}
                 <section>
-                   <h3 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
-                     <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-bold">4</span>
+                   <h3 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                     <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-[10px] flex items-center justify-center font-bold">4</span>
                      Extra
                    </h3>
-                   <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 space-y-3 w-full">
+                   <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 space-y-2 w-full">
                       
                       {/* SPREMUTA */}
                       <div 
-                           className={clsx("relative rounded-xl p-3 border-2 flex items-center justify-between cursor-pointer transition-all w-full", 
+                           className={clsx("relative rounded-xl p-2.5 border-2 flex items-center justify-between cursor-pointer transition-all w-full", 
                                spremuta ? "bg-orange-50 border-orange-400" : "bg-white border-slate-100")} 
                            onClick={() => setSpremuta(!spremuta)}
                        >
-                           <div className="flex items-center gap-3">
-                               <div className={clsx("p-2 rounded-full shrink-0", spremuta ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-400")}>
-                                   <Citrus size={16} />
+                           <div className="flex items-center gap-2">
+                               <div className={clsx("p-1.5 rounded-full shrink-0", spremuta ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-400")}>
+                                   <Citrus size={14} />
                                </div>
                                <div>
-                                   <h4 className="font-extrabold text-slate-800 text-xs">Spremuta</h4>
-                                   <p className="text-[10px] font-medium text-slate-500 mt-0.5">
+                                   <h4 className="font-extrabold text-slate-800 text-[10px]">Spremuta</h4>
+                                   <p className="text-[9px] font-medium text-slate-500 mt-0.5">
                                        {((box as any).spremutaIncluded || (isRedLove && sizeId === 'medium')) 
                                            ? <span className="text-emerald-600 font-bold">INCLUSA</span> 
                                            : <span className="text-orange-600 font-bold">+{(box.id === 'sparkling' || (isRedLove && sizeId === 'small')) ? "1,50€" : "2,50€"}</span>
@@ -706,35 +695,34 @@ export default function PrenotaBoxPage() {
                                    </p>
                                </div>
                            </div>
-                           {spremuta && <div className="text-orange-500"><Check size={16} /></div>}
+                           {spremuta && <div className="text-orange-500"><Check size={14} /></div>}
                        </div>
                        <input type="hidden" name="includeSpremuta" value={spremuta ? "on" : ""} />
 
                        {/* SUCCO EXTRA */}
-                       <div className={clsx("relative rounded-xl p-3 border-2 transition-all w-full", succoExtra ? "bg-yellow-50 border-yellow-400" : "bg-white border-slate-100")}>
+                       <div className={clsx("relative rounded-xl p-2.5 border-2 transition-all w-full", succoExtra ? "bg-yellow-50 border-yellow-400" : "bg-white border-slate-100")}>
                            <div className="flex items-center justify-between cursor-pointer" onClick={() => setSuccoExtra(!succoExtra)}>
-                               <div className="flex items-center gap-3">
-                                   <div className={clsx("p-2 rounded-full shrink-0", succoExtra ? "bg-yellow-500 text-white" : "bg-yellow-100 text-yellow-500")}>
-                                       <GlassWater size={16} />
+                               <div className="flex items-center gap-2">
+                                   <div className={clsx("p-1.5 rounded-full shrink-0", succoExtra ? "bg-yellow-500 text-white" : "bg-yellow-100 text-yellow-500")}>
+                                       <GlassWater size={14} />
                                    </div>
                                    <div>
-                                       <h4 className="font-extrabold text-slate-800 text-xs">Succo Extra</h4>
-                                       <p className="text-[10px] font-bold text-yellow-700 mt-0.5">
+                                       <h4 className="font-extrabold text-slate-800 text-[10px]">Succo Extra</h4>
+                                       <p className="text-[9px] font-bold text-yellow-700 mt-0.5">
                                            +{(box as any).succoPrice || "2,00"}€
                                        </p>
                                    </div>
                                </div>
-                               {succoExtra && <div className="text-yellow-600"><Check size={16} /></div>}
+                               {succoExtra && <div className="text-yellow-600"><Check size={14} /></div>}
                            </div>
 
                            {succoExtra && (
                                <div className="mt-2 pt-2 border-t border-yellow-200/50 w-full">
                                    <p className="text-[9px] font-bold text-yellow-700 uppercase mb-1">Gusto:</p>
-                                   {/* SUCCHI: GRID 3 COL */}
                                    <div className="grid grid-cols-3 gap-1 w-full">
                                        {SUCCHI_FLAVORS.map(gusto => (
                                            <button key={gusto} type="button" onClick={() => setSuccoFlavor(gusto)}
-                                               className={clsx("px-1 py-1.5 rounded text-[9px] font-bold border truncate text-center w-full", 
+                                               className={clsx("px-1 py-1 rounded text-[9px] font-bold border truncate text-center w-full", 
                                                    succoFlavor === gusto ? "bg-yellow-400 text-white border-yellow-500" : "bg-white text-slate-600 border-slate-200")}>
                                                {gusto}
                                            </button>
@@ -749,9 +737,8 @@ export default function PrenotaBoxPage() {
                        {/* REGALI GRID */}
                        {accessories && (
                          <div className="pt-2 border-t border-slate-100 w-full">
-                             <p className="font-bold text-slate-400 text-[10px] uppercase tracking-wider mb-2 pl-1">Regalo?</p>
-                             {/* REGALI: GRID 3 COL */}
-                             <div className="grid grid-cols-3 gap-2 w-full">
+                             <p className="font-bold text-slate-400 text-[9px] uppercase tracking-wider mb-2 pl-1">Regalo?</p>
+                             <div className="grid grid-cols-3 gap-1.5 w-full">
                                 {accessories.peluche_l && <GiftCard label="Peluche L" icon="🧸" price={accessories.peluche_l.price} selected={addPelucheL} onClick={() => setAddPelucheL(!addPelucheL)} />}
                                 {accessories.peluche_m && <GiftCard label="Peluche M" icon="🧸" price={accessories.peluche_m.price} selected={addPelucheM} onClick={() => setAddPelucheM(!addPelucheM)} />}
                                 {accessories.rosa && <GiftCard label="Rosa+Baci" icon="🌹" price={accessories.rosa.price} selected={addRosa} onClick={() => setAddRosa(!addRosa)} />}
@@ -764,38 +751,38 @@ export default function PrenotaBoxPage() {
                    </div>
                 </section>
 
-                {/* 5. DETTAGLI */}
+                {/* 5. DATI */}
                 <section>
-                   <h3 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
-                     <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-bold">5</span>
+                   <h3 className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                     <span className="w-5 h-5 rounded-full bg-slate-900 text-white text-[10px] flex items-center justify-center font-bold">5</span>
                      I tuoi Dati
                    </h3>
-                   <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-4 w-full">
-                       <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-lg w-full">
-                          <button type="button" onClick={() => setDelivery('domicilio')} className={clsx("py-2.5 rounded-md text-[11px] font-bold flex items-center justify-center gap-1 transition-all w-full", delivery === 'domicilio' ? "bg-white shadow-sm text-slate-900" : "text-slate-500")}>
-                              <Bike size={14} /> Domicilio
+                   <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 space-y-3 w-full">
+                       <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-lg w-full">
+                          <button type="button" onClick={() => setDelivery('domicilio')} className={clsx("py-2 rounded-md text-[10px] font-bold flex items-center justify-center gap-1 transition-all w-full", delivery === 'domicilio' ? "bg-white shadow-sm text-slate-900" : "text-slate-500")}>
+                              <Bike size={12} /> Domicilio
                           </button>
-                          <button type="button" onClick={() => setDelivery('ritiro')} className={clsx("py-2.5 rounded-md text-[11px] font-bold flex items-center justify-center gap-1 transition-all w-full", delivery === 'ritiro' ? "bg-white shadow-sm text-slate-900" : "text-slate-500")}>
-                              <Store size={14} /> Ritiro
+                          <button type="button" onClick={() => setDelivery('ritiro')} className={clsx("py-2 rounded-md text-[10px] font-bold flex items-center justify-center gap-1 transition-all w-full", delivery === 'ritiro' ? "bg-white shadow-sm text-slate-900" : "text-slate-500")}>
+                              <Store size={12} /> Ritiro
                           </button>
                        </div>
                        <input type="hidden" name="deliveryType" value={delivery} />
 
                        <div className="w-full">
-                          <label className="text-[10px] font-bold text-slate-500 ml-1 mb-1 block">Orario</label>
+                          <label className="text-[9px] font-bold text-slate-500 ml-1 mb-1 block">Orario</label>
                           <div className="flex gap-1 overflow-x-auto pb-2 no-scrollbar w-full">
                              {TIMES.map(t => (
-                                <button key={t} type="button" onClick={() => setTime(t)} className={clsx("flex-shrink-0 px-3 py-2 rounded-lg border text-[11px] font-bold whitespace-nowrap", time === t ? "bg-slate-800 text-white border-slate-800" : "bg-slate-50 text-slate-500 border-slate-200")}>{t}</button>
+                                <button key={t} type="button" onClick={() => setTime(t)} className={clsx("flex-shrink-0 px-3 py-1.5 rounded-lg border text-[10px] font-bold whitespace-nowrap", time === t ? "bg-slate-800 text-white border-slate-800" : "bg-slate-50 text-slate-500 border-slate-200")}>{t}</button>
                              ))}
                           </div>
                           <input type="hidden" name="preferredTime" value={time} />
                        </div>
 
-                       <div className="space-y-3 w-full">
-                          <input type="text" name="fullName" placeholder="Nome e Cognome" className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:bg-white outline-none" required />
-                          <input type="tel" name="phone" placeholder="Telefono" className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:bg-white outline-none" required />
+                       <div className="space-y-2 w-full">
+                          <input type="text" name="fullName" placeholder="Nome e Cognome" className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs focus:bg-white outline-none" required />
+                          <input type="tel" name="phone" placeholder="Telefono" className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs focus:bg-white outline-none" required />
                           {delivery === 'domicilio' ? (
-                             <input type="text" name="address" placeholder="Indirizzo Completo" className="w-full px-4 py-3 rounded-xl border border-rose-200 bg-rose-50/50 text-sm focus:bg-white outline-none animate-fade-in" required />
+                             <input type="text" name="address" placeholder="Indirizzo Completo" className="w-full px-3 py-2.5 rounded-xl border border-rose-200 bg-rose-50/50 text-xs focus:bg-white outline-none animate-fade-in" required />
                           ) : (
                              <input type="hidden" name="address" value="RITIRO IN SEDE" />
                           )}
@@ -805,11 +792,11 @@ export default function PrenotaBoxPage() {
                 
                 <PaymentLogos />
 
-                {/* BOTTOM STICKY ACTION BAR */}
-                <div className="sticky bottom-4 z-40 px-1 pb-[env(safe-area-inset-bottom)]">
-                   <div className="backdrop-blur-md bg-white/70 p-2 rounded-2xl border border-white/50 shadow-2xl">
+                {/* BOTTOM STICKY BAR - Ridotta altezza e padding */}
+                <div className="sticky bottom-3 z-40 px-1 pb-[env(safe-area-inset-bottom)]">
+                   <div className="backdrop-blur-md bg-white/80 p-1.5 rounded-2xl border border-white/50 shadow-2xl">
                        <SubmitButton label="Conferma" price={totalPrice} />
-                       {state.message && !state.success && <div className="bg-red-50 text-red-600 p-2 rounded-lg text-center text-xs mt-2 border border-red-100 font-bold">{state.message}</div>}
+                       {state.message && !state.success && <div className="bg-red-50 text-red-600 p-1.5 rounded-lg text-center text-[10px] mt-1 border border-red-100 font-bold">{state.message}</div>}
                    </div>
                 </div>
 
