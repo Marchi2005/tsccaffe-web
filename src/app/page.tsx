@@ -2,14 +2,34 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Wifi, Package, Coffee, MapPin, ArrowUp, Eye } from "lucide-react";
-
+import { ArrowRight, Wifi, Package, Coffee, MapPin, ArrowUp, Eye, Instagram, Facebook } from "lucide-react";
 import { useState, useEffect } from "react";
 import clsx from "clsx";
+
+// Icona TikTok personalizzata
+const TikTokIcon = ({ size = 20 }: { size?: number }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+  </svg>
+);
 
 export default function Home() {
   const [showWifiPass, setShowWifiPass] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  
+  // STATO PER GESTIRE IL NOME SOCIAL
+  const [socialHandle, setSocialHandle] = useState("@tabacchisanclementecaffe");
+  const [isTikTokHovered, setIsTikTokHovered] = useState(false);
 
   // Gestione apparizione tasto "Torna su"
   useEffect(() => {
@@ -67,11 +87,11 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* LOGO SVG AREA */}
-              <div className="relative mx-auto w-full max-w-md lg:max-w-full flex justify-center items-center order-1 lg:order-2">
-                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-brand-cyan/10 to-brand-red/5 rounded-full blur-3xl -z-10"></div>
-                 
-                 <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 animate-fade-in">
+              {/* LOGO SVG AREA & SOCIAL BANNER */}
+              <div className="relative mx-auto w-full max-w-md lg:max-w-full flex flex-col justify-center items-center order-1 lg:order-2">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-brand-cyan/10 to-brand-red/5 rounded-full blur-3xl -z-10"></div>
+                  
+                  <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 animate-fade-in mb-8">
                     <Image 
                       src="/icons/logo.svg" 
                       alt="TSC Caffè Logo" 
@@ -79,7 +99,76 @@ export default function Home() {
                       className="object-contain drop-shadow-xl"
                       priority
                     />
-                 </div>
+                  </div>
+
+                  {/* NUOVO: Social Banner INTERATTIVO */}
+                  <div className="flex flex-col items-center gap-3 animate-in slide-in-from-bottom-4 fade-in duration-700 delay-200">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Seguici sui social</span>
+                    
+                    <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md border border-slate-200 p-1.5 pr-6 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                      
+                      {/* Instagram */}
+                      <a 
+                        href="https://instagram.com/tabacchisanclementecaffe" 
+                        target="_blank"
+                        className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 hover:bg-gradient-to-tr hover:from-purple-500 hover:to-orange-500 hover:text-white transition-all text-slate-600"
+                        title="Instagram"
+                        // Quando torno sugli altri social, rimetto il nome lungo
+                        onMouseEnter={() => {
+                            setSocialHandle("@tabacchisanclementecaffe");
+                            setIsTikTokHovered(false);
+                        }}
+                      >
+                        <Instagram size={20} />
+                      </a>
+
+                      {/* TikTok - QUI avviene la magia */}
+                      <a 
+                        href="https://www.tiktok.com/@tssccaffe" 
+                        target="_blank"
+                        className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 hover:bg-[#ff0050] hover:text-white transition-all text-slate-600"
+                        title="TikTok"
+                        onMouseEnter={() => {
+                            setSocialHandle("@tssccaffe");
+                            setIsTikTokHovered(true);
+                        }}
+                        onMouseLeave={() => {
+                            setSocialHandle("@tabacchisanclementecaffe");
+                            setIsTikTokHovered(false);
+                        }}
+                      >
+                         <TikTokIcon size={20} />
+                      </a>
+
+                      {/* Facebook */}
+                      <a 
+                        href="https://www.facebook.com/people/Tabacchi-San-Clemente/100012509505700/" 
+                        target="_blank"
+                        className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 hover:bg-blue-600 hover:text-white transition-all text-slate-600"
+                        title="Facebook"
+                         onMouseEnter={() => {
+                            setSocialHandle("@tabacchisanclementecaffe");
+                            setIsTikTokHovered(false);
+                        }}
+                      >
+                        <Facebook size={20} />
+                      </a>
+
+                      <div className="h-8 w-px bg-slate-200 mx-2"></div>
+                      
+                      {/* Testo che cambia colore e contenuto */}
+                      <span 
+                        className={clsx(
+                            "text-xs font-bold transition-colors duration-300 min-w-[150px]", 
+                            isTikTokHovered ? "text-[#ff0050]" : "text-slate-700"
+                        )}
+                      >
+                        {socialHandle}
+                      </span>
+
+                    </div>
+                  </div>
+
               </div>
 
             </div>
