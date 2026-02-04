@@ -3,12 +3,13 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 // IMPORTA IL NUOVO COMPONENTE
 import ClientLayout from "@/components/ClientLayout"; 
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "TSC Caffè",
-  description: "Box San Valentino",
+  description: "Il tuo bar di fiducia",
 };
 
 export default function RootLayout({
