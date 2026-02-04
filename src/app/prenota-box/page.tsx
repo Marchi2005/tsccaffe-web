@@ -57,9 +57,9 @@ function SubmitButton({ label, price }: { label: string, price: number }) {
   const safePrice = (price && !isNaN(price)) ? price : 0;
 
   return (
-    <button disabled={pending} type="submit" className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all flex justify-between px-8 items-center disabled:opacity-70 disabled:cursor-not-allowed">
-       <span className="flex items-center gap-2">
-         {pending ? <span className="animate-pulse">Invio in corso...</span> : <>{label} <ArrowRight size={20} className="text-rose-300" /></>}
+    <button disabled={pending} type="submit" className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all flex justify-between px-6 sm:px-8 items-center disabled:opacity-70 disabled:cursor-not-allowed">
+       <span className="flex items-center gap-2 text-sm sm:text-lg">
+         {pending ? <span className="animate-pulse">Invio...</span> : <>{label} <ArrowRight size={20} className="text-rose-300 hidden sm:block" /></>}
        </span>
        <span className="bg-white/20 px-3 py-1 rounded-lg text-sm font-mono tracking-tight">{safePrice.toFixed(2)}€</span>
     </button>
@@ -167,6 +167,7 @@ function BoxCarousel({ boxId, boxName, price, compact = false }: { boxId: string
   );
 }
 
+// --- FIX RESPONSIVE: DRINK SELECTOR ---
 function DrinkSelector({ label, onSelect, currentSelection }: any) {
   const baseSelection = currentSelection ? currentSelection.split(" (")[0] : ""; 
   const drinkData = DRINKS_DATA.find(d => d.label === baseSelection) as any;
@@ -216,6 +217,7 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
   return (
     <div className="space-y-2">
       <p className="font-bold text-slate-400 text-xs uppercase tracking-wider pl-1">{label}</p>
+      {/* Grid Responsive: 3 colonne mobile, 4 sm */}
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
         {DRINKS_DATA.map((d: any) => {
           const isSelected = baseSelection === d.label;
@@ -225,10 +227,10 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
                  if (d.hasSub && d.subOptions && d.subOptions.length > 0) { initial += ` (${d.subOptions[0]})`; }
                  onSelect(initial);
               }}
-              className={clsx("relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all h-20", isSelected ? "bg-slate-800 text-white border-slate-800 shadow-md scale-[1.02]" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50")}
+              className={clsx("relative flex flex-col items-center justify-center p-2 rounded-xl border transition-all min-h-[5rem]", isSelected ? "bg-slate-800 text-white border-slate-800 shadow-md scale-[1.02]" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50")}
             >
               <span className="text-xl mb-1">{d.icon}</span>
-              <span className="text-[10px] font-bold leading-tight text-center">{d.label}</span>
+              <span className="text-[10px] font-bold leading-tight text-center break-words w-full">{d.label}</span>
             </button>
           );
         })}
@@ -237,38 +239,46 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
         <div className="bg-slate-50 p-3 rounded-xl animate-fade-in border border-slate-200 relative mt-2">
            <div className="space-y-3">
               {drinkData.hasCoffeeVariant && (
-                <div className="flex items-center gap-2">
-                   <div className="w-6 flex justify-center"><Bean size={14} className="text-slate-400" /></div>
-                   <div className="flex gap-1 bg-white p-1 rounded-lg border border-slate-300 shadow-sm">
-                      <button type="button" onClick={() => updateVariant('coffee', 'Normale')} className={clsx("px-3 py-1 rounded-md text-[10px] font-bold transition-all", !isDeca ? "bg-rose-500 text-white shadow-sm" : "text-slate-500 hover:bg-slate-50")}>Normale</button>
-                      <button type="button" onClick={() => updateVariant('coffee', 'Deca')} className={clsx("px-3 py-1 rounded-md text-[10px] font-bold transition-all", isDeca ? "bg-rose-500 text-white shadow-sm" : "text-slate-500 hover:bg-slate-50")}>Deca</button>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                   <div className="flex items-center gap-2 mb-1 sm:mb-0">
+                      <div className="w-5 flex justify-center"><Bean size={14} className="text-slate-400" /></div>
+                      <span className="text-[10px] font-bold text-slate-400 sm:hidden">Caffè</span>
+                   </div>
+                   <div className="flex flex-wrap gap-1">
+                      <button type="button" onClick={() => updateVariant('coffee', 'Normale')} className={clsx("px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border", !isDeca ? "bg-rose-500 text-white border-rose-500 shadow-sm" : "bg-white text-slate-500 border-slate-200")}>Normale</button>
+                      <button type="button" onClick={() => updateVariant('coffee', 'Deca')} className={clsx("px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border", isDeca ? "bg-rose-500 text-white border-rose-500 shadow-sm" : "bg-white text-slate-500 border-slate-200")}>Deca</button>
                    </div>
                 </div>
               )}
               {drinkData.hasMilkVariant && (
-                <div className="flex items-center gap-2">
-                   <div className="w-6 flex justify-center"><Milk size={14} className="text-slate-400" /></div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                   <div className="flex items-center gap-2 mb-1 sm:mb-0">
+                      <div className="w-5 flex justify-center"><Milk size={14} className="text-slate-400" /></div>
+                      <span className="text-[10px] font-bold text-slate-400 sm:hidden">Latte</span>
+                   </div>
+                   {/* Flex Wrap aggiunto per mobile */}
                    <div className="flex flex-wrap gap-1">
-                      <button type="button" onClick={() => updateVariant('milk', 'Intero')} className={clsx("px-2 py-1.5 rounded-lg border text-[10px] font-bold transition-colors", milkType === 'Intero' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-300")}>Intero</button>
-                      <button type="button" onClick={() => updateVariant('milk', 'Senza Lattosio')} className={clsx("px-2 py-1.5 rounded-lg border text-[10px] font-bold transition-colors", milkType === 'Senza Lattosio' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-300")}>No Lattosio</button>
-                      <button type="button" onClick={() => updateVariant('milk', 'Soia')} className={clsx("px-2 py-1.5 rounded-lg border text-[10px] font-bold transition-colors", milkType === 'Soia' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-300")}>Soia</button>
+                      <button type="button" onClick={() => updateVariant('milk', 'Intero')} className={clsx("px-2 py-1.5 rounded-lg border text-[10px] font-bold transition-colors flex-grow sm:flex-grow-0 text-center", milkType === 'Intero' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-200")}>Intero</button>
+                      <button type="button" onClick={() => updateVariant('milk', 'Senza Lattosio')} className={clsx("px-2 py-1.5 rounded-lg border text-[10px] font-bold transition-colors flex-grow sm:flex-grow-0 text-center", milkType === 'Senza Lattosio' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-200")}>No Lattosio</button>
+                      <button type="button" onClick={() => updateVariant('milk', 'Soia')} className={clsx("px-2 py-1.5 rounded-lg border text-[10px] font-bold transition-colors flex-grow sm:flex-grow-0 text-center", milkType === 'Soia' ? "bg-cyan-500 text-white border-cyan-500" : "bg-white text-slate-600 border-slate-200")}>Soia</button>
                    </div>
                 </div>
               )}
               {drinkData.hasSub && (
-                <div className="flex items-center gap-2">
-                   <div className="w-6 flex justify-center text-[10px] font-bold text-slate-400">Gusto</div>
-                   <div className="flex gap-1">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                   <div className="w-5 flex justify-center text-[10px] font-bold text-slate-400 hidden sm:flex">Gusto</div>
+                   <span className="text-[10px] font-bold text-slate-400 sm:hidden mb-1">Gusto</span>
+                   <div className="flex flex-wrap gap-1">
                      {drinkData.subOptions?.map((opt: string) => (
-                        <button key={opt} type="button" onClick={() => updateVariant('flavor', opt)} className={clsx("px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors", currentSelection.includes(opt) ? "bg-slate-700 text-white border-slate-700" : "bg-white text-slate-600 border-slate-300")}>{opt}</button>
+                        <button key={opt} type="button" onClick={() => updateVariant('flavor', opt)} className={clsx("px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-colors flex-grow sm:flex-grow-0", currentSelection.includes(opt) ? "bg-slate-700 text-white border-slate-700" : "bg-white text-slate-600 border-slate-200")}>{opt}</button>
                      ))}
                    </div>
                 </div>
               )}
               {drinkData.hasSize && (
                  <div className="flex items-center gap-2">
-                    <div className="w-6 flex justify-center text-[10px] font-bold text-slate-400">Size</div>
-                    <div className="flex gap-1 bg-white p-1 rounded-lg border border-slate-300 shadow-sm">
+                    <div className="w-5 flex justify-center text-[10px] font-bold text-slate-400">Size</div>
+                    <div className="flex gap-1 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
                        <button type="button" onClick={() => updateVariant('size', 'Standard')} className={clsx("px-3 py-1 rounded-md text-[10px] font-bold transition-all", sizeType === 'Standard' ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-50")}>S</button>
                        <button type="button" onClick={() => updateVariant('size', 'Grande')} className={clsx("px-3 py-1 rounded-md text-[10px] font-bold transition-all flex items-center gap-1", sizeType === 'Grande' ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-50")}>L <span className="opacity-70 text-[8px]">+0,20€</span></button>
                     </div>
@@ -281,6 +291,7 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
   );
 }
 
+// --- FIX RESPONSIVE: PASTRY SELECTOR ---
 function PastrySelector({ label, onSelect, currentSelection }: any) {
   const specialitaKeywords = ['pasticciotto', 'graffa', 'bomba', 'polacca'];
   const cornetti = PASTRIES_DATA.filter((p: any) => !specialitaKeywords.some(k => p.id.includes(k)) && p.id !== 'nessuno');
@@ -303,10 +314,10 @@ function PastrySelector({ label, onSelect, currentSelection }: any) {
                 isSelected ? "shadow-md ring-1 ring-inset" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
               )}
             >
-               <span className={clsx("text-xs font-bold leading-tight z-10", isSelected && "scale-105 origin-left")}>{p.label}</span>
+               <span className={clsx("text-xs font-bold leading-tight z-10 break-words pr-4", isSelected && "scale-105 origin-left")}>{p.label}</span>
                {isSelected && (
-                 <div className="absolute right-2 top-2 w-5 h-5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <Check size={12} strokeWidth={3} color={textColor} />
+                 <div className="absolute right-1 top-1 w-4 h-4 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <Check size={10} strokeWidth={3} color={textColor} />
                  </div>
                )}
             </button>
@@ -321,7 +332,7 @@ function PastrySelector({ label, onSelect, currentSelection }: any) {
           <p className="font-bold text-slate-400 text-xs uppercase tracking-wider pl-1">{label}</p>
        </div>
        {noGrazie && (
-          <button type="button" onClick={() => onSelect(noGrazie.label)} className={clsx("w-full py-2 px-4 rounded-xl border text-xs font-bold transition-all text-center mb-2", currentSelection === noGrazie.label ? "bg-slate-800 text-white border-slate-800" : "bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100")}>❌ Nessun Dolce</button>
+          <button type="button" onClick={() => onSelect(noGrazie.label)} className={clsx("w-full py-3 sm:py-2 px-4 rounded-xl border text-xs font-bold transition-all text-center mb-2", currentSelection === noGrazie.label ? "bg-slate-800 text-white border-slate-800" : "bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100")}>❌ Nessun Dolce</button>
        )}
        <div>
          <p className="text-[10px] font-bold text-slate-400 mb-2 ml-1 opacity-80 uppercase tracking-widest">Cornetteria</p>
@@ -363,11 +374,12 @@ function BoxCard({ box, selected, onClick }: any) {
   );
 }
 
+// --- FIX RESPONSIVE: GIFT CARD ---
 function GiftCard({ label, price, icon, selected, onClick }: any) {
     return (
-        <div onClick={onClick} className={clsx("cursor-pointer rounded-xl p-3 border-2 transition-all relative flex flex-col items-center justify-center text-center gap-1 h-24", selected ? "border-rose-500 bg-rose-50 ring-1 ring-rose-500" : "border-slate-100 bg-white hover:border-rose-200")}>
-            <div className="text-2xl">{icon}</div>
-            <div className="text-[10px] font-bold text-slate-700 leading-tight">{label}</div>
+        <div onClick={onClick} className={clsx("cursor-pointer rounded-xl p-2 border-2 transition-all relative flex flex-col items-center justify-center text-center gap-1 min-h-[6rem]", selected ? "border-rose-500 bg-rose-50 ring-1 ring-rose-500" : "border-slate-100 bg-white hover:border-rose-200")}>
+            <div className="text-xl sm:text-2xl">{icon}</div>
+            <div className="text-[10px] font-bold text-slate-700 leading-tight break-words w-full px-1">{label}</div>
             <div className="text-xs font-extrabold text-rose-600">+{price.toFixed(2)}€</div>
             {selected && <div className="absolute top-1 right-1 text-rose-500"><CheckCircle2 size={12} /></div>}
         </div>
@@ -478,15 +490,17 @@ export default function PrenotaBoxPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans flex flex-col">
+      {/* Navbar presente in layout globale o qui se serve */}
+      <Navbar /> 
 
-      <main className="flex-grow pt-32">
+      <main className="flex-grow pt-24 sm:pt-32">
         
         {/* HERO MOBILE CON CAROSELLO */}
-        <div className="lg:hidden relative h-[40vh] w-full mb-8 rounded-b-[2.5rem] overflow-hidden shadow-xl bg-slate-200">
+        <div className="lg:hidden relative h-[45vh] w-full mb-8 rounded-b-[2.5rem] overflow-hidden shadow-xl bg-slate-200">
           <BoxCarousel boxId={box.id} boxName={box.name} price={totalPrice} compact={true} />
         </div>
 
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 min-h-[calc(100vh-200px)] gap-8 px-4">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 min-h-[calc(100vh-200px)] gap-8 px-4 sm:px-6">
           
           {/* DESKTOP SIDEBAR CON CAROSELLO */}
           <div className="hidden lg:block relative h-full">
@@ -502,7 +516,7 @@ export default function PrenotaBoxPage() {
             {state.success ? (
                // --- THANK YOU PAGE RIDISEGNATA ---
                <div className="animate-fade-in py-10">
-                 <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100 text-center relative overflow-hidden">
+                 <div className="bg-white p-6 sm:p-8 rounded-[2.5rem] shadow-2xl border border-slate-100 text-center relative overflow-hidden">
                     {/* Background decorativo */}
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-rose-400 to-rose-600" />
                     
@@ -514,14 +528,14 @@ export default function PrenotaBoxPage() {
                             </div>
                         </div>
                         
-                        <h2 className="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">Grazie di Cuore!</h2>
-                        <p className="text-slate-500 text-lg mb-8 leading-relaxed max-w-sm mx-auto">
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">Grazie di Cuore!</h2>
+                        <p className="text-slate-500 text-base sm:text-lg mb-8 leading-relaxed max-w-sm mx-auto">
                             Abbiamo ricevuto la tua prenotazione.<br/>
                             Ora manca solo l'ultimo passaggio.
                         </p>
 
                         {/* AVVISO PAGAMENTO CRITICO */}
-                        <div className="bg-red-50 border-2 border-red-200 p-6 rounded-2xl mb-8 relative overflow-hidden shadow-lg shadow-red-100/50 text-left w-full">
+                        <div className="bg-red-50 border-2 border-red-200 p-5 sm:p-6 rounded-2xl mb-8 relative overflow-hidden shadow-lg shadow-red-100/50 text-left w-full">
                             <div className="flex items-start gap-4 relative z-10">
                                 <div className="bg-red-500 text-white p-2 rounded-lg shrink-0 shadow-md">
                                     <AlertTriangle size={24} strokeWidth={2.5} />
@@ -618,7 +632,7 @@ export default function PrenotaBoxPage() {
                         Configura Dimensione
                     </h3>
                     
-                    <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-rose-100 space-y-6 relative overflow-hidden">
+                    <div className="bg-white p-4 sm:p-6 rounded-[2rem] shadow-sm border border-rose-100 space-y-6 relative overflow-hidden">
                         
                         {box.id === 'sparkling' ? (
                             <div className="relative z-10 text-center py-4 bg-rose-50 rounded-2xl border border-rose-100">
@@ -683,7 +697,7 @@ export default function PrenotaBoxPage() {
                      <span className="w-8 h-8 rounded-full bg-slate-900 text-white text-sm flex items-center justify-center font-bold">3</span>
                      Personalizza Menù
                    </h3>
-                   <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 space-y-8">
+                   <div className="bg-white p-4 sm:p-6 rounded-[2rem] shadow-sm border border-slate-200 space-y-8">
                       <div>
                         <div className="flex items-center gap-2 mb-3">
                            <div className="bg-rose-100 text-rose-600 p-1.5 rounded-lg"><Heart size={14} className="fill-rose-600" /></div>
@@ -720,7 +734,7 @@ export default function PrenotaBoxPage() {
                      <span className="w-8 h-8 rounded-full bg-slate-900 text-white text-sm flex items-center justify-center font-bold">4</span>
                      Regali & Extra
                    </h3>
-                   <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 space-y-4">
+                   <div className="bg-white p-4 sm:p-6 rounded-[2rem] shadow-sm border border-slate-200 space-y-4">
                       
                       {/* SPREMUTA */}
                       <div 
@@ -729,7 +743,7 @@ export default function PrenotaBoxPage() {
                            onClick={() => setSpremuta(!spremuta)}
                        >
                            <div className="flex items-center gap-4">
-                               <div className={clsx("p-3 rounded-full", spremuta ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-400")}>
+                               <div className={clsx("p-3 rounded-full shrink-0", spremuta ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-400")}>
                                    <Citrus size={20} />
                                </div>
                                <div>
@@ -742,7 +756,7 @@ export default function PrenotaBoxPage() {
                                    </p>
                                </div>
                            </div>
-                           <div className={clsx("w-6 h-6 rounded-full border-2 flex items-center justify-center", spremuta ? "border-orange-500 bg-orange-500 text-white" : "border-slate-300")}>
+                           <div className={clsx("w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0", spremuta ? "border-orange-500 bg-orange-500 text-white" : "border-slate-300")}>
                                {spremuta && <Check size={14} strokeWidth={3} />}
                            </div>
                        </div>
@@ -756,7 +770,7 @@ export default function PrenotaBoxPage() {
                            {/* HEADER CLICKABLE */}
                            <div className="flex items-center justify-between cursor-pointer" onClick={() => setSuccoExtra(!succoExtra)}>
                                <div className="flex items-center gap-4">
-                                   <div className={clsx("p-3 rounded-full", succoExtra ? "bg-yellow-500 text-white" : "bg-yellow-100 text-yellow-500")}>
+                                   <div className={clsx("p-3 rounded-full shrink-0", succoExtra ? "bg-yellow-500 text-white" : "bg-yellow-100 text-yellow-500")}>
                                        <GlassWater size={20} />
                                    </div>
                                    <div>
@@ -766,7 +780,7 @@ export default function PrenotaBoxPage() {
                                        </p>
                                    </div>
                                </div>
-                               <div className={clsx("w-6 h-6 rounded-full border-2 flex items-center justify-center", succoExtra ? "border-yellow-500 bg-yellow-500 text-white" : "border-slate-300")}>
+                               <div className={clsx("w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0", succoExtra ? "border-yellow-500 bg-yellow-500 text-white" : "border-slate-300")}>
                                    {succoExtra && <Check size={14} strokeWidth={3} />}
                                </div>
                            </div>
@@ -856,7 +870,7 @@ export default function PrenotaBoxPage() {
                    </div>
                 </section>
 
-                <div className="sticky bottom-4 z-30">
+                <div className="sticky bottom-4 z-30 px-2">
                   <SubmitButton label="Conferma Ordine" price={totalPrice} />
                   {state.message && !state.success && <div className="bg-red-50 text-red-600 p-3 rounded-xl text-center text-xs mt-2 border border-red-100 font-bold shadow-lg">{state.message}</div>}
                 </div>
