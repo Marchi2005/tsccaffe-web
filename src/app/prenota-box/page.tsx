@@ -28,7 +28,7 @@ const IMAGE_PREFIXES: Record<string, string> = {
   royal: "royal-desire",
   velvet: "velvet-dream",
   red_love: "red-love",
-  sparkling: "sparkling-love"
+  sparkly: "sparkly-valentine"
 };
 
 // Mappa Prezzi: [Prezzo Scontato, Prezzo Originale]
@@ -51,7 +51,7 @@ const PRICING_MAP: any = {
        doppia: { current: 20, original: 23 }
     }
   },
-  sparkling: {
+  sparkly: {
     singola: { current: 10, original: 13 },
     doppia: { current: 0, original: 0 }
   }
@@ -421,7 +421,7 @@ export default function PrenotaBoxPage() {
 
   // RESET
   useEffect(() => {
-    if (box.id === "sparkling") {
+    if (box.id === "sparkly") {
       setVariantId("singola");
     } else {
       setVariantId("doppia"); 
@@ -460,7 +460,7 @@ export default function PrenotaBoxPage() {
         const isRedLoveMedium = (box.id === 'red_love' && sizeId === 'medium');
         let isIncluded = (box as any).spremutaIncluded || isRedLoveMedium;
         if (!isIncluded) {
-            const priceSpremuta = (box.id === 'sparkling' || (box.id === 'red_love' && sizeId === 'small')) ? 1.50 : 2.50;
+            const priceSpremuta = (box.id === 'sparkly' || (box.id === 'red_love' && sizeId === 'small')) ? 1.50 : 2.50;
             const qty = isSingle ? 1 : 2;
             final += (priceSpremuta * qty);
             original += (priceSpremuta * qty);
@@ -583,7 +583,7 @@ export default function PrenotaBoxPage() {
                         Configura
                     </h3>
                     <div className="bg-white p-3 rounded-2xl shadow-sm border border-rose-100 space-y-3 w-full">
-                        {box.id === 'sparkling' ? (
+                        {box.id === 'sparkly' ? (
                             <div className="text-center py-2 bg-rose-50 rounded-xl border border-rose-100">
                                 <Sparkles className="mx-auto text-rose-500 mb-1" size={18} />
                                 <h4 className="font-bold text-xs text-rose-800">Singola (Ltd. Ed.)</h4>
@@ -645,7 +645,7 @@ export default function PrenotaBoxPage() {
                             </div>
                         )}
                     </div>
-                    <input type="hidden" name="variant" value={box.id === 'sparkling' ? 'singola' : variantId} />
+                    <input type="hidden" name="variant" value={box.id === 'sparkly' ? 'singola' : variantId} />
                     <input type="hidden" name="boxSize" value={isRedLove ? sizeId : ""} />
                 </section>
 
@@ -689,7 +689,7 @@ export default function PrenotaBoxPage() {
                                <div>
                                    <h4 className="font-extrabold text-slate-800 text-[10px]">Spremuta</h4>
                                    <p className="text-[9px] font-medium text-slate-500 mt-0.5">
-                                       {((box as any).spremutaIncluded || (isRedLove && sizeId === 'medium')) ? <span className="text-emerald-600 font-bold">INCLUSA</span> : <span className="text-orange-600 font-bold">+{(box.id === 'sparkling' || (isRedLove && sizeId === 'small')) ? "1,50€" : "2,50€"}</span>}
+                                       {((box as any).spremutaIncluded || (isRedLove && sizeId === 'medium')) ? <span className="text-emerald-600 font-bold">INCLUSA</span> : <span className="text-orange-600 font-bold">+{(box.id === 'sparkly' || (isRedLove && sizeId === 'small')) ? "1,50€" : "2,50€"}</span>}
                                    </p>
                                    {!((box as any).spremutaIncluded || (isRedLove && sizeId === 'medium')) && !spremuta && (<p className="text-[8px] text-orange-400 leading-tight mt-0.5">Aggiungila per completare la colazione!</p>)}
                                </div>
