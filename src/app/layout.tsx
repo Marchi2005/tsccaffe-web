@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-// IMPORTA IL NUOVO COMPONENTE
 import ClientLayout from "@/components/ClientLayout"; 
+// 1. L'import è corretto
 import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -20,12 +20,13 @@ export default function RootLayout({
   return (
     <html lang="it">
       <body className={inter.className}>
-         {/* Invece di mettere <Navbar /> e <Footer /> qui direttamente,
-            usiamo il wrapper che decide se mostrarli o no.
-         */}
+         
          <ClientLayout>
             {children}
          </ClientLayout>
+    {/*per le analytics di vercel*/}
+         <Analytics />
+         
       </body>
     </html>
   );

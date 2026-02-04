@@ -1,13 +1,11 @@
 "use client";
 
 import { submitOrder } from "./actions";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { 
   Bike, Check, CheckCircle2, Citrus, Heart, Info, Store, Bean, Milk, 
   ArrowRight, Banknote, CreditCard, GlassWater, Sparkles, 
-  ChevronLeft, ChevronRight, MessageCircle, PhoneCall, RefreshCw, 
-  AlertTriangle, CalendarClock, MapPin
+  ChevronLeft, ChevronRight, MessageCircle, AlertTriangle
 } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, useActionState, useCallback } from "react";
@@ -37,7 +35,7 @@ const IMAGE_PREFIXES: Record<string, string> = {
 
 function PaymentLogos() {
   return (
-    <div className="flex flex-wrap justify-center items-end gap-4 mt-4 opacity-70 scale-90">
+    <div className="flex flex-wrap justify-center items-end gap-4 opacity-70 scale-90 mb-4">
       <div className="flex flex-col items-center gap-1">
         <Banknote size={20} className="text-slate-600" strokeWidth={1.5} />
         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Contanti</span>
@@ -55,7 +53,7 @@ function SubmitButton({ label, price }: { label: string, price: number }) {
   const safePrice = (price && !isNaN(price)) ? price : 0;
 
   return (
-    <button disabled={pending} type="submit" className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold text-sm sm:text-lg shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex justify-between px-5 items-center disabled:opacity-70 disabled:cursor-not-allowed">
+    <button disabled={pending} type="submit" className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-sm sm:text-lg shadow-xl shadow-slate-200 active:scale-[0.98] transition-all flex justify-between px-5 items-center disabled:opacity-70 disabled:cursor-not-allowed">
        <span className="flex items-center gap-2">
          {pending ? <span className="animate-pulse">Invio...</span> : <>{label} <ArrowRight size={18} className="text-rose-300 hidden sm:block" /></>}
        </span>
@@ -213,7 +211,7 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
     <div className="space-y-2">
       <p className="font-bold text-slate-400 text-[10px] uppercase tracking-wider pl-1">{label}</p>
       
-      {/* GRID OTTIMIZZATA: 3 colonne con gap minimo */}
+      {/* GRID OTTIMIZZATA: min-w-0 e overflow-hidden per evitare rotture layout */}
       <div className="grid grid-cols-3 gap-1.5">
         {DRINKS_DATA.map((d: any) => {
           const isSelected = baseSelection === d.label;
@@ -224,12 +222,12 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
                  onSelect(initial);
               }}
               className={clsx(
-                "relative flex flex-col items-center justify-center p-1.5 rounded-lg border transition-all h-16", 
+                "relative flex flex-col items-center justify-center p-1.5 rounded-lg border transition-all h-16 min-w-0 overflow-hidden", 
                 isSelected ? "bg-slate-800 text-white border-slate-800 shadow-md scale-[1.01]" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
               )}
             >
               <span className="text-lg mb-0.5">{d.icon}</span>
-              <span className="text-[9px] font-bold leading-none text-center break-words w-full px-0.5">{d.label}</span>
+              <span className="text-[9px] font-bold leading-none text-center truncate w-full px-0.5">{d.label}</span>
             </button>
           );
         })}
@@ -249,7 +247,7 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
                    </div>
                 </div>
               )}
-              {/* Latte - FlexWrap per evitare overflow */}
+              {/* Latte */}
               {drinkData.hasMilkVariant && (
                 <div className="flex items-start gap-2">
                    <div className="w-4 flex justify-center mt-1"><Milk size={12} className="text-slate-400" /></div>
@@ -485,10 +483,11 @@ export default function PrenotaBoxPage() {
   const accessories = (box as any).accessories || {};
 
   return (
-    // OVERFLOW HIDDEN FONDAMENTALE PER EVITARE SCROLL ORIZZONTALE
-    <div className="min-h-screen bg-slate-50 font-sans flex flex-col overflow-x-hidden">
+    // MAIN WRAPPER: overflow-hidden fondamentale
+    <div className="min-h-screen bg-slate-50 font-sans flex flex-col overflow-x-hidden w-full">
 
-      <main className="flex-grow pt-20 sm:pt-32 w-full max-w-[100vw]">
+      {/* HEADER SPACER */}
+      <main className="flex-grow pt-20 sm:pt-32 w-full">
         
         {/* HERO MOBILE CON CAROSELLO */}
         <div className="lg:hidden relative h-[40vh] w-full mb-6 rounded-b-[2rem] overflow-hidden shadow-lg bg-slate-200">
@@ -507,9 +506,10 @@ export default function PrenotaBoxPage() {
           </div>
 
           {/* CONFIGURATOR */}
-          <div className="pb-12">
+          {/* AUMENTATO PADDING BOTTOM a pb-32 per evitare che il bottone copra il contenuto */}
+          <div className="pb-32">
             {state.success ? (
-               // SUCCESS STATE (Invariato nella logica, ma responsive padding)
+               // SUCCESS STATE
                <div className="animate-fade-in py-6">
                  <div className="bg-white p-5 rounded-[2rem] shadow-xl border border-slate-100 text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-rose-400 to-rose-600" />
@@ -522,7 +522,6 @@ export default function PrenotaBoxPage() {
                             Prenotazione ricevuta. <br/> Completa il pagamento in sede.
                         </p>
                         
-                        {/* Box Avviso Pagamento Semplificato */}
                         <div className="bg-red-50 border border-red-200 p-4 rounded-xl mb-6 text-left w-full">
                             <h3 className="text-sm font-black text-red-700 uppercase tracking-wide mb-1 flex items-center gap-2">
                                 <AlertTriangle size={16} /> Pagamento Obbligatorio
@@ -795,15 +794,16 @@ export default function PrenotaBoxPage() {
                        </div>
                    </div>
                 </section>
-
-                <div className="sticky bottom-4 z-40 px-1">
-                  <SubmitButton label="Conferma" price={totalPrice} />
-                  {state.message && !state.success && <div className="bg-red-50 text-red-600 p-2 rounded-lg text-center text-xs mt-2 border border-red-100 font-bold">{state.message}</div>}
-                </div>
                 
-                <div className="text-center pb-8">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Pagamenti</p>
-                    <PaymentLogos />
+                {/* LOGOS SPOSTATI QUI PER EVITARE CHE VENGANO COPERTI */}
+                <PaymentLogos />
+
+                {/* BOTTOM STICKY ACTION BAR */}
+                <div className="sticky bottom-4 z-40 px-1 pb-[env(safe-area-inset-bottom)]">
+                   <div className="backdrop-blur-md bg-white/70 p-2 rounded-2xl border border-white/50 shadow-2xl">
+                       <SubmitButton label="Conferma" price={totalPrice} />
+                       {state.message && !state.success && <div className="bg-red-50 text-red-600 p-2 rounded-lg text-center text-xs mt-2 border border-red-100 font-bold">{state.message}</div>}
+                   </div>
                 </div>
 
                 <input type="hidden" name="totalPrice" value={totalPrice || 0} />
