@@ -124,12 +124,12 @@ export default function Home() {
 
                       {/* TikTok - QUI avviene la magia */}
                       <a 
-                        href="https://www.tiktok.com/@tssccaffe" 
+                        href="https://www.tiktok.com/@tsccaffe" 
                         target="_blank"
                         className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 hover:bg-[#ff0050] hover:text-white transition-all text-slate-600"
                         title="TikTok"
                         onMouseEnter={() => {
-                            setSocialHandle("@tssccaffe");
+                            setSocialHandle("@tsccaffe");
                             setIsTikTokHovered(true);
                         }}
                         onMouseLeave={() => {

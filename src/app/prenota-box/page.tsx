@@ -281,25 +281,81 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
 }
 
 function PastrySelector({ label, onSelect, currentSelection }: any) {
+  // STATO PER LE PREFERENZE ALIMENTARI
+  const [dietary, setDietary] = useState<'none' | 'vegan' | 'gluten_free'>('none');
+
   const specialitaKeywords = ['pasticciotto', 'graffa', 'bomba', 'polacca'];
   const cornetti = PASTRIES_DATA.filter((p: any) => !specialitaKeywords.some(k => p.id.includes(k)) && p.id !== 'nessuno');
   const specialita = PASTRIES_DATA.filter((p: any) => specialitaKeywords.some(k => p.id.includes(k)));
   const noGrazie = PASTRIES_DATA.find((p: any) => p.id === 'nessuno');
 
-  const renderGrid = (items: any[]) => (
-    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2 w-full">
-       {items.map((p) => {
-          const isSelected = currentSelection === p.label;
-          const textColor = p.text || (p.id.includes('cioccolato') || p.id === 'nutella' || p.id === 'bomba_cioccolato' ? 'white' : '#334155');
-          const isAmarena = p.id.includes('polacca') || p.id.includes('pasticciotto');
+  // Helper per controllare se un prodotto è disabilitato in base alla dieta
+  const isOptionDisabled = (p: any) => {
+    if (dietary === 'none') return false;
+    const l = p.label.toLowerCase();
+    
+    // VEGANA: Solo Frutti di Bosco, Albicocca e Vuoto abilitati
+    if (dietary === 'vegan') {
+      return !(l.includes('bosco') || l.includes('albicocca') || l.includes('vuoto'));
+    }
+    
+    // SENZA GLUTINE: Solo Nutella e Vuoto abilitati
+    if (dietary === 'gluten_free') {
+      return !(l.includes('nutella') || l.includes('vuoto'));
+    }
+    return false;
+  };
 
+  // Gestione click: aggiunge automaticamente il tag (Vegano/Senza Glutine) al nome del dolce
+  const handleSelect = (label: string) => {
+      let finalString = label;
+      // Rimuoviamo eventuali tag precedenti per evitare "Vuoto (Vegano) (Vegano)"
+      finalString = finalString.replace(" (Vegano)", "").replace(" (Senza Glutine)", "");
+
+      if (dietary === 'vegan') finalString += " (Vegano)";
+      if (dietary === 'gluten_free') finalString += " (Senza Glutine)";
+      
+      onSelect(finalString);
+  };
+
+  // Se cambio dieta, resetto la selezione se non è compatibile
+  useEffect(() => {
+      if (currentSelection && currentSelection !== 'Nessuno') {
+          // Se la selezione attuale non è compatibile con la nuova dieta, resetta o aggiorna il tag
+          const baseLabel = currentSelection.split(" (")[0];
+          // Logica semplificata: deseleziona se cambio filtro
+          // (Opzionale: potresti forzare un reset qui, ma lasciamo che l'utente scelga)
+      }
+  }, [dietary]);
+
+  const renderGrid = (items: any[]) => (
+    <div className="grid grid-cols-2 gap-2">
+       {items.map((p) => {
+          // Controllo selezione flessibile (ignora il tag tra parentesi per l'evidenziazione)
+          const isSelected = currentSelection.startsWith(p.label);
+          const isDisabled = isOptionDisabled(p);
+          
+          const textColor = isDisabled ? '#94a3b8' : (p.text || (p.id.includes('cioccolato') || p.id === 'nutella' ? 'white' : '#334155'));
+          
           return (
-            <button key={p.id} type="button" onClick={() => onSelect(p.label)} style={isSelected ? { backgroundColor: p.bg, borderColor: p.border, color: textColor } : {}} className={clsx("p-2.5 rounded-lg border text-left transition-all relative overflow-hidden flex items-center justify-between min-h-[3.5rem] w-full", isSelected ? "shadow-sm ring-1 ring-inset" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50")}>
-               <div className="flex flex-col w-full pr-2">
-                   <span className={clsx("text-[10px] font-bold leading-tight z-10 break-words", isSelected && "scale-105 origin-left")}>{p.label}</span>
-                   {isAmarena && <span className={clsx("text-[8px] font-medium leading-none mt-0.5", isSelected ? "opacity-90" : "text-rose-400")}>Crema Amarena</span>}
-               </div>
-               {isSelected && (<div className="shrink-0 w-4 h-4 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"><Check size={10} strokeWidth={3} color={textColor} /></div>)}
+            <button 
+              key={p.id} 
+              type="button" 
+              onClick={() => !isDisabled && handleSelect(p.label)}
+              disabled={isDisabled}
+              style={
+                isDisabled 
+                  ? { backgroundColor: '#f1f5f9', borderColor: '#e2e8f0' } 
+                  : (isSelected ? { backgroundColor: p.bg, borderColor: p.border, color: textColor } : {})
+              }
+              className={clsx(
+                "p-3 rounded-xl border text-left transition-all relative overflow-hidden flex flex-col justify-center pl-3 min-h-[3.5rem]",
+                isDisabled ? "opacity-50 cursor-not-allowed" : "active:scale-95",
+                !isDisabled && (isSelected ? "shadow-md ring-1 ring-inset" : "bg-white border-slate-200 text-slate-600")
+              )}
+            >
+               <span className={clsx("text-xs font-bold leading-tight z-10", isSelected && "scale-105 origin-left")}>{p.label}</span>
+               {isSelected && !isDisabled && <div className="absolute right-2 top-2"><Check size={12} strokeWidth={3} color={textColor} /></div>}
             </button>
           );
        })}
@@ -307,11 +363,67 @@ function PastrySelector({ label, onSelect, currentSelection }: any) {
   );
 
   return (
-    <div className="space-y-1.5 mt-3 w-full">
-       <div className="flex items-center justify-between"><p className="font-bold text-slate-400 text-[10px] uppercase tracking-wider pl-1">{label}</p></div>
-       {noGrazie && (<button type="button" onClick={() => onSelect(noGrazie.label)} className={clsx("w-full py-2 px-3 rounded-lg border text-[10px] font-bold transition-all text-center mb-1", currentSelection === noGrazie.label ? "bg-slate-800 text-white border-slate-800" : "bg-slate-50 text-slate-400 border-slate-200")}>❌ Nessun Dolce</button>)}
-       <div><p className="text-[9px] font-bold text-slate-400 mb-1 ml-1 opacity-80 uppercase tracking-widest">Cornetteria</p>{renderGrid(cornetti)}</div>
-       {specialita.length > 0 && (<div><p className="text-[9px] font-bold text-slate-400 mb-1 ml-1 mt-2 opacity-80 uppercase tracking-widest">Specialità</p>{renderGrid(specialita)}</div>)}
+    <div className="space-y-4 mt-4">
+       <div className="flex items-center justify-between">
+          <p className="font-bold text-slate-400 text-xs uppercase tracking-wider pl-1">{label}</p>
+       </div>
+
+       {/* SCELTA DIETA FACOLTATIVA */}
+       <div className="flex gap-2 mb-2 p-1 bg-slate-50 rounded-xl border border-slate-100">
+          <button 
+            type="button"
+            onClick={() => setDietary(dietary === 'vegan' ? 'none' : 'vegan')}
+            className={clsx("flex-1 py-2 text-[10px] font-bold rounded-lg border transition-all", dietary === 'vegan' ? "bg-green-100 text-green-700 border-green-200 shadow-sm" : "bg-white text-slate-500 border-transparent hover:bg-slate-100")}
+          >
+            🌱 Vegano
+          </button>
+          <button 
+            type="button"
+            onClick={() => setDietary(dietary === 'gluten_free' ? 'none' : 'gluten_free')}
+            className={clsx("flex-1 py-2 text-[10px] font-bold rounded-lg border transition-all", dietary === 'gluten_free' ? "bg-amber-100 text-amber-700 border-amber-200 shadow-sm" : "bg-white text-slate-500 border-transparent hover:bg-slate-100")}
+          >
+            🌾 Senza Glutine
+          </button>
+       </div>
+
+       {noGrazie && (
+          <button 
+            type="button" 
+            onClick={() => onSelect(noGrazie.label)} 
+            className={clsx("w-full py-3 px-4 rounded-xl border text-xs font-bold transition-all text-center mb-2", currentSelection === noGrazie.label ? "bg-slate-800 text-white border-slate-800" : "bg-slate-50 text-slate-400 border-slate-200")}
+          >
+            ❌ Nessun Dolce
+          </button>
+       )}
+
+       {/* CORNETTERIA */}
+       <div>
+         <p className="text-[10px] font-bold text-slate-400 mb-2 ml-1 opacity-80 uppercase tracking-widest flex items-center gap-1">
+            🥐 Cornetteria
+         </p>
+         {renderGrid(cornetti)}
+       </div>
+
+       {/* SPECIALITÀ (Con margine extra) */}
+       {specialita.length > 0 && (
+         <div className="mt-6 pt-2">
+            <p className="text-[10px] font-bold text-slate-400 mb-2 ml-1 opacity-80 uppercase tracking-widest flex items-center gap-1">
+               🍩 Specialità
+            </p>
+            {renderGrid(specialita)}
+         </div>
+       )}
+
+       {/* WARNING CELIACHIA (Solo se GF + Nutella) */}
+       {dietary === 'gluten_free' && currentSelection.startsWith('Nutella') && (
+         <div className="mt-3 bg-amber-50 border border-amber-100 p-3 rounded-xl flex gap-3 items-start animate-fade-in">
+            <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={16} />
+            <p className="text-[10px] text-amber-800 leading-tight font-medium">
+               <strong>Attenzione:</strong> Il prodotto potrebbe contenere tracce di frumento. 
+               Scelta sconsigliata a persone gravemente celiache.
+            </p>
+         </div>
+       )}
     </div>
   );
 }

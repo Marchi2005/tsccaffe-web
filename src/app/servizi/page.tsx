@@ -9,11 +9,12 @@ import {
   Zap,
   Ticket,
   MapPin,
-  ShoppingBag
+  ShoppingBag,
+  ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 // --- DATI DEI SERVIZI ---
 
@@ -75,7 +76,6 @@ const PRODUCT_OFFERS = [
       "/images/hilo-plus/amethyst-hilo-plus-pen_charger_2.png"
     ],
     bg: "bg-[#f4f4f7]",
-    tag: "Sconto Nuovi Clienti",
     description: [
       { type: "title", content: "La rivoluzione del gusto" },
       { type: "paragraph", content: "Gusto intenso, dall’inizio alla fine. ​Modalità standard e boost, scegli quella giusta per te. Compatibile esclusivamente con virto™ e rivo™." },
@@ -89,7 +89,7 @@ const PRODUCT_OFFERS = [
       { type: "paragraph", content: "Il dispositivo 2 pezzi super compatto.​"}
     ],
     features: ["Accendi, inserisci e parti!", "2 modalità: Standard e Boost", "Solo 5 Secondi di attesa", "App myGlo per gestire e trovare il dispositivo"],
-    note: ""
+    note: "Offerta Soggetta a limitazioni, solo per NUOVI CLIENTI glo™"
   },
   {
     id: "glo-hilo",
@@ -112,7 +112,6 @@ const PRODUCT_OFFERS = [
       "/images/hilo/amethyst.png"
     ],
     bg: "bg-[#f4f4f7]",
-    tag: "Sconto Nuovi Clienti",
     description: [
       { type: "title", content: "La rivoluzione del gusto" },
       { type: "paragraph", content: "Gusto intenso, dall’inizio alla fine. ​Modalità standard e boost, scegli quella giusta per te. Compatibile esclusivamente con virto™ e rivo™." },
@@ -122,7 +121,7 @@ const PRODUCT_OFFERS = [
       { type: "paragraph", content: "Controllo completo e un’interfaccia semplice e intuitiva grazie allo schermo LED." }
     ],
     features: ["Accendi, inserisci e parti!", "2 modalità: Standard e Boost", "Solo 5 Secondi di attesa", "App myGlo per gestire e trovare il dispositivo"],
-    note: "Offerta Soggetta a limitazioni, solo Per Nuovi Clienti glo™"
+    note: "Offerta Soggetta a limitazioni, solo per NUOVI CLIENTI glo™"
   },
   {
     id: "iqos-iluma-i",
@@ -130,8 +129,9 @@ const PRODUCT_OFFERS = [
     brandLogo: "/icons/iqos-logo.svg",
     brandName: "IQOS",
     model: "ILUMA i",
-    discountPrice: "59,00€",
-    hasDiscount: false,
+    fullPrice: "59,00€",
+    discountPrice: "49,00€",
+    hasDiscount: true,
     colors: ["bg-[#D1F0F2]", "bg-[#575B69]"],
     image: "/images/iqos-iluma-i/iqos-iluma-i-main.png",
     images: [
@@ -141,10 +141,9 @@ const PRODUCT_OFFERS = [
       "/images/iqos-iluma-i/iqos-iluma-i-midnightblack-2.png"
     ],
     bg: "bg-[#f4f4f7]",
-    tag: "Sconto Trade-in",
     description: "Iconico. Avanzato. Il nuovo dispositivo della linea IQOS ILUMA i, che unisce nuove funzionalità avanzate all'affidabilità della tecnologia SMARTCORE INDUCTION SYSTEM™ per un'esperienza di utilizzo avanzata, pensata per te. Pieno controllo del dispositivo con Touch Screen, maggiore flessibilità con Pause Mode , fino a 3 utilizzi consecutivi con una sola ricarica grazie alla funzionalità FlexBattery. L' adattatore di alimentazione non è incluso.",
     features: ["Modalità Pausa", "Touch Screen", "Senza lamina, nessuna pulizia"],
-    note: ""
+    note: "Offerta Soggetta a limitazioni, solo per NUOVI CLIENTI IQOS"
   },
   {
     id: "iqos-iluma-i-one",
@@ -152,8 +151,9 @@ const PRODUCT_OFFERS = [
     brandLogo: "/icons/iqos-logo.svg",
     brandName: "IQOS",
     model: "ILUMA i ONE",
-    discountPrice: "29,00€",
-    hasDiscount: false,
+    fullPrice: "29,00€",
+    discountPrice: "19,00€",
+    hasDiscount: true,
     colors: ["bg-[#D1F0F2]", "bg-[#575B69]"],
     image: "/images/iqos-iluma-i-one/iqos-iluma-i-one-main.png",
     images: [
@@ -163,10 +163,9 @@ const PRODUCT_OFFERS = [
       "/images/iqos-iluma-i-one/iqos-iluma-i-one-midnightblack-2.png"
     ],
     bg: "bg-[#f4f4f7]",
-    tag: "Sconto Trade-in",
     description: "Compatto, evoluto. Il nuovo dispositivo della linea IQOS ILUMA i che unisce nuove funzionalità avanzate all'affidabilità della tecnologia SMARTCORE INDUCTION SYSTEM™ per un'esperienza di utilizzo avanzata, pensata per te. IQOS ILUMA i ONE consente 20 utilizzi consecutivi con una sola ricarica e ora, grazie all' Accensione Automatica, permette di preriscaldare lo stick una volta inserito, senza dover premere alcun tasto, per un utilizzo più semplice e intuitivo. L'adattore di alimentazione non è inlcuso.",
     features: ["Accensione automatica", "Touch Screen", "Senza lamina, nessuna pulizia"],
-    note: ""
+    note: "Offerta Soggetta a limitazioni, solo per NUOVI CLIENTI IQOS"
   },
 ];
 
@@ -226,6 +225,20 @@ export default function ServicesPage() {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [shopStatus, setShopStatus] = useState({ text: "", classes: "hidden" }); 
 
+  // --- CALCOLO NOTE UNICHE ---
+  // Estrae tutte le note diverse presenti e assegna loro un simbolo (*, **, ***, ecc.)
+  const uniqueNotes = useMemo(() => {
+    const notes = PRODUCT_OFFERS.map(p => p.note).filter(n => n && n.trim() !== "");
+    return Array.from(new Set(notes));
+  }, []);
+
+  // Helper per ottenere l'asterisco corretto per un prodotto
+  const getNoteSymbol = (note: string | undefined) => {
+    if (!note || !note.trim()) return null;
+    const index = uniqueNotes.indexOf(note);
+    return index !== -1 ? "*".repeat(index + 1) : null;
+  };
+
   useEffect(() => {
     setShopStatus(getShopStatus());
     const interval = setInterval(() => {
@@ -259,77 +272,113 @@ export default function ServicesPage() {
         </section>
 
         {/* SEZIONE 1: OFFERTE */}
-        <section className="py-24 bg-white overflow-hidden border-b border-slate-100">
+        <section className="py-24 bg-white overflow-hidden border-b border-slate-100 relative">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-4xl font-extrabold text-slate-900 mb-4">Le nostre offerte.</h2>
             <p className="text-slate-500 mb-12">Clicca su una card per scoprire tutti i dettagli.</p>
 
-            <div className="flex overflow-x-auto pb-12 pt-4 gap-8 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
-              {PRODUCT_OFFERS.map((product) => (
-                <div
-                  key={product.id}
-                  onClick={() => setSelectedProduct(product)}
-                  className={clsx(
-                    "snap-center shrink-0 w-[85vw] md:w-[400px] h-[500px] rounded-[2.5rem] cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 relative overflow-hidden group",
-                    product.bg
-                  )}
-                >
-                  {product.isNew && (
-                    <div className="absolute top-6 right-6 z-20">
-                      <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg animate-in fade-in zoom-in duration-300">
-                        NEW
-                      </span>
-                    </div>
-                  )}
+            {/* CONTENITORE CAROSELLO RELATIVO PER L'INDICATORE */}
+            <div className="relative">
+              
+              {/* INDICATORE LATO DESTRO PER SCROLL (OVERLAY SFUMATO) */}
+              <div className="absolute top-0 bottom-12 right-0 w-24 bg-gradient-to-l from-white via-white/40 to-transparent z-20 pointer-events-none flex items-center justify-end pr-2 md:hidden">
+                 <div className="bg-white/80 backdrop-blur-md p-2 rounded-full shadow-lg border border-slate-100 animate-pulse">
+                    <ChevronRight className="text-slate-400" />
+                 </div>
+              </div>
 
-                  <div className="absolute inset-0 flex items-center justify-center p-6">
-                    <img
-                      src={product.image}
-                      className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
-                      alt={product.model}
-                    />
-                  </div>
-
-                  <div className="relative z-10 p-8 bg-gradient-to-b from-white/40 via-transparent to-transparent">
-                    <div className="h-6 mb-3">
-                      <img src={product.brandLogo} alt={product.brandName} className="h-full opacity-80" />
-                    </div>
-                    <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{product.model}</h3>
-
-                    <div className="mt-1 flex items-center gap-3">
-                      <span className="text-xl font-bold text-slate-800">
-                        {product.discountPrice}
-                        {product.fullPrice && <span className="text-blue-500 ml-0.5">*</span>}
-                      </span>
-                      {product.fullPrice && (
-                        <span className="text-sm text-slate-400 line-through decoration-slate-300 font-medium">
-                          {product.fullPrice}
+              <div className="flex overflow-x-auto pb-12 pt-4 gap-8 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+                {PRODUCT_OFFERS.map((product) => {
+                  const noteSymbol = getNoteSymbol(product.note);
+                  return (
+                  <div
+                    key={product.id}
+                    onClick={() => setSelectedProduct(product)}
+                    className={clsx(
+                      "snap-center shrink-0 w-[85vw] md:w-[400px] h-[500px] rounded-[2.5rem] cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 relative overflow-hidden group",
+                      product.bg
+                    )}
+                  >
+                    
+                    {/* --- TARGHETTE (BADGES) --- */}
+                    
+                    {/* 1. BADGE "NEW" (Sinistra) */}
+                    {product.isNew && (
+                      <div className="absolute top-6 left-6 z-20">
+                        <span className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg border border-slate-700 animate-in fade-in zoom-in duration-300">
+                          NEW
                         </span>
-                      )}
+                      </div>
+                    )}
+
+                    {/* 2. RIBBON "IN SCONTO" (Obliquo, Destra, Lampeggiante) */}
+                    {product.hasDiscount && (
+                      <div className="absolute top-0 right-0 w-[100px] h-[100px] overflow-hidden z-30 pointer-events-none">
+                        <div className="absolute top-[18px] -right-[35px] w-[140px] bg-red-600 text-white text-[9px] font-black uppercase tracking-widest py-1.5 text-center rotate-45 shadow-xl animate-pulse">
+                          IN SCONTO
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="absolute inset-0 flex items-center justify-center p-6">
+                      <img
+                        src={product.image}
+                        className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
+                        alt={product.model}
+                      />
+                    </div>
+
+                    <div className="relative z-10 p-8 bg-gradient-to-b from-white/40 via-transparent to-transparent">
+                      {/* Logo ingrandito e spostato più in basso */}
+                      <div className="h-9 mb-4 mt-8">
+                        <img src={product.brandLogo} alt={product.brandName} className="h-full opacity-90" />
+                      </div>
+                      
+                      {/* TITOLO CON ALONE BIANCO */}
+                      <h3 className="text-3xl font-bold text-slate-900 tracking-tight drop-shadow-[0_0_20px_rgba(255,255,255,1)]">
+                        {product.model}
+                      </h3>
+
+                      <div className="mt-1 flex items-center gap-3">
+                        {/* PREZZO CON ALONE BIANCO */}
+                        <span className="text-xl font-bold text-slate-800 drop-shadow-[0_0_20px_rgba(255,255,255,1)] flex items-start">
+                          {product.discountPrice}
+                          {/* ASTERISCO DINAMICO VICINO AL PREZZO */}
+                          {noteSymbol && <span className="text-blue-500 text-xs ml-0.5 -mt-1">{noteSymbol}</span>}
+                        </span>
+                        {product.fullPrice && (
+                          <span className="text-sm text-slate-400 line-through decoration-slate-300 font-medium">
+                            {product.fullPrice}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="absolute bottom-0 left-0 right-0 p-8 z-10 flex justify-between items-end bg-gradient-to-t from-white/20 to-transparent">
+                      <span className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border border-slate-100 transition-colors group-hover:bg-slate-900 group-hover:text-white">
+                        Scopri di più
+                      </span>
+                      <div className="flex gap-1.5 bg-white/50 backdrop-blur-md p-2 rounded-full border border-white/50">
+                        {product.colors.map((colorClass, i) => (
+                          <div key={i} className={clsx("w-3.5 h-3.5 rounded-full border border-white shadow-sm", colorClass)} />
+                        ))}
+                      </div>
                     </div>
                   </div>
-
-                  <div className="absolute bottom-0 left-0 right-0 p-8 z-10 flex justify-between items-end bg-gradient-to-t from-white/20 to-transparent">
-                    <span className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border border-slate-100 transition-colors group-hover:bg-slate-900 group-hover:text-white">
-                      Scopri di più
-                    </span>
-                    <div className="flex gap-1.5 bg-white/50 backdrop-blur-md p-2 rounded-full border border-white/50">
-                      {product.colors.map((colorClass, i) => (
-                        <div key={i} className={clsx("w-3.5 h-3.5 rounded-full border border-white shadow-sm", colorClass)} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                )})}
+              </div>
             </div>
 
-            <div className="mt-8 space-y-2 border-t border-slate-100 pt-8">
-              {PRODUCT_OFFERS.map((p) => p.note && (
-                <p key={p.id} className="text-xs text-slate-400 font-medium">
-                  <span className="text-blue-500 font-bold mr-1">*</span> {p.note}
-                </p>
-              ))}
-            </div>
+            {/* LISTA NOTE UNICHE A PIÈ DI SEZIONE */}
+            {uniqueNotes.length > 0 && (
+              <div className="mt-8 space-y-2 border-t border-slate-100 pt-8">
+                {uniqueNotes.map((note, idx) => (
+                  <p key={idx} className="text-xs text-slate-400 font-medium">
+                    <span className="text-blue-500 font-bold mr-1">{"*".repeat(idx + 1)}</span> {note}
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -475,15 +524,15 @@ export default function ServicesPage() {
               </div>
 
               <div className="w-full md:w-2/5 p-8 md:p-12 overflow-y-auto max-h-[90vh]">
-                {/* RIMOSSO STICKY QUI */}
                 <div className="pb-4">
                   <img src={selectedProduct.brandLogo} className="h-5 mb-6 opacity-40" alt="" />
                   <h2 className="text-4xl font-black text-slate-900 mb-2 leading-tight">{selectedProduct.model}</h2>
 
                   <div className="flex items-center gap-4 mb-8">
-                    <p className="text-3xl font-bold text-blue-600">
+                    <p className="text-3xl font-bold text-blue-600 flex items-start">
                       {selectedProduct.discountPrice}
-                      {selectedProduct.note && <span className="text-blue-500 ml-0.5">*</span>}
+                      {/* ASTERISCO ANCHE NEL MODAL */}
+                      {getNoteSymbol(selectedProduct.note) && <span className="text-blue-500 text-sm ml-0.5 -mt-1">{getNoteSymbol(selectedProduct.note)}</span>}
                     </p>
                     <div className="flex gap-1.5 border-l pl-4 border-slate-200">
                       {selectedProduct.colors.map((c, i) => (
@@ -537,16 +586,15 @@ export default function ServicesPage() {
                   </Link>
                   {selectedProduct.note && (
                     <p className="text-[11px] text-slate-400 mt-6 text-center leading-relaxed italic">
-                      <span className="text-blue-500 font-bold mr-1">*</span> {selectedProduct.note}
+                      <span className="text-blue-500 font-bold mr-1">{getNoteSymbol(selectedProduct.note)}</span> {selectedProduct.note}
                     </p>
                   )}
                 </div>
               </div>
             </div>
           </div>
-        )
-        }
-      </main >
-    </div >
+        )}
+      </main>
+    </div>
   );
 }
