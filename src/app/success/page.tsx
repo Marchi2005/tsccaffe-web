@@ -4,7 +4,9 @@ import { confirmOrderPayment } from "@/app/prenota-box/actions";
 import OrderQRSection from "@/components/OrderQRSection"; 
 import { createClient } from "@supabase/supabase-js"; 
 
-// Configurazione Supabase
+// Configurazione Supabase (Client con Service Role per saltare RLS se necessario)
+// NOTA: Qui usiamo la anon key per la lettura semplice, 
+// ma la conferma del pagamento userà la Service Role dentro la Action.
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -20,28 +22,31 @@ export default async function SuccessPage({ searchParams }: Props) {
   if (Array.isArray(orderId)) orderId = orderId[0];
   const finalOrderId = orderId || ""; 
 
-  // 1. Conferma il pagamento su Supabase
-  if (finalOrderId) {
-    await confirmOrderPayment(finalOrderId);
-  }
-
-  // 2. RECUPERO DATI ORDINE
   let showTicket = false;
   let orderAddress = ""; 
 
+  // 1. Logica di conferma e recupero dati
   if (finalOrderId) {
-      const { data: orderData } = await supabase
+    try {
+      // Eseguiamo la conferma del pagamento
+      await confirmOrderPayment(finalOrderId);
+
+      // Recuperiamo i dati dell'ordine per la UI
+      const { data: orderData, error } = await supabase
         .from('web_orders')
         .select('address') 
         .eq('id', finalOrderId)
         .single();
 
-      if (orderData) {
-          orderAddress = orderData.address || ""; 
-          if (orderAddress === 'RITIRO IN SEDE') {
-              showTicket = true;
-          }
+      if (orderData && !error) {
+        orderAddress = orderData.address || ""; 
+        if (orderAddress === 'RITIRO IN SEDE') {
+          showTicket = true;
+        }
       }
+    } catch (err) {
+      console.error("Errore durante la gestione post-pagamento:", err);
+    }
   }
 
   return (
@@ -63,23 +68,31 @@ export default async function SuccessPage({ searchParams }: Props) {
           </p>
 
           {/* CONDIZIONE: Ticket o Spedizione */}
-          {finalOrderId && showTicket ? (
-             <OrderQRSection orderId={finalOrderId} />
-          ) : finalOrderId ? (
-             <div className="bg-blue-50 p-5 rounded-2xl w-full border border-blue-100 flex flex-col items-center gap-2 mb-4 animate-fade-in-up">
-                <div className="bg-white p-3 rounded-full shadow-sm text-blue-600 mb-1">
-                    <Truck size={28} />
-                </div>
-                <div>
-                    <p className="text-sm text-blue-900 font-bold">Spedizione Confermata</p>
-                    <p className="text-xs text-blue-700/80 mt-1 leading-snug">
-                        Il tuo ordine verrà spedito all'indirizzo indicato: <br/>
-                        <span className="font-semibold italic text-blue-800">"{orderAddress}"</span>
-                    </p>
-                </div>
-             </div>
+          {finalOrderId ? (
+             showTicket ? (
+               <div className="w-full animate-fade-in-up">
+                 <OrderQRSection orderId={finalOrderId} />
+               </div>
+             ) : (
+               <div className="bg-blue-50 p-5 rounded-2xl w-full border border-blue-100 flex flex-col items-center gap-2 mb-4 animate-fade-in-up">
+                  <div className="bg-white p-3 rounded-full shadow-sm text-blue-600 mb-1">
+                      <Truck size={28} />
+                  </div>
+                  <div>
+                      <p className="text-sm text-blue-900 font-bold">Spedizione Confermata</p>
+                      <p className="text-xs text-blue-700/80 mt-1 leading-snug">
+                          Il tuo ordine verrà spedito all'indirizzo indicato: <br/>
+                          <span className="font-semibold italic text-blue-800">
+                            {orderAddress || "Indirizzo in fase di elaborazione..."}
+                          </span>
+                      </p>
+                  </div>
+               </div>
+             )
           ) : (
-             <p className="text-red-400 text-xs">ID Ordine non trovato.</p>
+             <div className="p-4 bg-red-50 rounded-xl border border-red-100 mb-4">
+               <p className="text-red-500 text-xs font-bold uppercase">ID Ordine non trovato</p>
+             </div>
           )}
 
         </div>
