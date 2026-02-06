@@ -173,33 +173,40 @@ export default function Footer() {
 
         </div>
 
-        {/* LEGAL BOTTOM */}
-        <div className="flex flex-col items-center gap-2">
-  <p className="text-slate-500 text-sm font-medium">
-    © {currentYear} Tabacchi San Clemente di Ianniello Gianpaolo
-  </p>
-  <p className="text-slate-400 text-xs flex items-center gap-1.5">
-    Realizzato con ❤️ da 
-    <a 
-      href="https://github.com/Marchi2005"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-rose-500 hover:text-rose-600 font-bold transition-all duration-300 hover:underline decoration-2 underline-offset-4"
-    >
-      Marco Ianniello
-    </a>
-  </p>
+{/* LEGAL BOTTOM */}
+<div className="flex flex-col items-center text-center">
+  
+  {/* Branding e Copyright */}
+  <div className="flex flex-col items-center gap-1 mb-4">
+    <p className="text-slate-600 text-sm font-bold tracking-tight">
+      Tabacchi San Clemente di Ianniello Gianpaolo
+    </p>
+    <p className="text-slate-400 text-[13px]">
+      © {currentYear} — Tutti i diritti riservati • P.IVA: 04124110612
+    </p>
+  </div>
+  <div className="mb-6">
+    <p className="text-slate-400 text-xs flex items-center justify-center gap-1.5 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
+      Realizzato con ❤️ da 
+      <a 
+        href="https://github.com/Marchi2005"
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-rose-500 hover:text-rose-600 font-bold transition-all duration-300 hover:underline decoration-2 underline-offset-4"
+      >
+        Marco Ianniello
+      </a>
+    </p>
+  </div>
+
+  {/* Link Policy */}
+  <div className="flex justify-center items-center gap-4 text-slate-400 text-xs uppercase tracking-widest font-medium">
+     <Link href="/privacy-policy" className="hover:text-rose-500 transition-colors">Privacy Policy</Link>
+     <span className="text-slate-200">|</span>
+     <Link href="/cookie-policy" className="hover:text-rose-500 transition-colors">Cookie Policy</Link>
+  </div>
 </div>
-          <p className="mt-2">
-             P.IVA: 04124110612
-          </p>
-          <div className="mt-4 flex justify-center gap-4">
-             <Link href="/privacy-policy" className="hover:text-brand-cyan transition-colors">Privacy Policy</Link>
-             <span>•</span>
-             <Link href="/cookie-policy" className="hover:text-brand-cyan transition-colors">Cookie Policy</Link>
-          </div>
-        </div>
-      </div>
+
     </footer>
   );
 }
