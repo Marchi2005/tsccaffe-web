@@ -111,7 +111,7 @@ function SubmitButton({ label, price, disabled }: { label: string, price: number
         </span>
         <span className="bg-white/20 px-3 py-1 rounded-lg text-lg font-mono tracking-tight">{safePrice.toFixed(2)}€</span>
       </button>
-      <p className="text-[10px] text-center text-slate-400 mt-2 font-medium">Pagamento in SEDE entro il 13/02/2026!!</p>
+      <p className="text-[10px] text-center text-slate-400 mt-2 font-medium">Pagamento in CONTANTI da effettuare in SEDE entro il 13/02/2026!!</p>
     </div>
   );
 }
