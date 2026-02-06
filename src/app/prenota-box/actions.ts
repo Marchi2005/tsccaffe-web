@@ -131,39 +131,58 @@ export async function submitOrder(prevState: any, formData: FormData) {
   };
 }
 
-// --- FUNZIONE DI CONFERMA PER ADMIN/STRIPE ---
 export async function confirmOrderPayment(orderId: string) {
     console.log("------------------------------------------------");
     console.log("1. INIZIO CONFERMA PER ID:", orderId);
 
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    
-    if (!serviceKey) {
-        console.error("❌ ERRORE GRAVE: La SUPABASE_SERVICE_ROLE_KEY non è stata letta!");
-        return;
-    }
-
-    const supabaseAdmin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        serviceKey,
-        {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false,
-            },
+    try {
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        
+        // Controllo chiavi
+        if (!serviceKey || !supabaseUrl) {
+            console.error("❌ ERRORE: Chiavi mancanti!");
+            return { 
+                success: false, 
+                message: `Chiavi mancanti su Vercel. URL: ${!!supabaseUrl}, KEY: ${!!serviceKey}` 
+            };
         }
-    );
 
-    const { data, error } = await supabaseAdmin
-        .from("web_orders")
-        .update({ status: 'pagato_online' })
-        .eq('id', orderId)
-        .select();
+        const supabaseAdmin = createClient(
+            supabaseUrl,
+            serviceKey,
+            {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false,
+                },
+            }
+        );
 
-    if (error) {
-        console.error("❌ ERRORE DATABASE:", error.message);
-    } else {
+        const { data, error } = await supabaseAdmin
+            .from("web_orders")
+            .update({ status: 'pagato_online' })
+            .eq('id', orderId)
+            .select();
+
+        if (error) {
+            console.error("❌ ERRORE DATABASE:", error.message);
+            return { success: false, message: error.message };
+        }
+
+        if (!data || data.length === 0) {
+            console.warn("⚠️ Nessun ordine trovato con questo ID.");
+            return { success: false, message: "Ordine non trovato nel database." };
+        }
+
         console.log("✅ SUCCESSO! Ordine aggiornato:", data);
+        console.log("------------------------------------------------");
+        
+        // IMPORTANTE: Restituiamo il risultato per vederlo nella pagina di test
+        return { success: true, data: data };
+
+    } catch (err: any) {
+        console.error("❌ ERRORE CRITICO:", err.message);
+        return { success: false, message: "Errore interno: " + err.message };
     }
-    console.log("------------------------------------------------");
 }
