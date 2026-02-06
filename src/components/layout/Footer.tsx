@@ -174,16 +174,22 @@ export default function Footer() {
         </div>
 
         {/* LEGAL BOTTOM */}
-        <div className="mt-16 border-t border-slate-800 pt-8 text-xs text-center text-slate-500">
-         <div className="text-center md:text-left">
-  <p className="text-slate-400 text-[13px] tracking-wide">
-    © {currentYear} <span className="text-slate-600 font-semibold">Tabacchi San Clemente</span>
-    <span className="mx-2 text-slate-300">|</span>
-    <span className="italic">Handcrafted by</span> 
-    <a href="..." className="ml-1 text-slate-500 hover:text-rose-500 transition-colors">Marco Ianniello</a>
+        <div className="flex flex-col items-center gap-2">
+  <p className="text-slate-500 text-sm font-medium">
+    © {currentYear} Tabacchi San Clemente di Ianniello Gianpaolo
+  </p>
+  <p className="text-slate-400 text-xs flex items-center gap-1.5">
+    Realizzato con ❤️ da 
+    <a 
+      href="https://github.com/Marchi2005"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-rose-500 hover:text-rose-600 font-bold transition-all duration-300 hover:underline decoration-2 underline-offset-4"
+    >
+      Marco Ianniello
+    </a>
   </p>
 </div>
-
           <p className="mt-2">
              P.IVA: 04124110612
           </p>
