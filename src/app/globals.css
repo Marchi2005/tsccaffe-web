@@ -8,6 +8,14 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+/* Forza il menu di Google Maps a stare sopra a tutto */
+.pac-container {
+    z-index: 99999 !important;
+    margin-top: 5px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
 /* Opzionale: Smooth scroll per le ancore */
 html {
   scroll-behavior: smooth;

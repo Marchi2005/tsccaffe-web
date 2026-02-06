@@ -3,97 +3,167 @@
 import { supabase } from "@/lib/supabase";
 import { BOX_TYPES } from "@/lib/schemas";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
 export async function submitOrder(prevState: any, formData: FormData) {
-  // 1. GESTIONE INDIRIZZO E DATI BASE
+  // --- CHIAVE STRIPE ---
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+      apiVersion: "2025-01-27.acacia" as any,
+      typescript: true,
+  });
+
+  // 1. GESTIONE DATI INPUT
   const deliveryType = formData.get("deliveryType");
   const address = deliveryType === 'ritiro' ? "RITIRO IN SEDE" : formData.get("address");
+  const paymentMethod = formData.get("paymentMethod") as string; 
 
-  // Dati grezzi dal form
   const rawData = {
     fullName: formData.get("fullName"),
     phone: formData.get("phone"),
     address: address,
     deliveryType: deliveryType,
     preferredTime: formData.get("preferredTime"),
-    
-    // Configurazione Box
+    paymentMethod: paymentMethod,
     boxType: formData.get("boxType") as string,
     boxFormat: formData.get("variant") as string,
     boxSize: formData.get("boxSize") as string,
-    
-    // Contenuto Colazione
     drink1: formData.get("drink1"),
     croissant1: formData.get("croissant1"),
     drink2: formData.get("drink2"),
     croissant2: formData.get("croissant2"),
-    
-    // Extra e Accessori
     includeSpremuta: formData.get("includeSpremuta"),
     includeSucco: formData.get("includeSucco"),
-    succoFlavor: formData.get("succoFlavor"), // NUOVO CAMPO
-    
+    succoFlavor: formData.get("succoFlavor"),
     addPelucheL: formData.get("addPelucheL"),
     addPelucheM: formData.get("addPelucheM"),
     addRosa: formData.get("addRosa"),
-    
     quantity: formData.get("quantity") || 1,
-    totalPrice: formData.get("totalPrice"),
+    totalPrice: parseFloat(formData.get("totalPrice") as string),
   };
 
   const selectedBox = BOX_TYPES.find(b => b.id === rawData.boxType);
   if (!selectedBox) return { success: false, message: "Box non valida." };
 
-  // Costruzione Descrizione Box (es. "Red Love Medium (Doppia)")
   let boxDescription = `${selectedBox.name}`;
   if (rawData.boxSize) boxDescription += ` ${rawData.boxSize.toUpperCase()}`;
   boxDescription += ` (${rawData.boxFormat})`;
 
-  // Costruzione Note Ordine (Per salvare i dettagli extra che non hanno colonne dedicate)
   let notesArray = [];
   if (rawData.includeSpremuta === "on") notesArray.push("Con Spremuta");
-  if (rawData.includeSucco === "on") {
-      notesArray.push(`Con Succo Extra (${rawData.succoFlavor})`); // Salviamo il gusto qui!
-  }
+  if (rawData.includeSucco === "on") notesArray.push(`Con Succo Extra (${rawData.succoFlavor})`); 
   const notesString = notesArray.join(" + ");
-
   const isSingle = rawData.boxFormat === "singola";
-  
-  const { error } = await supabase.from("web_orders").insert({
+
+  const initialStatus = paymentMethod === 'card' ? 'bozza_in_attesa' : 'da_pagare_in_sede';
+
+  // --- SALVATAGGIO ORDINE ---
+  const { data: orderData, error } = await supabase.from("web_orders").insert({
     full_name: rawData.fullName,
     phone: rawData.phone,
     address: rawData.address,
     delivery_type: rawData.deliveryType,
     preferred_time: rawData.preferredTime,
-    
+    payment_method: rawData.paymentMethod, 
     box_type: boxDescription, 
     box_format: rawData.boxFormat, 
-    
     drink_1: rawData.drink1,
     croissant_1: rawData.croissant1,
     drink_2: isSingle ? null : rawData.drink2,
     croissant_2: isSingle ? null : rawData.croissant2,
-    
-    // Se hai colonne booleane
     include_spremuta: rawData.includeSpremuta === "on",
     include_succo_extra: rawData.includeSucco === "on",
     include_peluche_l: rawData.addPelucheL === "on",
     include_peluche_m: rawData.addPelucheM === "on",
     include_rosa: rawData.addRosa === "on",
-
-    // Salviamo le note (gusto succo, etc)
     notes: notesString, 
-    
     quantity: Number(rawData.quantity),
     total_price: Number(rawData.totalPrice),
-    status: "pending",
-  });
+    status: initialStatus, 
+  }).select().single();
 
-  if (error) {
+  if (error || !orderData) {
     console.error("Errore Supabase:", error);
-    return { success: false, message: "Si è verificato un errore tecnico. Riprova." };
+    return { success: false, message: "Errore tecnico. Riprova." };
   }
 
+  // --- GESTIONE STRIPE ---
+  if (paymentMethod === 'card') {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://tsccaffe.it"; //DA CAMBIARE QUANDO SI FA TESTING LOCALE
+    let sessionUrl = null;
+
+    try {
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "eur",
+              product_data: {
+                name: `Ordine #${orderData.id} - ${boxDescription}`,
+                description: `Cliente: ${rawData.fullName}`,
+              },
+              unit_amount: Math.round(rawData.totalPrice * 100),
+            },
+            quantity: 1,
+          },
+        ],
+        mode: "payment",
+        success_url: `${baseUrl}/success?order_id=${orderData.id}`,
+        cancel_url: `${baseUrl}/`, 
+      });
+      sessionUrl = session.url;
+    } catch (e) {
+      console.error("Errore Stripe:", e);
+      return { success: false, message: "Errore pagamento." };
+    }
+
+    if (sessionUrl) redirect(sessionUrl);
+  }
+
+  // --- RITORNO PER PAGAMENTO IN CONTANTI ---
   revalidatePath("/admin"); 
-  return { success: true, message: "Ordine inviato con successo!" };
+  return { 
+    success: true, 
+    message: "Ordine inviato!", 
+    orderId: orderData.id // <--- Posizionato correttamente qui!
+  };
+}
+
+// --- FUNZIONE DI CONFERMA PER ADMIN/STRIPE ---
+export async function confirmOrderPayment(orderId: string) {
+    console.log("------------------------------------------------");
+    console.log("1. INIZIO CONFERMA PER ID:", orderId);
+
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!serviceKey) {
+        console.error("❌ ERRORE GRAVE: La SUPABASE_SERVICE_ROLE_KEY non è stata letta!");
+        return;
+    }
+
+    const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceKey,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+            },
+        }
+    );
+
+    const { data, error } = await supabaseAdmin
+        .from("web_orders")
+        .update({ status: 'pagato_online' })
+        .eq('id', orderId)
+        .select();
+
+    if (error) {
+        console.error("❌ ERRORE DATABASE:", error.message);
+    } else {
+        console.log("✅ SUCCESSO! Ordine aggiornato:", data);
+    }
+    console.log("------------------------------------------------");
 }
