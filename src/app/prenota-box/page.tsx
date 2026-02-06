@@ -54,7 +54,7 @@ const PRICING_MAP: any = {
     }
   },
   sparkly: {
-    singola: { current: 0.20, original: 13 },
+    singola: { current: 1, original: 13 },
     doppia: { current: 0, original: 0 }
   }
 };
