@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Check, Home, Truck, MessageCircle, Phone } from "lucide-react"; 
-import { confirmOrderPayment } from "@/app/prenota-box/actions"; 
+import { confirmOrderPayment } from "@/app/site-tsc/prenota-box/actions"; 
 import OrderQRSection from "@/components/OrderQRSection"; 
 import { createClient } from "@supabase/supabase-js"; 
 
