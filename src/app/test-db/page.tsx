@@ -1,4 +1,4 @@
-import { confirmOrderPayment } from "@/app/prenota-box/actions";
+import { confirmOrderPayment } from "@/app/site-tsc/prenota-box/actions";
 import { notFound } from "next/navigation";
 
 export default async function TestDbPage({
