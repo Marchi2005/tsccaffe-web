@@ -225,7 +225,7 @@ export default function Footer() {
               
               {/* LINK DINAMICI E PULITI */}
               <Link 
-                href={isLunaPage ? "https://www.tsccaffe.it/privacy-policy" : "/privacy-policy"} 
+                href={isLunaPage ? "/privacy-policy" : "/privacy-policy"} 
                 className="hover:text-rose-500 transition-colors"
               >
                 Privacy Policy
