@@ -67,7 +67,7 @@ export default function Home() {
                 <p className="text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                   Benvenuti a casa. Qui il caffè è un abbraccio e ogni pausa è un sorriso. 
                   Siamo il tuo punto di riferimento quotidiano: dalle colazioni artigianali 
-                  ai servizi utili. Siamo orgogliosamente <strong>GLO Partner</strong>.
+                  ai servizi utili. Siamo orgogliosamente <strong>GLO & IQOS Partner</strong>.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-6">

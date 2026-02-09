@@ -20,3 +20,12 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* In src/app/globals.css */
+
+@layer utilities {
+  .ligatures-on {
+    font-variant-ligatures: common-ligatures contextual;
+    font-feature-settings: "liga" 1, "calt" 1;
+  }
+}

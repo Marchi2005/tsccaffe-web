@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import localFont from "next/font/local"; // <--- Import necessario
 import "./globals.css";
 import ClientLayout from "@/components/ClientLayout"; 
 import { Analytics } from "@vercel/analytics/react";
 
+// Font di default (Inter)
 const inter = Inter({ subsets: ["latin"] });
+
+// CONFIGURAZIONE FONT "LUNA" GLOBALE
+// Assicurati che il file sia in: src/fonts/mending.regular.otf
+const lunaFont = localFont({
+  src: "../fonts/mending.regular.otf", 
+  variable: "--font-luna", // Questa variabile rende il font disponibile a Tailwind
+  weight: "400",
+});
 
 export const metadata: Metadata = {
   title: "TSC Caffè",
@@ -18,7 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it">
-      <body className={inter.className}>
+      {/* Aggiungo lunaFont.variable alle classi del body */}
+      <body className={`${inter.className} ${lunaFont.variable}`}>
+         
          {/* Easter Egg per la Console */}
          <script
             dangerouslySetInnerHTML={{
@@ -33,7 +45,7 @@ export default function RootLayout({
           />
          
          <ClientLayout>
-            {children}
+           {children}
          </ClientLayout>
          
          <Analytics />

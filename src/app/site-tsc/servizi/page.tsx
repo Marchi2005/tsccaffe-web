@@ -1,6 +1,5 @@
 "use client";
 
-import Navbar from "@/components/layout/Navbar";
 import {
   CreditCard,
   Smartphone,
@@ -10,13 +9,38 @@ import {
   Ticket,
   MapPin,
   ShoppingBag,
-  ChevronRight
+  ChevronRight,
+  Loader2 // <--- AGGIUNTO: Icona per il caricamento
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
 import { useState, useEffect, useMemo } from "react";
+import { createClient } from '@supabase/supabase-js';// <--- ASSICURATI DI AVERE QUESTO FILE
 
-// --- DATI DEI SERVIZI ---
+// --- TIPI DI DATI (Match esatto con tabella web_products) ---
+
+type DescriptionBlock = { type: "title" | "paragraph"; content: string };
+
+interface Product {
+  id: string;
+  slug: string;
+  brand_name: string; // ex brandName
+  model: string;
+  full_price: number; // ex fullPrice (ora è number)
+  discount_price: number; // ex discountPrice (ora è number)
+  is_new: boolean; // ex isNew
+  has_discount: boolean; // ex hasDiscount
+  brand_logo: string; // ex brandLogo
+  main_image: string; // ex image
+  gallery_images: string[]; // ex images
+  bg_class: string; // ex bg
+  colors: string[];
+  description: string | DescriptionBlock[];
+  features: string[];
+  note: string | null;
+}
+
+// --- DATI DEI SERVIZI (Statici) ---
 
 const PAYMENT_SERVICES = [
   {
@@ -51,124 +75,6 @@ const PAYMENT_SERVICES = [
   }
 ];
 
-// --- DATI PRODOTTI ---
-
-const PRODUCT_OFFERS = [
-  {
-    id: "glo-hilo-plus",
-    isNew: true,
-    brandLogo: "/icons/glo-logo.svg",
-    brandName: "GLO",
-    model: "glo™ HILO PLUS",
-    fullPrice: "69,00€",
-    discountPrice: "59,00€",
-    hasDiscount: true,
-    colors: ["bg-[#751423]", "bg-[#F1BA94]", "bg-[#2B6651]", "bg-[#272727]", "bg-[#D5A596]", "bg-[#422E4D]", "bg-[#202843]"],
-    image: "/images/hilo-plus/ruby-hilo-plus-pen_charger_2.png",
-    images: [
-      "/images/hilo-plus/ruby-hilo-plus_2.png",
-      "/images/hilo-plus/ruby-hilo-plus-pen_2.png",
-      "/images/hilo-plus/amber-hilo-plus-pen_charger_2.png",
-      "/images/hilo-plus/coral-hilo-plus-pen_charger_2.png",
-      "/images/hilo-plus/emerald-hilo-plus-pen_charger_2.png",
-      "/images/hilo-plus/sapphire-hilo-plus-pen_charger_2.png",
-      "/images/hilo-plus/onyx-hilo-plus-pen_charger_3.png",
-      "/images/hilo-plus/amethyst-hilo-plus-pen_charger_2.png"
-    ],
-    bg: "bg-[#f4f4f7]",
-    description: [
-      { type: "title", content: "La rivoluzione del gusto" },
-      { type: "paragraph", content: "Gusto intenso, dall’inizio alla fine. ​Modalità standard e boost, scegli quella giusta per te. Compatibile esclusivamente con virto™ e rivo™." },
-      { type: "title", content: "TurboStart™" },
-      { type: "paragraph", content: "Dallo start al gusto in 5 secondi." },
-      { type: "title", content: "EasyView™" },
-      { type: "paragraph", content: "Controllo completo e un’interfaccia semplice e intuitiva grazie allo schermo LED." },
-      { type: "title", content: "EasySwitch™​" },
-      { type: "paragraph", content: "Scegli se utilizzare il pennino dentro o fuori dal case di ricarica, anche nel mezzo della sessione." },
-      { type: "title", content: "Super compatto" },
-      { type: "paragraph", content: "Il dispositivo 2 pezzi super compatto.​"}
-    ],
-    features: ["Accendi, inserisci e parti!", "2 modalità: Standard e Boost", "Solo 5 Secondi di attesa", "App myGlo per gestire e trovare il dispositivo"],
-    note: "Offerta Soggetta a limitazioni, solo per NUOVI CLIENTI glo™"
-  },
-  {
-    id: "glo-hilo",
-    isNew: true,
-    brandLogo: "/icons/glo-logo.svg",
-    brandName: "GLO",
-    model: "glo™ HILO",
-    fullPrice: "29,00€",
-    discountPrice: "19,00€",
-    hasDiscount: true,
-    colors: ["bg-[#751423]", "bg-[#F1BA94]", "bg-[#2B6651]", "bg-[#272727]", "bg-[#D5A596]", "bg-[#422E4D]", "bg-[#202843]"],
-    image: "/images/hilo/ruby_2.png",
-    images: [
-      "/images/hilo/ruby_1.png",
-      "/images/hilo/amber.png",
-      "/images/hilo/coral.png",
-      "/images/hilo/emerald.png",
-      "/images/hilo/sapphire.png",
-      "/images/hilo/onyx.png",
-      "/images/hilo/amethyst.png"
-    ],
-    bg: "bg-[#f4f4f7]",
-    description: [
-      { type: "title", content: "La rivoluzione del gusto" },
-      { type: "paragraph", content: "Gusto intenso, dall’inizio alla fine. ​Modalità standard e boost, scegli quella giusta per te. Compatibile esclusivamente con virto™ e rivo™." },
-      { type: "title", content: "TurboStart™" },
-      { type: "paragraph", content: "Dallo start al gusto in 5 secondi." },
-      { type: "title", content: "EasyView™" },
-      { type: "paragraph", content: "Controllo completo e un’interfaccia semplice e intuitiva grazie allo schermo LED." }
-    ],
-    features: ["Accendi, inserisci e parti!", "2 modalità: Standard e Boost", "Solo 5 Secondi di attesa", "App myGlo per gestire e trovare il dispositivo"],
-    note: "Offerta Soggetta a limitazioni, solo per NUOVI CLIENTI glo™"
-  },
-  {
-    id: "iqos-iluma-i",
-    isNew: false,
-    brandLogo: "/icons/iqos-logo.svg",
-    brandName: "IQOS",
-    model: "ILUMA i",
-    fullPrice: "59,00€",
-    discountPrice: "49,00€",
-    hasDiscount: true,
-    colors: ["bg-[#D1F0F2]", "bg-[#575B69]"],
-    image: "/images/iqos-iluma-i/iqos-iluma-i-main.png",
-    images: [
-      "/images/iqos-iluma-i/iqos-iluma-i-breezeblue-1.png",
-      "/images/iqos-iluma-i/iqos-iluma-i-breezeblue-2.png",
-      "/images/iqos-iluma-i/iqos-iluma-i-midnightblack-1.png",
-      "/images/iqos-iluma-i/iqos-iluma-i-midnightblack-2.png"
-    ],
-    bg: "bg-[#f4f4f7]",
-    description: "Iconico. Avanzato. Il nuovo dispositivo della linea IQOS ILUMA i, che unisce nuove funzionalità avanzate all'affidabilità della tecnologia SMARTCORE INDUCTION SYSTEM™ per un'esperienza di utilizzo avanzata, pensata per te. Pieno controllo del dispositivo con Touch Screen, maggiore flessibilità con Pause Mode , fino a 3 utilizzi consecutivi con una sola ricarica grazie alla funzionalità FlexBattery. L' adattatore di alimentazione non è incluso.",
-    features: ["Modalità Pausa", "Touch Screen", "Senza lamina, nessuna pulizia"],
-    note: "Offerta Soggetta a limitazioni, solo per NUOVI CLIENTI IQOS"
-  },
-  {
-    id: "iqos-iluma-i-one",
-    isNew: false,
-    brandLogo: "/icons/iqos-logo.svg",
-    brandName: "IQOS",
-    model: "ILUMA i ONE",
-    fullPrice: "29,00€",
-    discountPrice: "19,00€",
-    hasDiscount: true,
-    colors: ["bg-[#D1F0F2]", "bg-[#575B69]"],
-    image: "/images/iqos-iluma-i-one/iqos-iluma-i-one-main.png",
-    images: [
-      "/images/iqos-iluma-i-one/iqos-iluma-i-one-breezeblue-1.png",
-      "/images/iqos-iluma-i-one/iqos-iluma-i-one-breezeblue-2.png",
-      "/images/iqos-iluma-i-one/iqos-iluma-i-one-midnightblack-1.png",
-      "/images/iqos-iluma-i-one/iqos-iluma-i-one-midnightblack-2.png"
-    ],
-    bg: "bg-[#f4f4f7]",
-    description: "Compatto, evoluto. Il nuovo dispositivo della linea IQOS ILUMA i che unisce nuove funzionalità avanzate all'affidabilità della tecnologia SMARTCORE INDUCTION SYSTEM™ per un'esperienza di utilizzo avanzata, pensata per te. IQOS ILUMA i ONE consente 20 utilizzi consecutivi con una sola ricarica e ora, grazie all' Accensione Automatica, permette di preriscaldare lo stick una volta inserito, senza dover premere alcun tasto, per un utilizzo più semplice e intuitivo. L'adattore di alimentazione non è inlcuso.",
-    features: ["Accensione automatica", "Touch Screen", "Senza lamina, nessuna pulizia"],
-    note: "Offerta Soggetta a limitazioni, solo per NUOVI CLIENTI IQOS"
-  },
-];
-
 // --- COMPONENTI UI ---
 
 function ServiceCard({ service }: { service: typeof PAYMENT_SERVICES[0] }) {
@@ -183,6 +89,12 @@ function ServiceCard({ service }: { service: typeof PAYMENT_SERVICES[0] }) {
     </div>
   );
 }
+
+// Helper per formattare valuta (dal DB arrivano numeri es: 69.00)
+const formatCurrency = (val: number | null) => {
+  if (val === null || val === undefined) return "";
+  return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(val);
+};
 
 // LOGICA ORARI APERTURA AVANZATA
 const getShopStatus = () => {
@@ -200,7 +112,6 @@ const getShopStatus = () => {
     opening: { text: "APRE TRA POCO", classes: "bg-blue-500 shadow-blue-500/20" }   
   };
 
-  // Domenica
   if (day === 0) {
     if (minutes >= 435 && minutes < 450) return statusStyles.opening;
     if (minutes >= 840 && minutes < 870) return statusStyles.closing;
@@ -208,7 +119,6 @@ const getShopStatus = () => {
     return statusStyles.closed;
   }
 
-  // Lun-Sab
   if (minutes >= 375 && minutes < 390) return statusStyles.opening;
   if (minutes >= 780 && minutes < 810) return statusStyles.closing;
   if (minutes >= 390 && minutes < 810) return statusStyles.open;
@@ -221,19 +131,47 @@ const getShopStatus = () => {
 };
 
 export default function ServicesPage() {
-  const [selectedProduct, setSelectedProduct] = useState<typeof PRODUCT_OFFERS[0] | null>(null);
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!); // Client Supabase
+  const [products, setProducts] = useState<Product[]>([]); // Stato prodotti dinamico
+  const [isLoading, setIsLoading] = useState(true); // Stato caricamento
+
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [shopStatus, setShopStatus] = useState({ text: "", classes: "hidden" }); 
 
-  // --- CALCOLO NOTE UNICHE ---
-  // Estrae tutte le note diverse presenti e assegna loro un simbolo (*, **, ***, ecc.)
-  const uniqueNotes = useMemo(() => {
-    const notes = PRODUCT_OFFERS.map(p => p.note).filter(n => n && n.trim() !== "");
-    return Array.from(new Set(notes));
+  // --- FETCHING DATI DAL DB ---
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('web_products') // <--- Nome tabella corretto
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error("Errore fetch prodotti:", error);
+        } else if (data) {
+          setProducts(data);
+        }
+      } catch (err) {
+        console.error("Errore generico:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
-  // Helper per ottenere l'asterisco corretto per un prodotto
-  const getNoteSymbol = (note: string | undefined) => {
+  // --- CALCOLO NOTE UNICHE (Aggiornato per gestire null e array dinamico) ---
+  const uniqueNotes = useMemo(() => {
+    const notes = products
+      .map(p => p.note)
+      .filter((n): n is string => n !== null && n.trim() !== "");
+    return Array.from(new Set(notes));
+  }, [products]);
+
+  const getNoteSymbol = (note: string | null | undefined) => {
     if (!note || !note.trim()) return null;
     const index = uniqueNotes.indexOf(note);
     return index !== -1 ? "*".repeat(index + 1) : null;
@@ -271,106 +209,109 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* SEZIONE 1: OFFERTE */}
-        <section className="py-24 bg-white overflow-hidden border-b border-slate-100 relative">
+       {/* SEZIONE 1: OFFERTE (DINAMICA) */}
+        <section className="py-24 bg-white overflow-hidden border-b border-slate-100 relative min-h-[500px]">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-4xl font-extrabold text-slate-900 mb-4">Le nostre offerte.</h2>
             <p className="text-slate-500 mb-12">Clicca su una card per scoprire tutti i dettagli.</p>
 
-            {/* CONTENITORE CAROSELLO RELATIVO PER L'INDICATORE */}
-            <div className="relative">
-              
-              {/* INDICATORE LATO DESTRO PER SCROLL (OVERLAY SFUMATO) */}
-              <div className="absolute top-0 bottom-12 right-0 w-24 bg-gradient-to-l from-white via-white/40 to-transparent z-20 pointer-events-none flex items-center justify-end pr-2 md:hidden">
-                 <div className="bg-white/80 backdrop-blur-md p-2 rounded-full shadow-lg border border-slate-100 animate-pulse">
-                    <ChevronRight className="text-slate-400" />
-                 </div>
+            {/* LOADER SE I DATI NON SONO ANCORA PRONTI */}
+            {isLoading ? (
+              <div className="flex justify-center items-center h-[400px]">
+                <Loader2 className="w-10 h-10 text-slate-400 animate-spin" />
               </div>
+            ) : (
+              <div className="relative">
+                {/* INDICATORE LATO DESTRO PER SCROLL */}
+                <div className="absolute top-0 bottom-12 right-0 w-24 bg-gradient-to-l from-white via-white/40 to-transparent z-20 pointer-events-none flex items-center justify-end pr-2 md:hidden">
+                   <div className="bg-white/80 backdrop-blur-md p-2 rounded-full shadow-lg border border-slate-100 animate-pulse">
+                      <ChevronRight className="text-slate-400" />
+                   </div>
+                </div>
 
-              <div className="flex overflow-x-auto pb-12 pt-4 gap-8 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
-                {PRODUCT_OFFERS.map((product) => {
-                  const noteSymbol = getNoteSymbol(product.note);
-                  return (
-                  <div
-                    key={product.id}
-                    onClick={() => setSelectedProduct(product)}
-                    className={clsx(
-                      "snap-center shrink-0 w-[85vw] md:w-[400px] h-[500px] rounded-[2.5rem] cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 relative overflow-hidden group",
-                      product.bg
-                    )}
-                  >
-                    
-                    {/* --- TARGHETTE (BADGES) --- */}
-                    
-                    {/* 1. BADGE "NEW" (Sinistra) */}
-                    {product.isNew && (
-                      <div className="absolute top-6 left-6 z-20">
-                        <span className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg border border-slate-700 animate-in fade-in zoom-in duration-300">
-                          NEW
-                        </span>
+                <div className="flex overflow-x-auto pb-12 pt-4 gap-8 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+                  {products.map((product) => {
+                    const noteSymbol = getNoteSymbol(product.note);
+                    return (
+                    <div
+                      key={product.id}
+                      onClick={() => setSelectedProduct(product)}
+                      // AGGIORNATO: product.bg -> product.bg_class
+                      className={clsx(
+                        "snap-center shrink-0 w-[85vw] md:w-[400px] h-[500px] rounded-[2.5rem] cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 relative overflow-hidden group",
+                        product.bg_class 
+                      )}
+                    >
+                      
+                      {/* 1. BADGE "NEW" - AGGIORNATO: product.isNew -> product.is_new */}
+                      {product.is_new && (
+                        <div className="absolute top-6 left-6 z-20">
+                          <span className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg border border-slate-700 animate-in fade-in zoom-in duration-300">
+                            NEW
+                          </span>
+                        </div>
+                      )}
+
+                      {/* 2. RIBBON "IN SCONTO" - AGGIORNATO: product.hasDiscount -> product.has_discount */}
+                      {product.has_discount && (
+                        <div className="absolute top-0 right-0 w-[100px] h-[100px] overflow-hidden z-30 pointer-events-none">
+                          <div className="absolute top-[18px] -right-[35px] w-[140px] bg-red-600 text-white text-[9px] font-black uppercase tracking-widest py-1.5 text-center rotate-45 shadow-xl animate-pulse">
+                            IN SCONTO
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="absolute inset-0 flex items-center justify-center p-6">
+                        {/* AGGIORNATO: product.image -> product.main_image */}
+                        <img
+                          src={product.main_image}
+                          className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
+                          alt={product.model}
+                        />
                       </div>
-                    )}
 
-                    {/* 2. RIBBON "IN SCONTO" (Obliquo, Destra, Lampeggiante) */}
-                    {product.hasDiscount && (
-                      <div className="absolute top-0 right-0 w-[100px] h-[100px] overflow-hidden z-30 pointer-events-none">
-                        <div className="absolute top-[18px] -right-[35px] w-[140px] bg-red-600 text-white text-[9px] font-black uppercase tracking-widest py-1.5 text-center rotate-45 shadow-xl animate-pulse">
-                          IN SCONTO
+                      <div className="relative z-10 p-8 bg-gradient-to-b from-white/40 via-transparent to-transparent">
+                        <div className="h-9 mb-4 mt-8">
+                          {/* AGGIORNATO: product.brandLogo -> product.brand_logo, product.brandName -> product.brand_name */}
+                          <img src={product.brand_logo} alt={product.brand_name} className="h-full opacity-90" />
+                        </div>
+                        
+                        <h3 className="text-3xl font-bold text-slate-900 tracking-tight drop-shadow-[0_0_20px_rgba(255,255,255,1)]">
+                          {product.model}
+                        </h3>
+
+                        <div className="mt-1 flex items-center gap-3">
+                          <span className="text-xl font-bold text-slate-800 drop-shadow-[0_0_20px_rgba(255,255,255,1)] flex items-start">
+                            {/* AGGIORNATO: Usa formatCurrency */}
+                            {formatCurrency(product.discount_price)}
+                            {noteSymbol && <span className="text-blue-500 text-xs ml-0.5 -mt-1">{noteSymbol}</span>}
+                          </span>
+                          {/* AGGIORNATO: product.fullPrice -> formatCurrency(product.full_price) */}
+                          {product.full_price && (
+                            <span className="text-sm text-slate-400 line-through decoration-slate-300 font-medium">
+                              {formatCurrency(product.full_price)}
+                            </span>
+                          )}
                         </div>
                       </div>
-                    )}
 
-                    <div className="absolute inset-0 flex items-center justify-center p-6">
-                      <img
-                        src={product.image}
-                        className="w-full h-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
-                        alt={product.model}
-                      />
-                    </div>
-
-                    <div className="relative z-10 p-8 bg-gradient-to-b from-white/40 via-transparent to-transparent">
-                      {/* Logo ingrandito e spostato più in basso */}
-                      <div className="h-9 mb-4 mt-8">
-                        <img src={product.brandLogo} alt={product.brandName} className="h-full opacity-90" />
-                      </div>
-                      
-                      {/* TITOLO CON ALONE BIANCO */}
-                      <h3 className="text-3xl font-bold text-slate-900 tracking-tight drop-shadow-[0_0_20px_rgba(255,255,255,1)]">
-                        {product.model}
-                      </h3>
-
-                      <div className="mt-1 flex items-center gap-3">
-                        {/* PREZZO CON ALONE BIANCO */}
-                        <span className="text-xl font-bold text-slate-800 drop-shadow-[0_0_20px_rgba(255,255,255,1)] flex items-start">
-                          {product.discountPrice}
-                          {/* ASTERISCO DINAMICO VICINO AL PREZZO */}
-                          {noteSymbol && <span className="text-blue-500 text-xs ml-0.5 -mt-1">{noteSymbol}</span>}
+                      <div className="absolute bottom-0 left-0 right-0 p-8 z-10 flex justify-between items-end bg-gradient-to-t from-white/20 to-transparent">
+                        <span className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border border-slate-100 transition-colors group-hover:bg-slate-900 group-hover:text-white">
+                          Scopri di più
                         </span>
-                        {product.fullPrice && (
-                          <span className="text-sm text-slate-400 line-through decoration-slate-300 font-medium">
-                            {product.fullPrice}
-                          </span>
-                        )}
+                        <div className="flex gap-1.5 bg-white/50 backdrop-blur-md p-2 rounded-full border border-white/50">
+                          {product.colors && product.colors.map((colorClass, i) => (
+                            <div key={i} className={clsx("w-3.5 h-3.5 rounded-full border border-white shadow-sm", colorClass)} />
+                          ))}
+                        </div>
                       </div>
                     </div>
-
-                    <div className="absolute bottom-0 left-0 right-0 p-8 z-10 flex justify-between items-end bg-gradient-to-t from-white/20 to-transparent">
-                      <span className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border border-slate-100 transition-colors group-hover:bg-slate-900 group-hover:text-white">
-                        Scopri di più
-                      </span>
-                      <div className="flex gap-1.5 bg-white/50 backdrop-blur-md p-2 rounded-full border border-white/50">
-                        {product.colors.map((colorClass, i) => (
-                          <div key={i} className={clsx("w-3.5 h-3.5 rounded-full border border-white shadow-sm", colorClass)} />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )})}
+                  )})}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* LISTA NOTE UNICHE A PIÈ DI SEZIONE */}
-            {uniqueNotes.length > 0 && (
+            {uniqueNotes.length > 0 && !isLoading && (
               <div className="mt-8 space-y-2 border-t border-slate-100 pt-8">
                 {uniqueNotes.map((note, idx) => (
                   <p key={idx} className="text-xs text-slate-400 font-medium">
@@ -475,7 +416,7 @@ export default function ServicesPage() {
           </div>
         </section>
 
-        {/* --- OVERLAY DETTAGLI CON SCROLL NATURALE (NO STICKY) --- */}
+        {/* --- OVERLAY DETTAGLI --- */}
         {selectedProduct && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
             <div
@@ -492,50 +433,57 @@ export default function ServicesPage() {
                 <span className="text-xl">✕</span>
               </button>
 
-              <div className={clsx("w-full md:w-3/5 relative group flex items-center justify-center overflow-hidden", selectedProduct.bg)}>
+              {/* AGGIORNATO: product.bg -> product.bg_class */}
+              <div className={clsx("w-full md:w-3/5 relative group flex items-center justify-center overflow-hidden", selectedProduct.bg_class)}>
                 <div className="relative w-full h-[400px] md:h-[600px] flex items-center justify-center p-12">
                   <img
                     key={currentImgIndex}
-                    src={selectedProduct.images[currentImgIndex]}
+                    // AGGIORNATO: product.images -> product.gallery_images
+                    src={selectedProduct.gallery_images[currentImgIndex]}
                     className="max-h-full object-contain drop-shadow-3xl animate-in fade-in zoom-in-95 duration-500"
                     alt={selectedProduct.model}
                   />
                 </div>
 
-                {currentImgIndex > 0 && (
-                  <button onClick={() => setCurrentImgIndex(prev => prev - 1)} className="absolute left-6 z-30 w-12 h-12 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white/50">←</button>
+                {/* Navigazione Immagini */}
+                {selectedProduct.gallery_images.length > 1 && (
+                    <>
+                        {currentImgIndex > 0 && (
+                        <button onClick={() => setCurrentImgIndex(prev => prev - 1)} className="absolute left-6 z-30 w-12 h-12 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white/50">←</button>
+                        )}
+                        {currentImgIndex < selectedProduct.gallery_images.length - 1 && (
+                        <button onClick={() => setCurrentImgIndex(prev => prev + 1)} className="absolute right-6 z-30 w-12 h-12 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white/50">→</button>
+                        )}
+                        <div className="absolute bottom-8 flex gap-2.5 z-30">
+                        {selectedProduct.gallery_images.map((_, idx) => (
+                            <button
+                            key={idx}
+                            onClick={() => setCurrentImgIndex(idx)}
+                            className={clsx(
+                                "h-1.5 transition-all duration-300 rounded-full",
+                                currentImgIndex === idx ? "w-8 bg-slate-800" : "w-1.5 bg-slate-300 hover:bg-slate-400"
+                            )}
+                            />
+                        ))}
+                        </div>
+                    </>
                 )}
-                {currentImgIndex < selectedProduct.images.length - 1 && (
-                  <button onClick={() => setCurrentImgIndex(prev => prev + 1)} className="absolute right-6 z-30 w-12 h-12 bg-white/20 backdrop-blur-lg rounded-full flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white/50">→</button>
-                )}
-
-                <div className="absolute bottom-8 flex gap-2.5 z-30">
-                  {selectedProduct.images.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentImgIndex(idx)}
-                      className={clsx(
-                        "h-1.5 transition-all duration-300 rounded-full",
-                        currentImgIndex === idx ? "w-8 bg-slate-800" : "w-1.5 bg-slate-300 hover:bg-slate-400"
-                      )}
-                    />
-                  ))}
-                </div>
               </div>
 
               <div className="w-full md:w-2/5 p-8 md:p-12 overflow-y-auto max-h-[90vh]">
                 <div className="pb-4">
-                  <img src={selectedProduct.brandLogo} className="h-5 mb-6 opacity-40" alt="" />
+                  {/* AGGIORNATO: brandLogo -> brand_logo */}
+                  <img src={selectedProduct.brand_logo} className="h-5 mb-6 opacity-40" alt="" />
                   <h2 className="text-4xl font-black text-slate-900 mb-2 leading-tight">{selectedProduct.model}</h2>
 
                   <div className="flex items-center gap-4 mb-8">
                     <p className="text-3xl font-bold text-blue-600 flex items-start">
-                      {selectedProduct.discountPrice}
-                      {/* ASTERISCO ANCHE NEL MODAL */}
+                      {/* AGGIORNATO: formatCurrency */}
+                      {formatCurrency(selectedProduct.discount_price)}
                       {getNoteSymbol(selectedProduct.note) && <span className="text-blue-500 text-sm ml-0.5 -mt-1">{getNoteSymbol(selectedProduct.note)}</span>}
                     </p>
                     <div className="flex gap-1.5 border-l pl-4 border-slate-200">
-                      {selectedProduct.colors.map((c, i) => (
+                      {selectedProduct.colors && selectedProduct.colors.map((c, i) => (
                         <div key={i} className={clsx("w-4 h-4 rounded-full border border-slate-200 shadow-sm", c)} />
                       ))}
                     </div>
@@ -564,7 +512,7 @@ export default function ServicesPage() {
                 <div>
                   <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4">Specifiche Tecniche</h4>
                   <ul className="space-y-4">
-                    {selectedProduct.features.map((f, i) => (
+                    {selectedProduct.features && selectedProduct.features.map((f, i) => (
                       <li key={i} className="flex items-start gap-4 text-slate-700">
                         <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center shrink-0 mt-1">
                           <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
@@ -577,7 +525,8 @@ export default function ServicesPage() {
 
                 <div className="pt-10 border-t border-slate-100 pb-4">
                   <Link
-                    href={`https://wa.me/393715428345?text=Ciao! Vorrei informazioni su ${selectedProduct.brandName} ${selectedProduct.model}`}
+                    // AGGIORNATO: brandName -> brand_name
+                    href={`https://wa.me/393715428345?text=Ciao! Vorrei informazioni su ${selectedProduct.brand_name} ${selectedProduct.model}`}
                     target="_blank"
                     className="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-lg"
                   >

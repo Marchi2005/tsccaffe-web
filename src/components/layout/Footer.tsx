@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Instagram, MapPin, Phone, MessageCircle } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Facebook, Instagram, MapPin, Phone, MessageCircle, Send } from "lucide-react";
 import { StatusBadge } from '@/components/ui/status-badge';
+import clsx from "clsx";
 
 // Icona TikTok personalizzata stile Lucide
 const TikTokIcon = ({ size = 18 }: { size?: number }) => (
@@ -22,6 +26,10 @@ const TikTokIcon = ({ size = 18 }: { size?: number }) => (
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
+  
+  // Logica per determinare se siamo nella sezione Luna Events
+  const isLunaPage = pathname === "/site-luna" || pathname.startsWith("/site-luna/");
 
   return (
     <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 relative z-50">
@@ -30,29 +38,73 @@ export default function Footer() {
           
           {/* COLONNA 1: BRAND & STORY */}
           <div className="space-y-6">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative h-12 w-12 p-1 transition-transform group-hover:scale-150">
-                 <Image 
-                   src="/icons/logo-footbar.svg" 
-                   alt="Logo TSC" 
-                   fill
-                   className="object-contain p-1"
-                 />
-              </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-white font-bold text-sm uppercase tracking-wide group-hover:text-brand-red transition-colors">
-                  Tabacchi San Clemente
-                </span>
-                <span className="text-brand-red font-serif italic text-lg">
-                  Caffè
-                </span>
-              </div>
-            </Link>
+            <div className="flex items-center flex-wrap gap-y-4">
+                
+                {/* LOGO TSC IBRIDO (Cambia se siamo su Luna) */}
+                <Link href="/" className="flex items-center gap-3 group">
+                    <div className="relative h-12 w-12 p-1 transition-transform group-hover:scale-150">
+                        <Image 
+                            // QUI LA MODIFICA: Usa lo stesso SVG della navbar quando è su Luna
+                            src={isLunaPage ? "/icons/logo-navbar-luna-page.svg" : "/icons/logo-footbar.svg"} 
+                            alt="Logo TSC" 
+                            fill
+                            className="object-contain p-1"
+                        />
+                    </div>
+                    <div className="flex flex-col leading-none">
+                        <span className={clsx(
+                            "font-bold text-sm uppercase tracking-wide transition-colors",
+                            // Su Luna testo grigio chiaro che diventa bianco, su TSC bianco che diventa rosso
+                            isLunaPage ? "text-slate-300 group-hover:text-white" : "text-white group-hover:text-brand-red"
+                        )}>
+                            Tabacchi San Clemente
+                        </span>
+                        <span className={clsx(
+                            "font-serif italic text-lg transition-colors",
+                            // QUI LA MODIFICA: Giallo (amber-400) su Luna, Rosso su TSC
+                            isLunaPage ? "text-amber-400" : "text-brand-red"
+                        )}>
+                            Caffè
+                        </span>
+                    </div>
+                </Link>
+
+                {/* --- LOGO LUNA EVENTS AGGIUNTIVO (Visibile solo su site-luna) --- */}
+                {isLunaPage && (
+                 <div className="flex items-center ml-4 pl-4 border-l border-slate-700 h-10 animate-in fade-in slide-in-from-left-4 duration-700">
+                     <div className="relative flex items-center justify-center">
+                         {/* Luna Sfondo */}
+                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 opacity-40 pointer-events-none">
+                             <Image 
+                                 src="/icons/moon.svg" 
+                                 alt="Luna Sfondo" 
+                                 width={80} 
+                                 height={80} 
+                                 className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.4)]" 
+                             />
+                         </div>
+                         {/* Testo Luna */}
+                         <div className="relative z-10 flex flex-col items-center leading-none pt-1">
+                             <span 
+                                 className="text-amber-400 font-luna text-2xl leading-none drop-shadow-md" 
+                                 style={{ fontFeatureSettings: '"liga" 1, "calt" 1' }}
+                             >
+                                 Luna
+                             </span>
+                             <span className="text-white text-[0.4rem] uppercase tracking-[0.3em] -mt-0.5 shadow-black drop-shadow-md font-serif font-light">
+                                 Events
+                             </span>
+                         </div>
+                     </div>
+                 </div>
+                )}
+            </div>
 
             <p className="text-sm text-slate-400 leading-relaxed">
-              Non solo un bar, ma il tuo angolo di relax quotidiano. 
-              Tra un caffè Illy perfetto, un sorriso e i servizi di cui hai bisogno, 
-              ci prendiamo cura della tua giornata.
+              {isLunaPage 
+                ? "Trasformiamo i tuoi momenti speciali in ricordi indimenticabili. Eventi esclusivi, cura dei dettagli e passione."
+                : "Non solo un bar, ma il tuo angolo di relax quotidiano. Tra un caffè Illy perfetto, un sorriso e i servizi di cui hai bisogno, ci prendiamo cura della tua giornata."
+              }
             </p>
 
             {/* SOCIAL ICONS */}
@@ -76,7 +128,6 @@ export default function Footer() {
                 <Facebook size={18} />
               </a>
               
-              {/* TIKTOK AGGIUNTO QUI */}
               <a 
                 href="https://www.tiktok.com/@tsccaffe" 
                 target="_blank" 
@@ -118,10 +169,18 @@ export default function Footer() {
                   <span className="w-1 h-1 bg-slate-600 rounded-full"></span> Servizi & Shop
                 </Link>
               </li>
+              
+              {/* LINK DINAMICO: SAN VALENTINO (TSC) vs PREVENTIVO (LUNA) */}
               <li>
-                <Link href="/prenota-box" className="text-brand-red font-bold hover:text-red-400 transition-colors flex items-center gap-2">
-                   San Valentino ❤️
-                </Link>
+                {isLunaPage ? (
+                    <a href="#contact" className="text-amber-400 font-bold hover:text-amber-300 transition-colors flex items-center gap-2">
+                       <Send size={14} className="mt-0.5" /> Richiedi Preventivo
+                    </a>
+                ) : (
+                    <Link href="/prenota-box" className="text-brand-red font-bold hover:text-red-400 transition-colors flex items-center gap-2">
+                       San Valentino ❤️
+                    </Link>
+                )}
               </li>
             </ul>
           </div>
@@ -173,7 +232,7 @@ export default function Footer() {
 
         </div>
 
-{/* LEGAL BOTTOM */}
+        {/* LEGAL BOTTOM */}
         <div className="border-t border-slate-800 pt-8 flex flex-col items-center text-center">
           <div className="flex flex-col items-center gap-1 mb-4">
             <p className="text-slate-200 text-sm font-bold tracking-tight">
