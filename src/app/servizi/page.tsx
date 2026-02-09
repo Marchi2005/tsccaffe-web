@@ -61,7 +61,7 @@ const PRODUCT_OFFERS = [
     brandName: "GLO",
     model: "glo™ HILO PLUS",
     fullPrice: "69,00€",
-    discountPrice: "49,00€",
+    discountPrice: "59,00€",
     hasDiscount: true,
     colors: ["bg-[#751423]", "bg-[#F1BA94]", "bg-[#2B6651]", "bg-[#272727]", "bg-[#D5A596]", "bg-[#422E4D]", "bg-[#202843]"],
     image: "/images/hilo-plus/ruby-hilo-plus-pen_charger_2.png",
