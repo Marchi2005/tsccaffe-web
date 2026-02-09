@@ -3,14 +3,26 @@
 import Link from "next/link";
 import Image from "next/image"; 
 import { Menu, X, ShoppingBag, Send } from "lucide-react"; 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const isLunaPage = pathname === "/site-luna" || pathname.startsWith("/site-luna/");
+
+  // --- FIX DOMINIO LUNA ---
+  const [isLunaDomain, setIsLunaDomain] = useState(false);
+
+  useEffect(() => {
+    // Questo controllo funziona anche se l'URL nel browser è solo "/"
+    if (typeof window !== "undefined" && window.location.hostname.includes("lunaevents")) {
+      setIsLunaDomain(true);
+    }
+  }, []);
+
+  // La pagina è Luna SE: il percorso inizia con /site-luna (sviluppo) OPPURE siamo sul dominio lunaevents (produzione)
+  const isLunaPage = pathname.startsWith("/site-luna") || isLunaDomain;
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -159,7 +171,6 @@ export default function Navbar() {
                   "backdrop-blur-xl", // Aumento il blur per compensare la trasparenza
                   "border",
                   // QUI CAMBIA: Uso gli stessi colori base della navbar ma con una trasparenza media (/60 o /70)
-                  // Invece di bg-white/95 (che era quasi solido), ora è vetro.
                   isLunaPage 
                     ? "bg-slate-900/60 border-white/10" 
                     : "bg-white/60 border-white/40"    
