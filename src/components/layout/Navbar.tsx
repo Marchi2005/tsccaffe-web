@@ -15,7 +15,7 @@ export default function Navbar() {
   const [isLunaDomain, setIsLunaDomain] = useState(false);
 
   useEffect(() => {
-    // Questo controllo funziona anche se l'URL nel browser è solo "/"
+    // Controllo se siamo sul dominio lunaevents
     if (typeof window !== "undefined" && window.location.hostname.includes("lunaevents")) {
       setIsLunaDomain(true);
     }
@@ -24,10 +24,25 @@ export default function Navbar() {
   // La pagina è Luna SE: il percorso inizia con /site-luna (sviluppo) OPPURE siamo sul dominio lunaevents (produzione)
   const isLunaPage = pathname.startsWith("/site-luna") || isLunaDomain;
 
+  // URL del sito principale per i redirect
+  const TSC_URL = "https://www.tsccaffe.it";
+
+  // --- LOGICA LINK ---
+  // Se siamo su Luna, Menu e Servizi puntano al sito TSC esterno.
+  // Home punta sempre alla "/" del sito corrente.
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Menu", href: "/menu" },
-    { name: "Servizi & Shop", href: "/servizi" },
+    { 
+      name: "Home", 
+      href: "/" 
+    },
+    { 
+      name: "Menu", 
+      href: isLunaPage ? `${TSC_URL}/menu` : "/menu" 
+    },
+    { 
+      name: "Servizi & Shop", 
+      href: isLunaPage ? `${TSC_URL}/servizi` : "/servizi" 
+    },
   ];
 
   return (
@@ -36,7 +51,7 @@ export default function Navbar() {
         "fixed top-0 inset-x-0 z-50 w-full transition-all duration-300",
         "rounded-b-[30px]",
         "backdrop-blur",         
-        isLunaPage ? "bg-slate-900/40 border-white/10" : "bg-white/0 border-white/40", // NAVBAR ORIGINALE (Trasparente)             
+        isLunaPage ? "bg-slate-900/40 border-white/10" : "bg-white/0 border-white/40",            
         "backdrop-saturate-150",     
         "border-b"
       )}
@@ -78,7 +93,7 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* --- LOGO LUNA EVENTS (VERSIONE MAXI - COME RICHIESTO) --- */}
+            {/* --- LOGO LUNA EVENTS (VERSIONE MAXI) --- */}
             {isLunaPage && (
               <div className="flex items-center ml-4 pl-4 border-l border-white/20 h-10 animate-in fade-in slide-in-from-left-4 duration-700">
                   <div className="relative flex items-center justify-center">
@@ -113,6 +128,8 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
+                // Se è un link esterno (inizia con http), target blank è opzionale ma consigliato se vuoi tenere aperta Luna
+                // Qui lo lascio normale per navigazione fluida come richiesto "portare a..."
                 className={clsx(
                   "text-sm font-bold transition-colors",
                   isLunaPage
@@ -161,16 +178,15 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* MOBILE MENU DROP - MODIFICATO SOLO QUESTO */}
+      {/* MOBILE MENU DROP */}
       {isOpen && (
         <div className="absolute top-full left-0 w-full mt-2 px-4">
             <div 
                 className={clsx(
                   "overflow-hidden p-4 space-y-2 shadow-2xl",
                   "rounded-[30px]",
-                  "backdrop-blur-xl", // Aumento il blur per compensare la trasparenza
+                  "backdrop-blur-xl", 
                   "border",
-                  // QUI CAMBIA: Uso gli stessi colori base della navbar ma con una trasparenza media (/60 o /70)
                   isLunaPage 
                     ? "bg-slate-900/60 border-white/10" 
                     : "bg-white/60 border-white/40"    

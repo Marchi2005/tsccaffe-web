@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Facebook, Instagram, MapPin, Phone, MessageCircle, Send } from "lucide-react";
 import { StatusBadge } from '@/components/ui/status-badge';
 import clsx from "clsx";
-import { useState, useEffect } from "react"; // <--- IMPORTANTE: Aggiunto qui
+import { useState, useEffect } from "react";
 
 // Icona TikTok personalizzata stile Lucide
 const TikTokIcon = ({ size = 18 }: { size?: number }) => (
@@ -33,13 +33,11 @@ export default function Footer() {
   const [isLunaDomain, setIsLunaDomain] = useState(false);
 
   useEffect(() => {
-    // Se siamo su lunaevents.it, forziamo la modalità Luna
     if (typeof window !== "undefined" && window.location.hostname.includes("lunaevents")) {
       setIsLunaDomain(true);
     }
   }, []);
 
-  // La pagina è Luna SE: il percorso inizia con /site-luna OPPURE siamo sul dominio lunaevents
   const isLunaPage = pathname.startsWith("/site-luna") || isLunaDomain;
 
   return (
@@ -50,12 +48,9 @@ export default function Footer() {
           {/* COLONNA 1: BRAND & STORY */}
           <div className="space-y-6">
             <div className="flex items-center flex-wrap gap-y-4">
-                
-                {/* LOGO TSC IBRIDO (Cambia se siamo su Luna) */}
                 <Link href="/" className="flex items-center gap-3 group">
                     <div className="relative h-12 w-12 p-1 transition-transform group-hover:scale-150">
                         <Image 
-                            // QUI LA MODIFICA: Usa lo stesso SVG della navbar quando è su Luna
                             src={isLunaPage ? "/icons/logo-navbar-luna-page.svg" : "/icons/logo-footbar.svg"} 
                             alt="Logo TSC" 
                             fill
@@ -65,14 +60,12 @@ export default function Footer() {
                     <div className="flex flex-col leading-none">
                         <span className={clsx(
                             "font-bold text-sm uppercase tracking-wide transition-colors",
-                            // Su Luna testo grigio chiaro che diventa bianco, su TSC bianco che diventa rosso
                             isLunaPage ? "text-slate-300 group-hover:text-white" : "text-white group-hover:text-brand-red"
                         )}>
                             Tabacchi San Clemente
                         </span>
                         <span className={clsx(
                             "font-serif italic text-lg transition-colors",
-                            // QUI LA MODIFICA: Giallo (amber-400) su Luna, Rosso su TSC
                             isLunaPage ? "text-amber-400" : "text-brand-red"
                         )}>
                             Caffè
@@ -80,33 +73,30 @@ export default function Footer() {
                     </div>
                 </Link>
 
-                {/* --- LOGO LUNA EVENTS AGGIUNTIVO (Visibile solo su site-luna) --- */}
                 {isLunaPage && (
                  <div className="flex items-center ml-4 pl-4 border-l border-slate-700 h-10 animate-in fade-in slide-in-from-left-4 duration-700">
-                     <div className="relative flex items-center justify-center">
-                         {/* Luna Sfondo */}
-                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 opacity-40 pointer-events-none">
-                             <Image 
-                                 src="/icons/moon.svg" 
-                                 alt="Luna Sfondo" 
-                                 width={80} 
-                                 height={80} 
-                                 className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.4)]" 
-                             />
-                         </div>
-                         {/* Testo Luna */}
-                         <div className="relative z-10 flex flex-col items-center leading-none pt-1">
-                             <span 
-                                 className="text-amber-400 font-luna text-2xl leading-none drop-shadow-md" 
-                                 style={{ fontFeatureSettings: '"liga" 1, "calt" 1' }}
-                             >
-                                 Luna
-                             </span>
-                             <span className="text-white text-[0.4rem] uppercase tracking-[0.3em] -mt-0.5 shadow-black drop-shadow-md font-serif font-light">
-                                 Events
-                             </span>
-                         </div>
-                     </div>
+                      <div className="relative flex items-center justify-center">
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 opacity-40 pointer-events-none">
+                              <Image 
+                                  src="/icons/moon.svg" 
+                                  alt="Luna Sfondo" 
+                                  width={80} 
+                                  height={80} 
+                                  className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.4)]" 
+                              />
+                          </div>
+                          <div className="relative z-10 flex flex-col items-center leading-none pt-1">
+                              <span 
+                                  className="text-amber-400 font-luna text-2xl leading-none drop-shadow-md" 
+                                  style={{ fontFeatureSettings: '"liga" 1, "calt" 1' }}
+                              >
+                                  Luna
+                              </span>
+                              <span className="text-white text-[0.4rem] uppercase tracking-[0.3em] -mt-0.5 shadow-black drop-shadow-md font-serif font-light">
+                                  Events
+                              </span>
+                          </div>
+                      </div>
                  </div>
                 )}
             </div>
@@ -120,42 +110,16 @@ export default function Footer() {
 
             {/* SOCIAL ICONS */}
             <div className="flex space-x-4">
-              <a 
-                href="https://instagram.com/tabacchisanclementecaffe" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="bg-slate-800 p-2 rounded-full hover:bg-brand-cyan hover:text-white transition-all"
-                aria-label="Instagram"
-              >
+              <a href="https://instagram.com/tabacchisanclementecaffe" target="_blank" rel="noreferrer" className="bg-slate-800 p-2 rounded-full hover:bg-brand-cyan hover:text-white transition-all">
                 <Instagram size={18} />
               </a>
-              <a 
-                href="https://www.facebook.com/people/Tabacchi-San-Clemente/100012509505700/" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="bg-slate-800 p-2 rounded-full hover:bg-blue-600 hover:text-white transition-all"
-                aria-label="Facebook"
-              >
+              <a href="https://www.facebook.com/people/Tabacchi-San-Clemente/100012509505700/" target="_blank" rel="noreferrer" className="bg-slate-800 p-2 rounded-full hover:bg-blue-600 hover:text-white transition-all">
                 <Facebook size={18} />
               </a>
-              
-              <a 
-                href="https://www.tiktok.com/@tsccaffe" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="bg-slate-800 p-2 rounded-full hover:bg-[#ff0050] hover:text-white transition-all"
-                aria-label="TikTok"
-              >
+              <a href="https://www.tiktok.com/@tsccaffe" target="_blank" rel="noreferrer" className="bg-slate-800 p-2 rounded-full hover:bg-[#ff0050] hover:text-white transition-all">
                 <TikTokIcon size={18} />
               </a>
-
-              <a 
-                href="https://wa.me/393715428345" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="bg-slate-800 p-2 rounded-full hover:bg-green-500 hover:text-white transition-all"
-                aria-label="WhatsApp"
-              >
+              <a href="https://wa.me/393715428345" target="_blank" rel="noreferrer" className="bg-slate-800 p-2 rounded-full hover:bg-green-500 hover:text-white transition-all">
                 <MessageCircle size={18} />
               </a>
             </div>
@@ -180,8 +144,6 @@ export default function Footer() {
                   <span className="w-1 h-1 bg-slate-600 rounded-full"></span> Servizi & Shop
                 </Link>
               </li>
-              
-              {/* LINK DINAMICO: SAN VALENTINO (TSC) vs PREVENTIVO (LUNA) */}
               <li>
                 {isLunaPage ? (
                     <a href="#contact" className="text-amber-400 font-bold hover:text-amber-300 transition-colors flex items-center gap-2">
@@ -215,11 +177,9 @@ export default function Footer() {
             </ul>
           </div>
 
-           {/* COLONNA 4: ORARI DI APERTURA */}
+           {/* COLONNA 4: ORARI */}
           <div>
             <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-6">Orari Apertura</h3>
-            
-            {/* Card Orari */}
             <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/10 shadow-lg text-slate-900">
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-start pb-3 border-b border-slate-200">
@@ -234,13 +194,11 @@ export default function Footer() {
                   <span className="text-slate-600 font-medium">07:30 - 14:30</span>
                 </div>
               </div>
-
               <div className="mt-4 pt-2 border-t border-slate-100">
                  <StatusBadge className="w-full justify-center bg-white shadow-sm" />
               </div>
             </div>
           </div>
-
         </div>
 
         {/* LEGAL BOTTOM */}
@@ -257,25 +215,33 @@ export default function Footer() {
           <div className="mb-6">
             <div className="text-slate-400 text-xs flex items-center justify-center gap-1.5 bg-slate-800/50 px-4 py-2 rounded-full border border-slate-700">
               Realizzato con ❤️ da 
-              <a 
-                href="https://github.com/Marchi2005"
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-rose-500 hover:text-rose-600 font-bold transition-all duration-300 hover:underline decoration-2 underline-offset-4"
-              >
+              <a href="https://github.com/Marchi2005" target="_blank" rel="noopener noreferrer" className="text-rose-500 hover:text-rose-600 font-bold transition-all duration-300 hover:underline decoration-2 underline-offset-4">
                 Marco Ianniello
               </a>
             </div>
           </div>
 
           <div className="flex justify-center items-center gap-4 text-slate-500 text-xs uppercase tracking-widest font-medium">
-             <Link href="/privacy-policy" className="hover:text-rose-500 transition-colors">Privacy Policy</Link>
-             <span className="text-slate-700">|</span>
-             <Link href="/cookie-policy" className="hover:text-rose-500 transition-colors">Cookie Policy</Link>
+              
+              {/* LINK DINAMICI E PULITI */}
+              <Link 
+                href={isLunaPage ? "https://www.tsccaffe.it/privacy-policy" : "/privacy-policy"} 
+                className="hover:text-rose-500 transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              
+              <span className="text-slate-700">|</span>
+              
+              <Link 
+                href={isLunaPage ? "/cookie-policy" : "/cookie-policy"} 
+                className="hover:text-rose-500 transition-colors"
+              >
+                Cookie Policy
+              </Link>
           </div>
         </div>
       </div>
-
     </footer>
   );
 }
