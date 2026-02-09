@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Facebook, Instagram, MapPin, Phone, MessageCircle, Send } from "lucide-react";
 import { StatusBadge } from '@/components/ui/status-badge';
 import clsx from "clsx";
+import { useState, useEffect } from "react"; // <--- IMPORTANTE: Aggiunto qui
 
 // Icona TikTok personalizzata stile Lucide
 const TikTokIcon = ({ size = 18 }: { size?: number }) => (
@@ -28,8 +29,18 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
   
-  // Logica per determinare se siamo nella sezione Luna Events
-  const isLunaPage = pathname === "/site-luna" || pathname.startsWith("/site-luna/");
+  // --- FIX DOMINIO LUNA ---
+  const [isLunaDomain, setIsLunaDomain] = useState(false);
+
+  useEffect(() => {
+    // Se siamo su lunaevents.it, forziamo la modalità Luna
+    if (typeof window !== "undefined" && window.location.hostname.includes("lunaevents")) {
+      setIsLunaDomain(true);
+    }
+  }, []);
+
+  // La pagina è Luna SE: il percorso inizia con /site-luna OPPURE siamo sul dominio lunaevents
+  const isLunaPage = pathname.startsWith("/site-luna") || isLunaDomain;
 
   return (
     <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 relative z-50">
