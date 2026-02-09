@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Wifi, Package, Coffee, MapPin, ArrowUp, Eye, Instagram, Facebook } from "lucide-react";
+import { ArrowRight, Wifi, Package, Coffee, MapPin, ArrowUp, Eye, Instagram, Facebook, Sparkles, Moon } from "lucide-react";
 import { useState, useEffect } from "react";
 import clsx from "clsx";
 
@@ -31,6 +31,13 @@ export default function Home() {
   const [socialHandle, setSocialHandle] = useState("@tabacchisanclementecaffe");
   const [isTikTokHovered, setIsTikTokHovered] = useState(false);
 
+  // Determina l'URL in base all'ambiente
+// In Sviluppo (localhost) usa la cartella interna per testare
+// In Produzione usa il dominio vero
+const lunaUrl = process.env.NODE_ENV === "development" 
+  ? "/site-luna" 
+  : "https://lunaevents.it";
+  
   // Gestione apparizione tasto "Torna su"
   useEffect(() => {
     const handleScroll = () => {
@@ -67,7 +74,7 @@ export default function Home() {
                 <p className="text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                   Benvenuti a casa. Qui il caffè è un abbraccio e ogni pausa è un sorriso. 
                   Siamo il tuo punto di riferimento quotidiano: dalle colazioni artigianali 
-                  ai servizi utili. Siamo orgogliosamente <strong>GLO & IQOS Partner</strong>.
+                  ai servizi utili. Siamo orgogliosamente <strong>GLO™ & IQOS Partner</strong>.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-6">
@@ -192,21 +199,21 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-3">Servizi & Shop</h3>
                 <p className="text-slate-600 mb-6 flex-grow text-sm leading-relaxed">
-                   Punto vendita autorizzato <strong>GLO</strong>. 
+                   Punto vendita autorizzato <strong>GLO™ & IQOS</strong>. 
                    Pagamento bollettini, ricariche telefoniche e valori bollati. 
                    Tutto quello che serve per semplificare la tua giornata.
                 </p>
                 <ul className="space-y-3 mb-6">
                     <li className="flex items-center gap-3 text-sm text-slate-700">
                         <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan"></span>
-                        Glo Partner Ufficiale
+                        glo™ Premium Partner
                     </li>
                     <li className="flex items-center gap-3 text-sm text-slate-700">
                         <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan"></span>
-                        Pagamenti & Ricariche
+                        IQOS Partner Ufficiale
                     </li>
                 </ul>
-                <Link href="#" className="mt-auto inline-flex items-center text-sm font-bold text-brand-cyan hover:text-brand-dark transition-colors">
+                <Link href="/servizi" className="mt-auto inline-flex items-center text-sm font-bold text-brand-cyan hover:text-brand-dark transition-colors">
                    Vedi le offerte dedicate <ArrowRight size={16} className="ml-2" />
                 </Link>
               </div>
@@ -227,29 +234,85 @@ export default function Home() {
                 </Link>
               </div>
 
-              {/* Card 3: WiFi */}
-              <div className="group relative overflow-hidden rounded-3xl bg-slate-50 border border-slate-100 p-8 hover:shadow-xl transition-all duration-300 flex flex-col">
-                <div className="mb-6 bg-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm text-brand-cyan group-hover:scale-110 transition-transform">
-                   <Wifi size={28} />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">Free WiFi Zone</h3>
-                <p className="text-slate-600 mb-6 flex-grow text-sm leading-relaxed">
-                   Devi lavorare o semplicemente navigare? 
-                   Offriamo una connessione ultraveloce gratuita per tutti i nostri clienti.
-                </p>
-                <div className="mt-auto">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Password Ospiti</p>
-                  <button 
-                    onClick={() => setShowWifiPass(!showWifiPass)}
-                    className="w-full flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 hover:border-brand-cyan transition-all group/btn"
-                  >
-                    <span className={clsx("font-mono text-sm font-bold", showWifiPass ? "text-brand-dark" : "text-slate-400")}>
-                        {showWifiPass ? "TSCAP2025" : "Clicca per mostrare"}
-                    </span>
-                    <Eye size={16} className="text-slate-400 group-hover/btn:text-brand-cyan" />
-                  </button>
-                </div>
-              </div>
+              {/* Card 3: Luna Events Spoiler (Catering & Ape Car) */}
+<div className="group relative overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 p-8 hover:shadow-2xl hover:shadow-amber-900/20 transition-all duration-500 flex flex-col justify-between">
+  
+  {/* Effetto Glow Sfondo (Toni Ambra/Oro) */}
+  <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-all duration-700 pointer-events-none"></div>
+  <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-purple-900/20 rounded-full blur-3xl group-hover:bg-purple-900/30 transition-all duration-700 pointer-events-none"></div>
+
+  {/* --- LOGO LUNA EVENTS (Adattato per la card) --- */}
+  <div className="relative flex flex-col items-center justify-center py-6 mb-4 group-hover:scale-105 transition-transform duration-500">
+        {/* Sfondo Luna (Immagine) */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
+            <Image
+                src="/icons/moon.svg"
+                alt=""
+                width={140} // Ridotto rispetto ai 300 originali per stare nella card
+                height={140}
+                className="w-32 h-32 object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.3)]"
+            />
+        </div>
+        
+        {/* Testo Luna */}
+        <h2
+            className="font-luna text-5xl text-amber-400 relative z-10 leading-none drop-shadow-md"
+            style={{ fontFeatureSettings: '"liga" 1, "calt" 1' }}
+        >
+            Luna
+        </h2>
+        
+        {/* Testo Events */}
+        <span className="text-slate-300 font-serif uppercase text-[0.6rem] tracking-[0.4em] relative z-10 mt-[-2px] pl-1">
+            Events
+        </span>
+  </div>
+
+  {/* Descrizione Servizio */}
+  <div className="relative text-center mb-6">
+    <p className="text-slate-400 text-sm leading-relaxed">
+      Portiamo la festa dove vuoi tu. <br/>
+      <span className="font-luna text-xl text-amber-400">Apecar esclusiva</span> per aperitivi, rinfreschi, matrimoni ed eventi aziendali.
+    </p>
+  </div>
+
+  {/* Area Spoiler / Azione */}
+  <div className="relative mt-auto">
+    <div 
+      onClick={() => setShowWifiPass(!showWifiPass)} // Usa lo stato per svelare
+      className="cursor-pointer w-full overflow-hidden relative p-1 rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 hover:border-amber-500/50 transition-all group/btn"
+    >
+      <div className="relative z-10 flex items-center justify-between p-3">
+        <span className={clsx(
+            "font-medium text-sm transition-all duration-500", 
+            showWifiPass ? "font-luna text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400" : "text-slate-400"
+          )}>
+            {showWifiPass ? "Stiamo Arrivando..." : "Hai un evento in mente?"}
+        </span>
+        
+        {/* Icona che cambia */}
+        <div className={clsx("transition-transform duration-500", showWifiPass ? "rotate-0 translate-x-0" : "-rotate-45")}>
+            {showWifiPass ? (
+                // Link al sito Luna
+<Link href={lunaUrl} onClick={(e) => e.stopPropagation()}>
+            <div className="bg-amber-400 text-slate-900 p-1.5 rounded-lg hover:bg-white transition-colors">
+                <ArrowRight size={16} />
+            </div>
+        </Link>
+            ) : (
+                <Sparkles size={16} className="text-amber-400" />
+            )}
+        </div>
+      </div>
+
+      {/* Effetto scia al click */}
+      <div className={clsx(
+        "absolute inset-0 bg-gradient-to-r from-amber-900/40 to-purple-900/40 transition-transform duration-700 ease-out",
+        showWifiPass ? "translate-x-0" : "-translate-x-full"
+      )}></div>
+    </div>
+  </div>
+</div>
 
             </div>
           </div>
