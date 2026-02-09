@@ -3,7 +3,7 @@ import ComingSoon from "@/components/luna/ComingSoon"; // Assicurati che l'impor
 
 // --- INTERRUTTORE SITO ---
 // Metti "false" quando vuoi andare online con il sito vero!
-const IS_COMING_SOON = false; 
+const IS_COMING_SOON = true; 
 
 export const metadata: Metadata = {
   title: "Luna Events",
