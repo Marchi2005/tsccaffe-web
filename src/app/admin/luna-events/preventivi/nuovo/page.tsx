@@ -630,8 +630,8 @@ export default function AdminQuoteGenerator() {
                                     {/* QUI USIAMO IL TOTALE FINALE ESATTO */}
                                     <span className="text-[#C4A052]">€ {finalTotal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</span>
                                 </div>
-                                {/* IVA INCLUSA COME RICHIESTO */}
-                                <p className="text-[9px] text-slate-400 text-right mt-1">* IVA Inclusa</p>
+                                {/* IVA Esclusa COME RICHIESTO */}
+                                <p className="text-[9px] text-slate-400 text-right mt-1">* IVA Esclusa</p>
                             </div>
                         </div>
                     </div>
