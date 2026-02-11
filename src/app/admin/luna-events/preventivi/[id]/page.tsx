@@ -583,7 +583,7 @@ export default function EditQuotePage() {
                                     </span>
                                     <span className="text-[#C4A052]">€ {finalTotal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</span>
                                 </div>
-                                <p className="text-[9px] text-slate-400 text-right mt-1">* IVA Inclusa</p>
+                                <p className="text-[9px] text-slate-400 text-right mt-1">* IVA Esclusa</p>
                             </div>
                         </div>
                     </div>
