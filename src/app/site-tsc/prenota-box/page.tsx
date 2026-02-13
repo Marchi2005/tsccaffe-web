@@ -1014,7 +1014,7 @@ export default function PrenotaBoxPage() {
                         <p className="font-bold text-slate-400 text-[9px] uppercase tracking-wider mb-2 pl-1">Regalo?</p>
                         <div className="grid grid-cols-3 gap-1.5 w-full">
                           {accessories.peluche_l && <GiftCard label="Peluche L" icon="🧸" price={accessories.peluche_l.price} selected={addPelucheL} onClick={() => setAddPelucheL(!addPelucheL)} isPromo={isRoyal} />}
-                          {accessories.peluche_m && <GiftCard label="Peluche M" icon="🧸" price={accessories.peluche_m.price} selected={addPelucheM} onClick={() => setAddPelucheM(!addPelucheM)} isPromo={isRoyal} />}
+                          //{accessories.peluche_m && <GiftCard label="Peluche M" icon="🧸" price={accessories.peluche_m.price} selected={addPelucheM} onClick={() => setAddPelucheM(!addPelucheM)} isPromo={isRoyal} />}
                           {accessories.rosa && <GiftCard label="Rosa+Baci" icon="🌹" price={accessories.rosa.price} selected={addRosa} onClick={() => setAddRosa(!addRosa)} />}
                         </div>
                         <input type="hidden" name="addPelucheL" value={addPelucheL ? "on" : ""} /><input type="hidden" name="addPelucheM" value={addPelucheM ? "on" : ""} /><input type="hidden" name="addRosa" value={addRosa ? "on" : ""} />
