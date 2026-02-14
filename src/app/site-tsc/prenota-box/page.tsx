@@ -477,7 +477,7 @@ function BoxCard({ box, selected, onClick }: any) {
 
   // 1. DEFINISCI LA CONDIZIONE DI DISABILITAZIONE
   // Verifica che l'ID sia esattamente quello usato nel tuo DB (es. 'velvet-dream', 'velvet_dream', ecc.)
-  const isDisabled = box.id === 'velvet';
+  const isDisabled = box.id === '';
 
   return (
     <div 
