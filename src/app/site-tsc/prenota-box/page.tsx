@@ -475,25 +475,58 @@ function BoxCard({ box, selected, onClick }: any) {
 
   const isBestSeller = box.id === 'royal';
 
-  return (
-    <div onClick={onClick} className={clsx("cursor-pointer rounded-xl p-3 border-2 transition-all relative overflow-hidden group h-full flex flex-col w-full", selected ? "border-rose-500 bg-rose-50/50 ring-1 ring-rose-500" : "border-slate-100 bg-white hover:border-rose-200")}>
+  // 1. DEFINISCI LA CONDIZIONE DI DISABILITAZIONE
+  // Verifica che l'ID sia esattamente quello usato nel tuo DB (es. 'velvet-dream', 'velvet_dream', ecc.)
+  const isDisabled = box.id === 'velvet';
 
-      {isBestSeller && (
+  return (
+    <div 
+      // 2. BLOCCA IL CLICK
+      onClick={isDisabled ? undefined : onClick} 
+      className={clsx(
+        "rounded-xl p-3 border-2 transition-all relative overflow-hidden group h-full flex flex-col w-full",
+        
+        // 3. GESTIONE CLASSI (Disabilitato vs Normale)
+        isDisabled 
+          ? "opacity-50 cursor-not-allowed bg-slate-50 border-slate-100 grayscale" // Stile Disabilitato
+          : "cursor-pointer", // Stile Attivo (cursore)
+
+        // Logica di selezione (solo se NON disabilitato)
+        !isDisabled && selected 
+          ? "border-rose-500 bg-rose-50/50 ring-1 ring-rose-500" 
+          : !isDisabled 
+            ? "border-slate-100 bg-white hover:border-rose-200" 
+            : ""
+      )}
+    >
+
+      {isBestSeller && !isDisabled && (
         <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-[8px] font-black px-2 py-1 rounded-bl-xl z-20 shadow-sm flex items-center gap-1">
           <Star size={8} fill="currentColor" /> BEST SELLER
         </div>
       )}
 
-      <div className="flex justify-between items-start mb-1">
-        <h4 className={clsx("font-bold text-sm", selected ? "text-rose-600" : "text-slate-900")}>{box.name}</h4>
+      {/* (Opzionale) Badge "Non disponibile" */}
+      {isDisabled && (
+        <div className="absolute top-0 right-0 bg-slate-200 text-slate-500 text-[8px] font-black px-2 py-1 rounded-bl-xl z-20">
+          ESAURITO
+        </div>
+      )}
 
-        {selected && (
+      <div className="flex justify-between items-start mb-1">
+        <h4 className={clsx("font-bold text-sm", selected && !isDisabled ? "text-rose-600" : "text-slate-900")}>
+          {box.name}
+        </h4>
+
+        {selected && !isDisabled && (
           <div className={clsx("bg-rose-500 text-white p-0.5 rounded-full transition-all", isBestSeller ? "mt-5 mr-1" : "")}>
             <Check size={10} strokeWidth={3} />
           </div>
         )}
       </div>
+      
       <p className="text-[10px] text-slate-500 mb-2 leading-tight flex-grow">{box.desc}</p>
+      
       <div className="flex items-baseline gap-1 mt-auto">
         <span className="text-[9px] font-bold text-slate-400 uppercase">Da</span>
         <div className="flex items-baseline gap-1.5">
