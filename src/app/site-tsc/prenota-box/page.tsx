@@ -22,7 +22,7 @@ const SHOP_PHONE_NUMBER = "393715428345";
 const SUCCHI_FLAVORS = [
   "Ace", "Albicocca", "Ananas", "Arancia",
   "Arancia Rossa", "Frutti di Bosco", "Mango Passion",
-  "Mela", "Melograno", "Mirtillo", "Multifrutti",
+  "Mela", "Mirtillo", "Multifrutti",
   "Pera", "Pesca", "Pompelmo"
 ].sort();
 
