@@ -47,14 +47,14 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  return (
-    <div className="min-h-screen flex flex-col bg-slate-50 font-sans relative">
+return (
+    <div className="min-h-screen flex flex-col bg-slate-50 font-sans relative max-w-[100vw] overflow-x-hidden">
 
       <main className="flex-grow">
         
         {/* HERO SECTION */}
         <section className="relative overflow-hidden pt-12 pb-20 lg:pt-28 lg:pb-32">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
               
               {/* Text Content */}
@@ -175,7 +175,7 @@ export default function Home() {
 
         {/* FEATURES GRID */}
         <section id="servizi" className="py-24 bg-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">I Nostri Servizi</h2>
               <p className="mt-4 text-lg text-slate-600">Tutto ciò di cui hai bisogno in un'unica sosta.</p>
@@ -278,7 +278,7 @@ export default function Home() {
 
         {/* LOCATION SECTION */}
         <section id="location" className="py-24 bg-slate-50 relative">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8">
              <div className="grid lg:grid-cols-2 gap-12 bg-white rounded-[2.5rem] p-4 shadow-xl overflow-hidden border border-slate-100">
                 
                 {/* Info Text */}
