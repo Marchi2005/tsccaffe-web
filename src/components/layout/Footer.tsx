@@ -3,8 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Facebook, Instagram, MapPin, Phone, MessageCircle, Send } from "lucide-react";
-import { StatusBadge } from '@/components/ui/status-badge';
+import { Facebook, Instagram, MapPin, Phone, MessageCircle, Send, Coffee } from "lucide-react";
 import clsx from "clsx";
 import { useState, useEffect } from "react";
 
@@ -31,11 +30,54 @@ export default function Footer() {
   
   // --- FIX DOMINIO LUNA ---
   const [isLunaDomain, setIsLunaDomain] = useState(false);
+  const [shopStatus, setShopStatus] = useState({ text: "VERIFICA...", classes: "bg-slate-300" });
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hostname.includes("lunaevents")) {
       setIsLunaDomain(true);
     }
+
+    // LOGICA ORARI APERTURA AVANZATA
+    const updateShopStatus = () => {
+      const now = new Date();
+      const itTimeStr = now.toLocaleString("en-US", { timeZone: "Europe/Rome" });
+      const itDate = new Date(itTimeStr);
+
+      const day = itDate.getDay(); 
+      const minutes = itDate.getHours() * 60 + itDate.getMinutes();
+
+      const statusStyles = {
+        open: { text: "APERTO ORA", classes: "bg-emerald-500 shadow-emerald-500/40" },
+        closed: { text: "CHIUSO ORA", classes: "bg-rose-500 shadow-rose-500/40" },
+        closing: { text: "IN CHIUSURA", classes: "bg-amber-500 shadow-amber-500/40" }, 
+        opening: { text: "APRE TRA POCO", classes: "bg-blue-500 shadow-blue-500/40" }   
+      };
+
+      if (day === 0) {
+        if (minutes >= 435 && minutes < 450) return statusStyles.opening;
+        if (minutes >= 840 && minutes < 870) return statusStyles.closing;
+        if (minutes >= 450 && minutes < 870) return statusStyles.open;
+        return statusStyles.closed;
+      }
+
+      if (minutes >= 375 && minutes < 390) return statusStyles.opening;
+      if (minutes >= 780 && minutes < 810) return statusStyles.closing;
+      if (minutes >= 390 && minutes < 810) return statusStyles.open;
+
+      if (minutes >= 915 && minutes < 930) return statusStyles.opening;
+      if (minutes >= 1170 && minutes < 1200) return statusStyles.closing;
+      if (minutes >= 930 && minutes < 1200) return statusStyles.open;
+
+      return statusStyles.closed;
+    };
+
+    // Imposta lo stato iniziale e aggiorna ogni 60 secondi
+    setShopStatus(updateShopStatus());
+    const interval = setInterval(() => {
+      setShopStatus(updateShopStatus());
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const isLunaPage = pathname.startsWith("/site-luna") || isLunaDomain;
@@ -60,7 +102,7 @@ export default function Footer() {
                     <div className="flex flex-col leading-none">
                         <span className={clsx(
                             "font-bold text-sm uppercase tracking-wide transition-colors",
-                            isLunaPage ? "text-slate-300 group-hover:text-white" : "text-white group-hover:text-brand-red"
+                            isLunaPage ? "text-slate-300 group-hover:text-white" : "text-white group-hover:text-brand-coffee"
                         )}>
                             Tabacchi San Clemente
                         </span>
@@ -150,8 +192,8 @@ export default function Footer() {
                        <Send size={14} className="mt-0.5" /> Richiedi Preventivo
                     </a>
                 ) : (
-                    <Link href="/prenota-box" className="text-brand-red font-bold hover:text-red-400 transition-colors flex items-center gap-2">
-                       San Valentino ❤️
+                    <Link href="/prenota-colazione" className="text-brand-red font-bold hover:text-rose-700 transition-colors flex items-center gap-2">
+                       <Coffee size={14} className="mt-0.5" /> Prenota Colazione
                     </Link>
                 )}
               </li>
@@ -194,8 +236,13 @@ export default function Footer() {
                   <span className="text-slate-600 font-medium">07:30 - 14:30</span>
                 </div>
               </div>
-              <div className="mt-4 pt-2 border-t border-slate-100">
-                 <StatusBadge className="w-full justify-center bg-white shadow-sm" />
+              
+              {/* STATUS BADGE DINAMICO */}
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                 <div className="flex items-center justify-center gap-2.5 w-full bg-white shadow-sm py-2.5 px-3 rounded-xl border border-slate-100">
+                    <span className={clsx("w-2.5 h-2.5 rounded-full shadow-lg animate-pulse", shopStatus.classes)}></span>
+                    <span className="text-xs font-bold text-slate-700 tracking-wide">{shopStatus.text}</span>
+                 </div>
               </div>
             </div>
           </div>

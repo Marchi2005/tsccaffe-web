@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image"; 
-import { Menu, X, ShoppingBag, Send } from "lucide-react"; 
+import { Menu, X, ShoppingBag, Send, Coffee } from "lucide-react"; 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -50,7 +50,7 @@ export default function Navbar() {
       className={clsx(
         "fixed top-0 inset-x-0 z-50 w-full transition-all duration-300",
         "rounded-b-[30px]",
-        "backdrop-blur",         
+        "backdrop-blur",        
         isLunaPage ? "bg-slate-900/40 border-white/10" : "bg-white/0 border-white/40",            
         "backdrop-saturate-150",     
         "border-b"
@@ -128,8 +128,6 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                // Se è un link esterno (inizia con http), target blank è opzionale ma consigliato se vuoi tenere aperta Luna
-                // Qui lo lascio normale per navigazione fluida come richiesto "portare a..."
                 className={clsx(
                   "text-sm font-bold transition-colors",
                   isLunaPage
@@ -152,11 +150,11 @@ export default function Navbar() {
                 </a>
             ) : (
                 <Link 
-                  href="/prenota-box" 
-                  className="inline-flex items-center gap-2 bg-brand-red text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-red-700 hover:shadow-brand-red/40 transition-all transform hover:-translate-y-0.5"
+                  href="/prenota-colazione" 
+                  className="inline-flex items-center gap-2 bg-brand-coffee text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-amber-900 hover:shadow-amber-900/40 transition-all transform hover:-translate-y-0.5"
                 >
-                  <ShoppingBag size={18} />
-                  Box San Valentino
+                  <Coffee size={18} />
+                  Prenota Colazione
                 </Link>
             )}
           </div>
@@ -219,11 +217,11 @@ export default function Navbar() {
                    </a>
                 ) : (
                    <Link
-                     href="/prenota-box"
+                     href="/prenota-colazione"
                      onClick={() => setIsOpen(false)}
-                     className="mt-4 flex items-center justify-center gap-2 w-full text-center rounded-xl bg-brand-red px-4 py-3 text-base font-bold text-white shadow-md hover:bg-red-700"
+                     className="mt-4 flex items-center justify-center gap-2 w-full text-center rounded-xl bg-brand-coffee px-4 py-3 text-base font-bold text-white shadow-md hover:bg-amber-900"
                    >
-                     <ShoppingBag size={18} /> Prenota Box San Valentino
+                     <Coffee size={18} /> Prenota Colazione
                    </Link>
                 )}
             </div>

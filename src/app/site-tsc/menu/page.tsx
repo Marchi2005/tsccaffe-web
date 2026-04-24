@@ -219,7 +219,7 @@ export default function MenuPage() {
 
       </div>
 
-      {/* 3. INFO FOOTER SECTION */}
+{/* 3. INFO FOOTER SECTION */}
       <section className="bg-white py-16 border-t border-slate-100">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
           <div className="inline-flex items-center justify-center p-3 bg-brand-cyan/10 rounded-full text-brand-cyan mb-2">
@@ -231,12 +231,12 @@ export default function MenuPage() {
             Siamo a disposizione per fornirti l'elenco degli ingredienti e degli allergeni presenti nei nostri prodotti.
           </p>
           <div className="pt-4">
-                        <Link 
-              href="/prenota-box" 
-              className="inline-flex items-center gap-2 bg-brand-red text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-red-700 hover:shadow-brand-red/40 transition-all transform hover:-translate-y-0.5"
+            <Link 
+              href="/prenota-colazione" 
+              className="inline-flex items-center gap-2 bg-brand-coffee text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-amber-900 hover:shadow-amber-900/40 transition-all transform hover:-translate-y-0.5"
             >
-              <ShoppingBag size={18} />
-              Prenota Box San Valentino
+              <Coffee size={18} />
+              Prenota Colazione
             </Link>
           </div>
         </div>

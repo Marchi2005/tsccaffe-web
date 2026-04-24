@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { HeartCrack, Home, Gift, ArrowRight } from "lucide-react";
+import { Compass, Home, Coffee, ArrowRight } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -7,38 +7,39 @@ export default function NotFound() {
       
       {/* Sfondo decorativo */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-         <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-rose-200 rounded-full blur-[100px] opacity-20"></div>
+         <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-amber-200 rounded-full blur-[100px] opacity-20"></div>
          <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-orange-100 rounded-full blur-[100px] opacity-30"></div>
       </div>
 
-      {/* Card Principale */}
-      <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-100 text-center max-w-md w-full relative z-10 animate-fade-in">
+      {/* Card Principale (Aggiunto 'overflow-hidden' per tagliare correttamente la barra superiore) */}
+      <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-slate-100 text-center max-w-md w-full relative z-10 animate-fade-in overflow-hidden">
         
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-rose-400 to-rose-600" />
+        {/* Barra sottile superiore ora segue la curvatura grazie a overflow-hidden */}
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-400 to-amber-600" />
 
-        <div className="w-24 h-24 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-8 ring-rose-50/50">
-           <HeartCrack size={48} className="text-rose-500 drop-shadow-sm" />
+        <div className="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-8 ring-amber-50/50">
+           <Compass size={48} className="text-amber-600 drop-shadow-sm" />
         </div>
 
         <h1 className="text-5xl font-extrabold text-slate-900 mb-2 tracking-tight">404</h1>
         <h2 className="text-xl font-bold text-slate-800 mb-4">Pagina non trovata</h2>
         
         <p className="text-slate-500 text-sm mb-8 leading-relaxed">
-          Sembra che tu abbia smarrito la strada...<br/>
-          <strong>Ma non perdere l'occasione di stupire chi ami!</strong>
+          Sembra che tu abbia smarrito la rotta...<br/>
+          <strong>Ma sei sempre in tempo per un buon caffè!</strong>
         </p>
 
-        {/* Pulsante CALL TO ACTION (Prenota Box) */}
+        {/* Pulsante CALL TO ACTION (Prenota Colazione) */}
         <div className="mb-4">
             <Link 
-              href="/prenota-box" 
-              className="w-full bg-rose-500 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-rose-200 hover:bg-rose-600 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group animate-pulse-slow"
+              href="/prenota-colazione" 
+              className="w-full bg-amber-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-amber-900/20 hover:bg-amber-950 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group animate-pulse-slow"
             >
-              <Gift size={22} className="group-hover:rotate-12 transition-transform" />
-              Ordina la Box di San Valentino
+              <Coffee size={22} className="group-hover:rotate-12 transition-transform" />
+              Prenota Colazione
               <ArrowRight size={18} className="opacity-80" />
             </Link>
-            <p className="text-[10px] text-rose-400 font-bold uppercase tracking-widest mt-2">Edizione Limitata</p>
+            <p className="text-[10px] text-amber-700 font-bold uppercase tracking-widest mt-2">Inizia bene la giornata</p>
         </div>
 
         {/* Pulsante Secondario (Home) */}

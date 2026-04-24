@@ -125,7 +125,7 @@ export default function PrivacyPolicy() {
                             </div>
                             <h1 className="text-3xl font-extrabold text-slate-900">Privacy Policy</h1>
                         </div>
-                        <p className="text-slate-400 text-sm mb-8 font-medium">TSC Caffè • Aggiornato Febbraio 2026</p>
+                        <p className="text-slate-400 text-sm mb-8 font-medium">TSC Caffè • Aggiornato Aprile 2026</p>
 
                         <PolicyContent theme="tsc" />
                     </motion.div>
@@ -184,7 +184,7 @@ function PolicyContent({ theme }: { theme: 'luna' | 'tsc' }) {
                 </p>
                 <ul className={`list-disc pl-5 mt-4 space-y-2 ${listMarkerClass}`}>
                     <li className={textClass}>
-                        <strong className={strongClass}>Servizio "Prenota Box" (TSC Caffè):</strong> Nome, Cognome, Numero di telefono, Indirizzo di consegna (se applicabile), preferenze alimentari.
+                        <strong className={strongClass}>Servizi "Prenota Box" e "Prenota Colazione" (TSC Caffè):</strong> Nome, Cognome, Numero di telefono, Indirizzo di consegna (se applicabile), preferenze alimentari.
                     </li>
                     <li className={textClass}>
                         <strong className={strongClass}>Servizio "Preventivi Eventi" (Luna Events):</strong> Nome, Cognome, Email, Numero di telefono, Dettagli sull'evento (data, tipo di cerimonia, numero ospiti) inseriti nel modulo di contatto dedicato.

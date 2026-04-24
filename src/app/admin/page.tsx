@@ -9,12 +9,13 @@ import {
   LogOut, 
   ChevronRight,
   Sparkles,
-  Moon
+  Moon,
+  Coffee,
+  Archive
 } from "lucide-react";
 import clsx from "clsx";
 
 // --- CONFIGURAZIONE FONT LUNA ---
-// Assicurati che il percorso sia corretto rispetto a dove si trova questo file
 const lunaFont = localFont({
     src: [
         {
@@ -28,17 +29,18 @@ const lunaFont = localFont({
 
 export default function AdminDashboard() {
   
-  const modules = [
+  // --- MODULI ATTIVI ---
+  const activeModules = [
     {
-      id: "san-valentino",
-      title: "Ordini San Valentino",
-      desc: "Gestisci le prenotazioni delle Box, scansiona i QR e monitora lo stato.",
-      icon: Heart,
-      href: "/admin/san-valentino",
-      color: "text-rose-500",
-      bg: "bg-rose-50",
-      border: "hover:border-rose-200",
-      style: "light" // Card classica chiara
+      id: "colazioni",
+      title: "Ordini Colazioni",
+      desc: "Gestisci le prenotazioni quotidiane, incassa, visualizza gli scontrini e stampa le comande.",
+      icon: Coffee,
+      href: "/admin/colazioni", // <-- Modifica se la pagina l'hai chiamata diversamente
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+      border: "hover:border-amber-200",
+      style: "light" 
     },
     {
       id: "prodotti",
@@ -72,6 +74,17 @@ export default function AdminDashboard() {
     }
   ];
 
+  // --- MODULI ARCHIVIATI (Disattivati) ---
+  const archivedModules = [
+    {
+      id: "san-valentino",
+      title: "San Valentino 2026",
+      desc: "Archivio ordini e statistiche dell'evento concluso.",
+      icon: Heart,
+      href: "/admin/san-valentino"
+    }
+  ];
+
   return (
     <div className={clsx("min-h-screen bg-slate-50 p-6 md:p-12 font-sans", lunaFont.variable)}>
       <div className="max-w-5xl mx-auto">
@@ -90,15 +103,15 @@ export default function AdminDashboard() {
              className="flex items-center gap-2 text-slate-400 hover:text-red-500 transition-colors font-medium text-sm bg-white border border-slate-200 px-4 py-2 rounded-xl hover:bg-red-50 hover:border-red-200"
           >
             <LogOut size={16} />
-            Esci
+            <span className="hidden sm:inline">Esci</span>
           </Link>
         </div>
 
-        {/* Grid delle Card */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {modules.map((mod) => {
+        {/* --- GRID MODULI ATTIVI --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+          {activeModules.map((mod) => {
             
-            // --- RENDER CARD "LUNA EVENTS" (SCURA) ---
+            // Render Card "Luna Events"
             if (mod.style === "dark") {
               return (
                 <Link 
@@ -106,7 +119,6 @@ export default function AdminDashboard() {
                   href={mod.href}
                   className="group relative bg-[#050A18] rounded-3xl p-8 border border-[#C4A052]/20 shadow-xl overflow-hidden hover:scale-[1.02] transition-transform duration-300"
                 >
-                   {/* Sfondo Stellato statico */}
                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/40 via-[#050A18] to-[#050A18] opacity-50" />
                    <div className="absolute top-4 right-8 w-1 h-1 bg-white rounded-full opacity-60 animate-pulse" />
                    <div className="absolute bottom-10 left-10 w-0.5 h-0.5 bg-white rounded-full opacity-40" />
@@ -122,7 +134,6 @@ export default function AdminDashboard() {
                       </div>
                       
                       <div>
-                        {/* Logo Luna Font */}
                         <div className="mb-2">
                              <span className="text-4xl text-[#C4A052]" style={{ fontFamily: 'var(--font-luna)' }}>Luna</span>
                              <span className="text-lg text-white/90 uppercase tracking-[0.2em] font-light ml-2">Events</span>
@@ -140,7 +151,7 @@ export default function AdminDashboard() {
               );
             }
 
-            // --- RENDER CARD CLASSICHE (CHIARE) ---
+            // Render Card Classiche
             const Icon = mod.icon;
             return (
               <Link 
@@ -169,6 +180,33 @@ export default function AdminDashboard() {
             );
           })}
         </div>
+
+        {/* --- SEZIONE ARCHIVIO (San Valentino ecc.) --- */}
+        <div>
+          <div className="flex items-center gap-2 text-slate-400 mb-4 px-2">
+            <Archive size={16} />
+            <h3 className="text-xs font-bold uppercase tracking-widest">Archivio Eventi Passati</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {archivedModules.map((mod) => (
+              <Link 
+                key={mod.id} 
+                href={mod.href}
+                className="flex items-center gap-4 p-4 rounded-2xl bg-slate-200/50 border border-slate-200 grayscale hover:grayscale-0 opacity-70 hover:opacity-100 transition-all"
+              >
+                <div className="p-3 bg-slate-300 text-slate-500 rounded-xl">
+                  <mod.icon size={20} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-700">{mod.title}</h4>
+                  <p className="text-xs text-slate-500 line-clamp-1">{mod.desc}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
