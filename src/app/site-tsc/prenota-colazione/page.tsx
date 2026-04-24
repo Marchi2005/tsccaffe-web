@@ -447,15 +447,15 @@ export default function PrenotaColazionePage() {
   );
 
   return (
-    // 🔧 Rimosso overflow-x-hidden per permettere lo sticky a destra
-    <div className="min-h-screen bg-slate-50 font-sans flex flex-col w-full overflow-x-clip">
+    // 🔧 Blocco totale dell'overflow su mobile, preservando lo sticky su desktop
+    <div className="min-h-screen bg-slate-50 font-sans flex flex-col w-full max-w-[100vw] overflow-x-hidden md:overflow-x-clip">
       <Script src={`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places`} strategy="afterInteractive" onLoad={() => setIsMapsLoaded(true)} />
 
-      <main className="flex-grow pt-20 sm:pt-32 w-full">
+      <main className="flex-grow pt-20 sm:pt-32 w-full max-w-[100vw] flex flex-col">
         {/* 🔧 Configurazione grid e items-start per attivare lo sticky scorrimento */}
-        <div className="max-w-7xl mx-auto grid md:grid-cols-12 min-h-[calc(100vh-200px)] gap-8 px-4 sm:px-6 items-start">
+        <div className="max-w-7xl w-full mx-auto grid md:grid-cols-12 min-h-[calc(100vh-200px)] gap-4 md:gap-8 px-4 sm:px-6 items-start">
           
-          <div className="md:col-span-7 lg:col-span-8 pb-32 w-full max-w-[420px] mx-auto md:max-w-none">
+          <div className="md:col-span-7 lg:col-span-8 pb-32 w-full max-w-full sm:max-w-[420px] mx-auto md:max-w-none overflow-x-hidden sm:overflow-x-visible">
             {state.success ? (
               <div className="animate-fade-in py-8 px-4 w-full flex justify-center">
                   <div className="bg-white p-0 rounded-[2.5rem] shadow-2xl shadow-amber-100/50 border border-slate-100 text-center relative overflow-hidden max-w-sm w-full">
@@ -761,9 +761,21 @@ export default function PrenotaColazionePage() {
                     
                     <div className="w-full">
                       <label className="text-[10px] font-bold text-slate-500 ml-1 mb-1.5 block uppercase tracking-wider">Orario</label>
-                      <div className="flex gap-1.5 overflow-x-auto pb-2 no-scrollbar w-full">
+                      {/* 🔧 Rimosso il forzamento a 3 colonne su schermi piccoli, manteniamo 2 colonne fisse sui cellulari */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 w-full">
                           {TIMES.map(t => (
-                              <button key={t} type="button" onClick={() => setTime(t)} className={clsx("flex-shrink-0 px-4 py-2 rounded-xl border text-xs font-bold whitespace-nowrap transition-colors", time === t ? "bg-amber-900 text-white border-amber-900" : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100")}>{t}</button>
+                              <button 
+                                key={t} 
+                                type="button" 
+                                onClick={() => setTime(t)} 
+                                /* 🔧 Rimosso 'whitespace-nowrap' e abbassato il padding su mobile (px-2) */
+                                className={clsx(
+                                  "flex-shrink-0 px-2 sm:px-4 py-2.5 rounded-xl border text-xs sm:text-sm font-bold transition-colors w-full", 
+                                  time === t ? "bg-amber-900 text-white border-amber-900 shadow-md" : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                                )}
+                              >
+                                {t}
+                              </button>
                           ))}
                       </div>
                       <input type="hidden" name="preferredTime" value={time} />
