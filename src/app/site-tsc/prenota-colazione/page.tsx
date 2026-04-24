@@ -75,18 +75,16 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 function SubmitButton({ label, price, disabled }: { label: string, price: number, disabled?: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <div className="w-full bg-white border-t border-slate-200 p-4 pb-6 shadow-[0_-5px_20px_rgba(0,0,0,0.1)]">
-      <button
-        disabled={pending || disabled}
-        type="submit"
-        className="w-full bg-amber-900 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-amber-900/20 hover:scale-[1.01] active:scale-[0.98] transition-all flex justify-between px-6 items-center disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-400"
-      >
-        <span className="flex items-center gap-2 text-sm uppercase tracking-wider">
-          {pending ? <span className="animate-pulse">Attendi...</span> : <>{label} <ArrowRight size={20} className="text-amber-300" /></>}
-        </span>
-        <span className="bg-white/20 px-3 py-1 rounded-lg text-lg font-mono tracking-tight">{(price || 0).toFixed(2)}€</span>
-      </button>
-    </div>
+    <button
+      disabled={pending || disabled}
+      type="submit"
+      className="w-full bg-amber-900 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-amber-900/20 hover:scale-[1.01] active:scale-[0.98] transition-all flex justify-between px-6 items-center disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-400"
+    >
+      <span className="flex items-center gap-2 text-sm uppercase tracking-wider">
+        {pending ? <span className="animate-pulse">Attendi...</span> : <>{label} <ArrowRight size={20} className="text-amber-300" /></>}
+      </span>
+      <span className="bg-white/20 px-3 py-1 rounded-lg text-lg font-mono tracking-tight">{(price || 0).toFixed(2)}€</span>
+    </button>
   );
 }
 
@@ -170,7 +168,7 @@ function DrinkSelector({ label, onSelect, currentSelection }: any) {
   return (
     <div className="space-y-1.5 w-full">
       <p className="font-bold text-slate-400 text-[10px] uppercase tracking-wider pl-1">{label}</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full">
+      <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 gap-2 w-full">
         {DRINKS_DATA.map((d: any) => {
           const isSelected = baseSelection === d.label;
           return (
@@ -219,8 +217,8 @@ function PastrySelector({ label, onSelect, currentSelection }: any) {
     onSelect(finalString);
   };
 
-  const renderGrid = (items: any[]) => (
-    <div className="grid grid-cols-2 gap-2">
+    const renderGrid = (items: any[]) => (
+    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2">
       {items.map((p) => {
         const isSelected = currentSelection.startsWith(p.label);
         const isDisabled = isOptionDisabled(p);
@@ -253,7 +251,7 @@ function PastrySelector({ label, onSelect, currentSelection }: any) {
         <p className="font-bold text-slate-400 text-xs uppercase tracking-wider pl-1">{label}</p>
       </div>
 
-      <div className="flex gap-2 mb-2 p-1 bg-slate-50 rounded-xl border border-slate-100">
+      <div className="flex flex-col min-[400px]:flex-row gap-2 mb-2 p-1 bg-slate-50 rounded-xl border border-slate-100">
         <button type="button" onClick={() => setDietary(dietary === 'vegan' ? 'none' : 'vegan')} className={clsx("flex-1 py-2 text-[10px] font-bold rounded-lg border transition-all", dietary === 'vegan' ? "bg-green-100 text-green-700 border-green-200 shadow-sm" : "bg-white text-slate-500 border-transparent hover:bg-slate-100")}>🌱 Vegano</button>
         <button type="button" onClick={() => setDietary(dietary === 'gluten_free' ? 'none' : 'gluten_free')} className={clsx("flex-1 py-2 text-[10px] font-bold rounded-lg border transition-all", dietary === 'gluten_free' ? "bg-amber-100 text-amber-700 border-amber-200 shadow-sm" : "bg-white text-slate-500 border-transparent hover:bg-slate-100")}>🌾 Senza Glutine</button>
       </div>
@@ -450,14 +448,14 @@ export default function PrenotaColazionePage() {
 
   return (
     // 🔧 Rimosso overflow-x-hidden per permettere lo sticky a destra
-    <div className="min-h-screen bg-slate-50 font-sans flex flex-col w-full">
+    <div className="min-h-screen bg-slate-50 font-sans flex flex-col w-full overflow-x-clip">
       <Script src={`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places`} strategy="afterInteractive" onLoad={() => setIsMapsLoaded(true)} />
 
       <main className="flex-grow pt-20 sm:pt-32 w-full">
         {/* 🔧 Configurazione grid e items-start per attivare lo sticky scorrimento */}
         <div className="max-w-7xl mx-auto grid md:grid-cols-12 min-h-[calc(100vh-200px)] gap-8 px-4 sm:px-6 items-start">
           
-          <div className="md:col-span-7 lg:col-span-8 pb-32 w-full max-w-[500px] mx-auto md:max-w-none">
+          <div className="md:col-span-7 lg:col-span-8 pb-32 w-full max-w-[420px] mx-auto md:max-w-none">
             {state.success ? (
               <div className="animate-fade-in py-8 px-4 w-full flex justify-center">
                   <div className="bg-white p-0 rounded-[2.5rem] shadow-2xl shadow-amber-100/50 border border-slate-100 text-center relative overflow-hidden max-w-sm w-full">
@@ -501,7 +499,7 @@ export default function PrenotaColazionePage() {
                     <span className="w-5 h-5 rounded-full bg-amber-900 text-white text-[10px] flex items-center justify-center font-bold">1</span>
                     Chi è a colazione?
                   </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 w-full">
+                  <div className="grid grid-cols-1 min-[350px]:grid-cols-2 sm:grid-cols-5 gap-2 w-full">
                     {PEOPLE_OPTIONS.map(opt => {
                         const Icon = opt.icon;
                         const isSelected = peopleCount === opt.val;
@@ -589,7 +587,7 @@ export default function PrenotaColazionePage() {
                            <div>
                                <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-widest mb-2 border-b pb-2 mt-4">🥐 Dolci</h4>
                                
-                               <div className="flex gap-2 p-1 bg-slate-50 rounded-xl border border-slate-100 mb-3">
+                               <div className="flex flex-col min-[400px]:flex-row gap-2 p-1 bg-slate-50 rounded-xl border border-slate-100 mb-3">
                                     <button type="button" onClick={() => setBulkDietary(bulkDietary === 'vegan' ? 'none' : 'vegan')} className={clsx("flex-1 py-2 text-[10px] font-bold rounded-lg border transition-all", bulkDietary === 'vegan' ? "bg-green-100 text-green-700 border-green-200 shadow-sm" : "bg-white text-slate-500 border-transparent hover:bg-slate-100")}>🌱 Vegano</button>
                                     <button type="button" onClick={() => setBulkDietary(bulkDietary === 'gluten_free' ? 'none' : 'gluten_free')} className={clsx("flex-1 py-2 text-[10px] font-bold rounded-lg border transition-all", bulkDietary === 'gluten_free' ? "bg-amber-100 text-amber-700 border-amber-200 shadow-sm" : "bg-white text-slate-500 border-transparent hover:bg-slate-100")}>🌾 Senza Glutine</button>
                                </div>
@@ -755,7 +753,7 @@ export default function PrenotaColazionePage() {
                     I tuoi Dati
                   </h3>
                   <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-4 w-full">
-                    <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl w-full">
+                    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl w-full">
                       <button type="button" onClick={() => setDelivery('domicilio')} className={clsx("py-2.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-2 transition-all w-full", delivery === 'domicilio' ? "bg-white shadow-sm text-amber-900" : "text-slate-500")}><Bike size={14} /> Domicilio</button>
                       <button type="button" onClick={() => setDelivery('ritiro')} className={clsx("py-2.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-2 transition-all w-full", delivery === 'ritiro' ? "bg-white shadow-sm text-amber-900" : "text-slate-500")}><Store size={14} /> Ritiro</button>
                     </div>
