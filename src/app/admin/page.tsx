@@ -11,7 +11,8 @@ import {
   Sparkles,
   Moon,
   Coffee,
-  Archive
+  Archive,
+  Megaphone // <-- Nuova icona per gli avvisi
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -19,7 +20,7 @@ import clsx from "clsx";
 const lunaFont = localFont({
     src: [
         {
-            path: '../../fonts/mending.regular.otf', // Verifica il percorso!
+            path: '../../fonts/mending.regular.otf',
             weight: '400',
             style: 'normal',
         },
@@ -36,11 +37,22 @@ export default function AdminDashboard() {
       title: "Ordini Colazioni",
       desc: "Gestisci le prenotazioni quotidiane, incassa, visualizza gli scontrini e stampa le comande.",
       icon: Coffee,
-      href: "/admin/colazioni", // <-- Modifica se la pagina l'hai chiamata diversamente
+      href: "/admin/colazioni",
       color: "text-amber-600",
       bg: "bg-amber-50",
       border: "hover:border-amber-200",
       style: "light" 
+    },
+    {
+      id: "announcements", // <-- NUOVO MODULO AGGIUNTO
+      title: "Avvisi & Popup",
+      desc: "Gestisci i popup del sito: comunicazioni urgenti, promozioni e guasti.",
+      icon: Megaphone,
+      href: "/admin/announcements",
+      color: "text-violet-600",
+      bg: "bg-violet-50",
+      border: "hover:border-violet-200",
+      style: "light"
     },
     {
       id: "prodotti",
@@ -70,7 +82,7 @@ export default function AdminDashboard() {
       desc: "Gestione eventi, prenotazioni e gallery.",
       icon: Moon,
       href: "/admin/luna-events",
-      style: "dark" // Card speciale scura
+      style: "dark"
     }
   ];
 
