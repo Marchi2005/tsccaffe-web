@@ -10,7 +10,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Validazione robusta
+// Validazione robusta (Fix per Vercel Build su Zod Enum)
 const AnnouncementSchema = z.object({
   title: z.string().min(3, "Il titolo deve avere almeno 3 caratteri").max(150, "Titolo troppo lungo"),
   description: z.string().min(10, "La descrizione deve essere chiara (min 10 car)").max(600, "Descrizione troppo lunga"),
@@ -22,7 +22,10 @@ const AnnouncementSchema = z.object({
     'Promo Colazione',
     'Promo Aperitivo',
     'Guasto Servizi Tabacchi'
-  ], { required_error: "Seleziona una categoria valida", invalid_type_error: "Categoria non valida" }),
+  ], { 
+    // Usiamo errorMap come richiesto da TypeScript/Zod per gli enum
+    errorMap: () => ({ message: "Seleziona una categoria valida" }) 
+  }),
   start_at: z.string().min(1, "Inserisci la data e l'ora di inizio"),
   end_at: z.string().min(1, "Inserisci la data e l'ora di fine"),
 }).refine((data) => {
