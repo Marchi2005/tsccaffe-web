@@ -33,28 +33,33 @@ const PRICE_SUCCO = 2.50;
 const getDrinkPrice = (drinkStr: string) => {
   if (!drinkStr) return 0;
   const str = drinkStr.toLowerCase();
-  let base = 1.50; // Default: Cappuccino, Latte, Ginseng ecc.
   
-  if (str.includes("caffè") && !str.includes("ginseng") && !str.includes("latte")) base = 1.20;
+  // 🛑 Se contiene "grazie" o "nessun", il prezzo è 0
+  if (str.includes("grazie") || str.includes("nessun")) return 0;
+
+  let base = 1.50; 
+  if (str.includes("espresso") && !str.includes("ginseng") && !str.includes("latte")) base = 1.20;
   if (str.includes("latte macchiato")) base = 1.80;
   if (str.includes("latte bianco") || str === "latte") base = 1.50;
 
   let extra = 0;
   if (str.includes("grande")) {
-    extra = str.includes("ginseng") ? 0.30 : 0.20; // Ginseng +0.30, altri +0.20
+    extra = str.includes("ginseng") ? 0.30 : 0.20;
   }
   return base + extra;
 };
 
 const getPastryPrice = (pastryStr: string) => {
-  if (!pastryStr || pastryStr.includes("nessun")) return 0;
+  if (!pastryStr) return 0;
   const str = pastryStr.toLowerCase();
   
-  let base = 1.30; // Default farciti
+  // 🛑 Se contiene "nessun" o "grazie", il prezzo è 0
+  if (str.includes("nessun") || str.includes("grazie")) return 0;
+  
+  let base = 1.30; 
   if (str.includes("vuoto")) base = 1.20;
   if (str.includes("nutella")) base = 1.50;
-  if (str.includes("senza glutine") && str.includes("vuoto")) base = 1.30; // SG Vuoto 1.30
-  // SG Nutella rimane 1.50 calcolato sopra
+  if (str.includes("senza glutine") && str.includes("vuoto")) base = 1.30; 
   
   return base;
 };
@@ -371,34 +376,69 @@ export default function PrenotaColazionePage() {
       return false;
   };
 
-  // 💰 CALCOLO CARRELLO & PREZZI
+// 💰 CALCOLO CARRELLO & PREZZI
   const cartData = useMemo(() => {
     let items: Array<{ name: string, qty: number, price: number }> = [];
     let total = 0;
 
     if (peopleCount === '5+') {
         Object.entries(bulkDrinks).forEach(([name, qty]) => {
-            if (qty > 0) { const price = getDrinkPrice(name); items.push({ name, qty, price }); total += price * qty; }
+            const price = getDrinkPrice(name);
+            // ✅ Aggiungi solo se qty > 0 E il prezzo non è 0
+            if (qty > 0 && price > 0) { items.push({ name, qty, price }); total += price * qty; }
         });
         Object.entries(bulkPastries).forEach(([name, qty]) => {
-            if (qty > 0) { const price = getPastryPrice(name); items.push({ name, qty, price }); total += price * qty; }
+            const price = getPastryPrice(name);
+            // ✅ Aggiungi solo se qty > 0 E il prezzo non è 0
+            if (qty > 0 && price > 0) { items.push({ name, qty, price }); total += price * qty; }
         });
     } else {
-        for (let i = 0; i < peopleCount; i++) {
+        for (let i = 0; i < Number(peopleCount); i++) {
             const dPrice = getDrinkPrice(menus[i].drink);
-            items.push({ name: `P${i+1} - ${menus[i].drink}`, qty: 1, price: dPrice }); total += dPrice;
-            if (!menus[i].pastry.includes("Nessun")) {
-                const pPrice = getPastryPrice(menus[i].pastry);
-                items.push({ name: `P${i+1} - ${menus[i].pastry}`, qty: 1, price: pPrice }); total += pPrice;
+            // ✅ Se la bevanda è "No grazie" (prezzo 0), non viene inserita
+            if (dPrice > 0) {
+                items.push({ name: `P${i+1} - ${menus[i].drink}`, qty: 1, price: dPrice }); 
+                total += dPrice;
+            }
+            
+            const pPrice = getPastryPrice(menus[i].pastry);
+            // ✅ Se il dolce è "Nessun dolce" (prezzo 0), non viene inserito
+            if (pPrice > 0) {
+               items.push({ name: `P${i+1} - ${menus[i].pastry}`, qty: 1, price: pPrice }); 
+               total += pPrice;
             }
         }
     }
+    
+    // Altri prodotti (Spremute, Succhi)
     if (spremuteCount > 0) { items.push({ name: "Spremuta d'Arancia", qty: spremuteCount, price: PRICE_SPREMUTA }); total += PRICE_SPREMUTA * spremuteCount; }
     Object.entries(succhiCounters).forEach(([flavor, qty]) => {
         if (qty > 0) { items.push({ name: `Succo (${flavor})`, qty, price: PRICE_SUCCO }); total += PRICE_SUCCO * qty; }
     });
+
+    // Commissione Stripe
+    if (paymentMethod === 'card') {
+        const stripeFee = Math.round(((total * 0.015) + 0.25) * 100) / 100;
+        items.push({ name: "Commissioni Stripe", qty: 1, price: stripeFee });
+        total += stripeFee;
+    }
+
+    // 🎁 LOGICA ARROTONDAMENTO "SCONTO REGALO"
+    // Es: 2.99 -> 2.90 (Sconto 0.09)
+    const finalTotal = Math.floor(total * 10) / 10; 
+    const discountAmount = Math.round((total - finalTotal) * 100) / 100;
+
+    if (discountAmount > 0) {
+        items.push({ 
+            name: "🎁 Sconto Arrotondamento", 
+            qty: 1, 
+            price: -discountAmount // Prezzo negativo per lo sconto
+        });
+        total = finalTotal;
+    }
+
     return { items, total };
-  }, [peopleCount, menus, bulkDrinks, bulkPastries, spremuteCount, succhiCounters]);
+  }, [peopleCount, menus, bulkDrinks, bulkPastries, spremuteCount, succhiCounters, paymentMethod]);
 
   // ⚠️ Controllo Warning Globale
   const hasGlutenFreeNutella = cartData.items.some(i => i.name.toLowerCase().includes('senza glutine') && i.name.toLowerCase().includes('nutella'));
@@ -532,7 +572,8 @@ export default function PrenotaColazionePage() {
                            <div>
                                <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-widest mb-3 border-b pb-2">☕ Bevande</h4>
                                <div className="space-y-2">
-                                   {DRINKS_DATA.map(d => {
+                                   {/* 🔻 Aggiunto il filter per escludere "grazie" e "nessun" */}
+                                   {DRINKS_DATA.filter(d => !d.label.toLowerCase().includes('grazie') && !d.label.toLowerCase().includes('nessun')).map(d => {
                                        const baseKey = d.label;
                                        // Trova le sotto-varianti personalizzate aggiunte al carrello
                                        const subKeys = Object.keys(bulkDrinks).filter(k => k.startsWith(baseKey) && k !== baseKey && bulkDrinks[k] > 0);
@@ -593,7 +634,8 @@ export default function PrenotaColazionePage() {
                                </div>
 
                                <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
-                                   {PASTRIES_DATA.filter(p => p.id !== 'nessuno').map(p => {
+                                   {/* 🔻 Aggiunto il controllo testo per sicurezza totale sui dolci */}
+                                   {PASTRIES_DATA.filter(p => p.id !== 'nessuno' && !p.label.toLowerCase().includes('nessun') && !p.label.toLowerCase().includes('grazie')).map(p => {
                                        const isDisabled = isBulkOptionDisabled(p);
                                        let filteredKey = p.label;
                                        if (bulkDietary === 'vegan') filteredKey += " (Vegano)";
@@ -738,7 +780,7 @@ export default function PrenotaColazionePage() {
                             name="notes"
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            placeholder="Es. Cornetto ben caldo, cappuccino senza schiuma, suonare al citofono 'Rossi'..."
+                            placeholder="Es. Bevande Non Zuccherate, cappuccino senza schiuma, suonare al citofono 'Rossi', attenti al gatto..."
                             className="w-full h-24 p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:bg-white outline-none focus:border-amber-300 transition-colors resize-none"
                         />
                     </div>
