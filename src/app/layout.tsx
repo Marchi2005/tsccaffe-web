@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next"; // Aggiunto Viewport qui
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -20,6 +20,14 @@ const lunaFont = localFont({
 export const metadata: Metadata = {
   title: "TSC Caffè",
   description: "Il tuo bar di fiducia",
+};
+
+// FIX iOS NOTCH: Permette al sito di espandersi a tutto schermo (sotto la safe-area)
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 // Funzione Server-Side per recuperare gli annunci attivi da Supabase
@@ -60,9 +68,9 @@ export default async function RootLayout({
 
   return (
     <html lang="it">
-      {/* Aggiungo lunaFont.variable alle classi del body */}
-      <body className={`${inter.className} ${lunaFont.variable}`}>
-         
+      {/* FIX S25 ULTRA E STRABORDAMENTI: Aggiunto overflow-x-hidden e w-full */}
+      <body className={`${inter.className} ${lunaFont.variable} relative w-full overflow-x-hidden antialiased`}>
+          
          {/* Easter Egg per la Console */}
          <script
            dangerouslySetInnerHTML={{
