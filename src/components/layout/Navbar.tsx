@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image"; 
-import { Menu, X, ShoppingBag, Send, Coffee } from "lucide-react"; 
+import { Menu, X, Send, Coffee } from "lucide-react"; 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -34,16 +34,19 @@ export default function Navbar() {
   ];
 
   return (
-    // Rimosso il backdrop-blur da qui! Il <nav> ora fa solo da contenitore invisibile.
-    <nav className="fixed top-0 inset-x-0 z-50 w-full transition-all duration-300">
+    // Aggiunto pt-[env(safe-area-inset-top)] al contenitore principale
+    <nav className="fixed top-0 inset-x-0 z-50 w-full transition-all duration-300 pt-[env(safe-area-inset-top)]">
       
       {/* 1. SFONDO DELLA NAVBAR (SEPARATO)
-        Questo div gestisce solo il vetro della barra superiore (h-20).
-        Risolve il bug dei browser impedendo che il menu a tendina erediti blocchi di blur.
+        Questo div gestisce solo il vetro della barra superiore.
+        FIX NOTCH: Estendiamo lo sfondo verso l'alto (top: 0 per coprire il safe-area-inset-top)
+        e lo allunghiamo per far stare dentro l'h-20 originale + il padding.
       */}
       <div 
         className={clsx(
-          "absolute top-0 left-0 w-full h-20 transition-all duration-300 -z-10",
+          // Abbiamo cambiato top-0 in top-0 (assoluto allo schermo) e aggiunto h-[calc(5rem+env(safe-area-inset-top))]
+          "absolute top-0 left-0 w-full transition-all duration-300 -z-10",
+          "h-[calc(5rem+env(safe-area-inset-top))]", // 5rem = h-20 di tailwind
           "rounded-b-[30px]",
           "backdrop-blur-lg backdrop-saturate-150 border-b",
           isLunaPage ? "bg-slate-900/40 border-white/10" : "bg-white/00 border-white/50"
@@ -136,20 +139,17 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 3. MOBILE MENU DROP (EFFETTO VETRO ORA FUNZIONANTE!)
-        Essendo svincolato dallo sfondo del genitore, ora il browser processerà
-        il backdrop-blur in maniera pulita ed efficace.
-      */}
+      {/* 3. MOBILE MENU DROP (EFFETTO VETRO ORA FUNZIONANTE!) */}
       {isOpen && (
         <div className="absolute top-full left-0 w-full mt-2 px-4 animate-in slide-in-from-top-4 fade-in duration-300 z-50">
             <div 
                 className={clsx(
                   "overflow-hidden p-5 space-y-2 relative",
                   "rounded-[30px] border",
-                  "backdrop-blur-lg backdrop-saturate-150", // Magia Apple
+                  "backdrop-blur-lg backdrop-saturate-150", 
                   isLunaPage 
                     ? "bg-slate-900/40 border-white/10 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.5)]" 
-                    : "bg-white/00 border-white/60 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)]" // Colore corretto, no interferenze
+                    : "bg-white/00 border-white/60 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)]" 
                 )}
             >
                 {navLinks.map((link) => (
