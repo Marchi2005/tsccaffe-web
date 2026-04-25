@@ -23,8 +23,9 @@ const AnnouncementSchema = z.object({
     'Promo Aperitivo',
     'Guasto Servizi Tabacchi'
   ], { 
-    // Usiamo errorMap come richiesto da TypeScript/Zod per gli enum
-    errorMap: () => ({ message: "Seleziona una categoria valida" }) 
+    // Usiamo il formato nativo accettato da TypeScript per gli enum Zod
+    required_error: "Devi selezionare una categoria",
+    invalid_type_error: "Categoria non valida selezionata",
   }),
   start_at: z.string().min(1, "Inserisci la data e l'ora di inizio"),
   end_at: z.string().min(1, "Inserisci la data e l'ora di fine"),
