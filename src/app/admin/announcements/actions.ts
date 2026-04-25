@@ -23,14 +23,12 @@ const AnnouncementSchema = z.object({
     'Promo Aperitivo',
     'Guasto Servizi Tabacchi'
   ], { 
-    // Usiamo il formato nativo accettato da TypeScript per gli enum Zod
-    required_error: "Devi selezionare una categoria",
-    invalid_type_error: "Categoria non valida selezionata",
+    // Usiamo ESATTAMENTE la proprietà "message" come richiesto dai tipi di Zod per l'enum
+    message: "Devi selezionare una categoria valida"
   }),
   start_at: z.string().min(1, "Inserisci la data e l'ora di inizio"),
   end_at: z.string().min(1, "Inserisci la data e l'ora di fine"),
 }).refine((data) => {
-  // Ci assicuriamo di non far crashare Zod se la data non è valida
   const start = new Date(data.start_at);
   const end = new Date(data.end_at);
   return end > start;
