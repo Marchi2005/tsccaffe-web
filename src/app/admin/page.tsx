@@ -12,7 +12,8 @@ import {
   Moon,
   Coffee,
   Archive,
-  Megaphone // <-- Nuova icona per gli avvisi
+  Megaphone,
+  Ticket // <-- Nuova icona aggiunta per i coupon
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -44,7 +45,18 @@ export default function AdminDashboard() {
       style: "light" 
     },
     {
-      id: "announcements", // <-- NUOVO MODULO AGGIUNTO
+      id: "coupons", // <-- NUOVO MODULO COUPON
+      title: "Coupon & Sconti",
+      desc: "Crea e gestisci i codici promozionali, gli sconti fissi o percentuali per il checkout.",
+      icon: Ticket,
+      href: "/admin/coupons",
+      color: "text-rose-600",
+      bg: "bg-rose-50",
+      border: "hover:border-rose-200",
+      style: "light"
+    },
+    {
+      id: "announcements", 
       title: "Avvisi & Popup",
       desc: "Gestisci i popup del sito: comunicazioni urgenti, promozioni e guasti.",
       icon: Megaphone,

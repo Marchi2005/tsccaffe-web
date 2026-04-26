@@ -49,6 +49,8 @@ type Order = {
   delivery_type: 'domicilio' | 'ritiro';
   preferred_time: string;
   notes: string; // Contiene Scontrino + Note Cliente
+  promo_code_id?: string;
+  discount_applied?: number;
 };
 
 // --- HELPER DI MAPPING STATO ---
@@ -72,18 +74,27 @@ function getVisualStatus(dbStatus: string): 'pending' | 'confirmed' | 'completed
 
 // 🔧 2. PARSER DELLE NOTE: Spacca la colonna notes di Supabase in Scontrino e Messaggi
 function parseOrderNotes(rawNotes: string | null) {
-  if (!rawNotes) return { scontrino: [], customerNotes: "" };
-  
+  if (!rawNotes) return { scontrino: [], customerNotes: "", scontoInfo: "" };
+
+  // Dividiamo per le varie sezioni
   const parts = rawNotes.split("--- NOTE CLIENTE ---");
-  const scontrinoRaw = parts[0]?.replace("--- DETTAGLI SCONTRINO ---", "").trim() || "";
+  let scontrinoRaw = parts[0]?.replace("--- DETTAGLI SCONTRINO ---", "").trim() || "";
   const customerNotesRaw = parts[1]?.trim() || "";
-  
-  // Dividiamo lo scontrino riga per riga per renderizzarlo come lista
+
+  // Estraiamo la sezione sconto se presente nelle note (per sicurezza retroattiva)
+  let scontoInfo = "";
+  if (scontrinoRaw.includes("--- SCONTO APPLICATO ---")) {
+    const scontoParts = scontrinoRaw.split("--- SCONTO APPLICATO ---");
+    scontrinoRaw = scontoParts[0].trim();
+    scontoInfo = scontoParts[1].trim();
+  }
+
   const scontrinoItems = scontrinoRaw.split('\n').map(item => item.trim()).filter(item => item.length > 0);
-  
+
   return {
     scontrino: scontrinoItems,
-    customerNotes: customerNotesRaw !== 'Nessuna nota aggiuntiva' ? customerNotesRaw : ""
+    customerNotes: customerNotesRaw !== 'Nessuna nota aggiuntiva' ? customerNotesRaw : "",
+    scontoInfo // 🆕 Restituiamo anche info sullo sconto testuale
   };
 }
 
@@ -186,17 +197,18 @@ export default function AdminDashboard() {
   };
 
   const calculateStats = (data: Order[]) => {
-    const activeOrders = data.filter(o => getVisualStatus(o.status) !== 'cancelled');
-    let gross = 0;
-    let fees = 0;
+  const activeOrders = data.filter(o => getVisualStatus(o.status) !== 'cancelled');
+  let gross = 0;
+  let fees = 0;
+  let totalDiscounts = 0; // 🆕
 
-    activeOrders.forEach(order => {
-      gross += order.total_price;
-      const isCardPayment = order.payment_method === 'card';
-      if (isCardPayment) {
-        fees += calculateStripeFee(order.total_price);
-      }
-    });
+  activeOrders.forEach(order => {
+    gross += order.total_price;
+    totalDiscounts += (order.discount_applied || 0); // 🆕
+    if (order.payment_method === 'card') {
+      fees += calculateStripeFee(order.total_price);
+    }
+  });
 
     const pendingCount = data.filter(o => {
       const visual = getVisualStatus(o.status);
@@ -317,7 +329,7 @@ export default function AdminDashboard() {
 
               <div className="flex items-center gap-4">
                 <Link href="/admin" className="p-2 bg-white rounded-full border border-slate-200 hover:bg-slate-100 transition">
-                  <ArrowLeft size={20} className="text-slate-600"/>
+                  <ArrowLeft size={20} className="text-slate-600" />
                 </Link>
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-none">
@@ -428,7 +440,7 @@ export default function AdminDashboard() {
               filteredOrders.map((order) => {
                 // 🔧 Elaborazione Note Intelligente
                 const { scontrino, customerNotes } = parseOrderNotes(order.notes);
-                
+
                 const visualStatus = getVisualStatus(order.status);
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address || "")}`;
                 const showIncassaButton = order.status === 'da_pagare_in_sede' && visualStatus !== 'cancelled';
@@ -455,6 +467,13 @@ export default function AdminDashboard() {
                       </div>
                       <div className="text-right">
                         <p className="font-black text-xl text-slate-900">€{order.total_price.toFixed(2)}</p>
+                        {/* 🆕 BADGE SCONTO NELLA CARD */}
+                        {order.discount_applied && order.discount_applied > 0 && (
+                          <div className="flex items-center justify-end gap-1 text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded mt-1">
+                            <TrendingDown size={10} /> -€{order.discount_applied.toFixed(2)}
+                          </div>
+                        )}
+
                         {order.payment_method === 'card' && visualStatus !== 'cancelled' && (
                           <p className="text-[9px] text-red-400 font-medium mt-0.5">-€{calculateStripeFee(order.total_price).toFixed(2)} fee</p>
                         )}
@@ -501,23 +520,23 @@ export default function AdminDashboard() {
                       {/* Rendering dinamico dello scontrino */}
                       <ul className="space-y-2 mb-4 text-sm text-slate-700 font-medium">
                         {scontrino.length > 0 ? (
-                            scontrino.map((item, i) => (
-                                <li key={i} className="flex gap-2 leading-snug">
-                                    <span className="text-slate-400">•</span> {item}
-                                </li>
-                            ))
+                          scontrino.map((item, i) => (
+                            <li key={i} className="flex gap-2 leading-snug">
+                              <span className="text-slate-400">•</span> {item}
+                            </li>
+                          ))
                         ) : (
-                            <li className="italic text-slate-400 text-xs">Nessun dettaglio disponibile</li>
+                          <li className="italic text-slate-400 text-xs">Nessun dettaglio disponibile</li>
                         )}
                       </ul>
 
                       {/* Note del Cliente (se presenti) */}
                       {customerNotes && (
-                          <div className="bg-amber-50 p-3 rounded-xl border border-amber-100 mt-4 shadow-sm relative overflow-hidden">
-                              <div className="absolute top-0 left-0 w-1 h-full bg-amber-400" />
-                              <h4 className="text-[10px] font-black text-amber-900 uppercase flex items-center gap-1.5 mb-1 tracking-wider"><FileText size={12}/> Note Cliente</h4>
-                              <p className="text-xs text-amber-800/90 leading-relaxed font-medium">{customerNotes}</p>
-                          </div>
+                        <div className="bg-amber-50 p-3 rounded-xl border border-amber-100 mt-4 shadow-sm relative overflow-hidden">
+                          <div className="absolute top-0 left-0 w-1 h-full bg-amber-400" />
+                          <h4 className="text-[10px] font-black text-amber-900 uppercase flex items-center gap-1.5 mb-1 tracking-wider"><FileText size={12} /> Note Cliente</h4>
+                          <p className="text-xs text-amber-800/90 leading-relaxed font-medium">{customerNotes}</p>
+                        </div>
                       )}
                     </div>
 
@@ -599,14 +618,14 @@ export default function AdminDashboard() {
                       </ul>
                     </td>
                     <td className="py-3 align-top text-right font-bold text-xs space-y-2">
-                       <div className="uppercase">[{order.delivery_type}]</div>
-                       {order.delivery_type === 'domicilio' && <div className="font-normal">{order.address}</div>}
-                       {customerNotes && (
-                           <div className="mt-2 text-left border-l-2 border-black pl-2 pt-1 pb-1 font-normal italic">
-                               <strong className="block not-italic text-[10px] uppercase">Note Cliente:</strong>
-                               {customerNotes}
-                           </div>
-                       )}
+                      <div className="uppercase">[{order.delivery_type}]</div>
+                      {order.delivery_type === 'domicilio' && <div className="font-normal">{order.address}</div>}
+                      {customerNotes && (
+                        <div className="mt-2 text-left border-l-2 border-black pl-2 pt-1 pb-1 font-normal italic">
+                          <strong className="block not-italic text-[10px] uppercase">Note Cliente:</strong>
+                          {customerNotes}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 )
