@@ -10,6 +10,9 @@ import AnnouncementModal, { Announcement } from "@/components/AnnouncementModal"
 // Font di default (Inter)
 const inter = Inter({ subsets: ["latin"] });
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // CONFIGURAZIONE FONT "LUNA" GLOBALE
 const lunaFont = localFont({
   src: "../fonts/mending.regular.otf", 
@@ -35,7 +38,6 @@ async function getActiveAnnouncements(): Promise<Announcement[]> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Fallback di sicurezza se le env vars mancano
   if (!supabaseUrl || !supabaseKey) {
     console.warn("Variabili d'ambiente Supabase mancanti in layout.tsx");
     return [];
@@ -43,10 +45,16 @@ async function getActiveAnnouncements(): Promise<Announcement[]> {
 
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // La RLS gestisce già il filtro temporale (start_at / end_at) e is_active = true
+  // Otteniamo l'ora esatta in formato ISO per il confronto
+  const oraAttuale = new Date().toISOString();
+
+  // Non fidarti solo della RLS: aggiungiamo i filtri espliciti nel codice
   const { data, error } = await supabase
     .from('site_announcements')
-    .select('id, title, description, category');
+    .select('id, title, description, category')
+    .eq('is_active', true)             // Solo quelli attivi
+    .lte('start_at', oraAttuale)        // Iniziati prima o adesso
+    .gte('end_at', oraAttuale);          // Che finiscono dopo adesso
 
   if (error) {
     console.error("Errore recupero annunci:", error);
