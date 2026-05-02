@@ -7,6 +7,11 @@ export function proxy(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const pathname = url.pathname;
 
+  // Permette alle pagine legali di restare "condivise" nella root di /app
+  if (pathname === '/privacy-policy' || pathname === '/cookie-policy') {
+    return NextResponse.next(); 
+  }
+
   // --- LOG DI DEBUG (Controlla il terminale) ---
   console.log(`[Proxy] Host: ${hostname} | Path: ${pathname}`);
 
@@ -47,9 +52,6 @@ export function proxy(request: NextRequest) {
   return NextResponse.rewrite(url);
 }
 
-// ... (tieni tutto il codice della funzione proxy uguale a prima) ...
-
-// Sostituisci SOLO questo blocco config in fondo al file:
 export const config = {
   matcher: [
     /*

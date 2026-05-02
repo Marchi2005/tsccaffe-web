@@ -49,7 +49,8 @@ export default function Navbar() {
           "h-[calc(5rem+env(safe-area-inset-top))]", // 5rem = h-20 di tailwind
           "rounded-b-[30px]",
           "backdrop-blur-lg backdrop-saturate-150 border-b",
-          isLunaPage ? "bg-slate-900/40 border-white/10" : "bg-white/00 border-white/50"
+          // Modificato per il nuovo tema chiaro di Luna
+          isLunaPage ? "bg-[#FAF8F5]/80 border-[#E8E1D9]" : "bg-white/00 border-white/50"
         )}
         style={{ boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.05)" }}
       />
@@ -62,6 +63,7 @@ export default function Navbar() {
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative h-10 w-10 md:h-12 md:w-12 transition-transform group-hover:scale-105">
+                 {/* Presumiamo che per il tema chiaro tu possa usare lo stesso logo, o uno scuro se disponibile */}
                  <Image 
                    src={isLunaPage ? "/icons/logo-navbar-luna-page.svg" : "/icons/logo-navbar.svg"}
                    alt="Logo TSC" 
@@ -72,13 +74,15 @@ export default function Navbar() {
               <div className="flex flex-col leading-none">
                 <span className={clsx(
                   "font-bold text-[10px] md:text-xs uppercase tracking-wide transition-colors",
-                  isLunaPage ? "text-slate-300 group-hover:text-white" : "text-brand-dark group-hover:text-brand-blue"
+                  // Colore scuro anche per la modalità Luna
+                  isLunaPage ? "text-slate-500 group-hover:text-[#7A0018]" : "text-brand-dark group-hover:text-brand-blue"
                 )}>
                   Tabacchi San Clemente
                 </span>
                 <span className={clsx(
                   "font-serif italic text-sm md:text-base transition-colors",
-                  isLunaPage ? "text-amber-400" : "text-brand-coffee"
+                  // Accento rosso per la modalità Luna
+                  isLunaPage ? "text-[#7A0018]" : "text-brand-coffee"
                 )}>
                   Caffè
                 </span>
@@ -87,16 +91,16 @@ export default function Navbar() {
 
             {/* LOGO LUNA EVENTS */}
             {isLunaPage && (
-              <div className="flex items-center ml-4 pl-4 border-l border-white/20 h-10 animate-in fade-in slide-in-from-left-4 duration-700">
+              <div className="flex items-center ml-4 pl-4 border-l border-[#E8E1D9] h-10 animate-in fade-in slide-in-from-left-4 duration-700">
                   <div className="relative flex items-center justify-center">
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 opacity-50 pointer-events-none">
-                          <Image src="/icons/moon.svg" alt="Luna Sfondo" width={120} height={120} className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(251,191,36,0.6)]" />
+                          <Image src="/icons/moon.svg" alt="Luna Sfondo" width={120} height={120} className="w-full h-full object-contain" />
                       </div>
                       <div className="relative z-10 flex flex-col items-center leading-none pt-2">
-                          <span className="text-amber-400 font-luna text-3xl md:text-4xl leading-none drop-shadow-md" style={{ fontFeatureSettings: '"liga" 1, "calt" 1' }}>
+                          <span className="text-[#7A0018] font-luna text-3xl md:text-4xl leading-none drop-shadow-sm" style={{ fontFeatureSettings: '"liga" 1, "calt" 1' }}>
                               Luna
                           </span>
-                          <span className="text-white text-[0.5rem] md:text-[0.6rem] uppercase tracking-[0.3em] -mt-1 shadow-black drop-shadow-md font-serif font-light">
+                          <span className="text-slate-600 text-[0.5rem] md:text-[0.6rem] uppercase tracking-[0.3em] -mt-1 font-serif font-light">
                               Events
                           </span>
                       </div>
@@ -108,13 +112,13 @@ export default function Navbar() {
           {/* DESKTOP MENU */}
           <div className="hidden md:flex md:items-center md:space-x-8">
             {navLinks.map((link) => (
-              <Link key={link.name} href={link.href} className={clsx("text-sm font-bold transition-colors", isLunaPage ? "text-white hover:text-amber-400" : "text-slate-800 hover:text-brand-cyan")}>
+              <Link key={link.name} href={link.href} className={clsx("text-sm font-bold transition-colors", isLunaPage ? "text-slate-700 hover:text-[#7A0018]" : "text-slate-800 hover:text-brand-cyan")}>
                 {link.name}
               </Link>
             ))}
             
             {isLunaPage ? (
-                <a href="#contact" className="inline-flex items-center gap-2 bg-amber-400 text-slate-950 px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg hover:bg-amber-300 transition-all transform hover:-translate-y-0.5">
+                <a href="#contact" className="inline-flex items-center gap-2 bg-[#7A0018] text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg hover:bg-[#5C0012] transition-all transform hover:-translate-y-0.5">
                   <Send size={16} strokeWidth={2.5} /> Richiedi Preventivo
                 </a>
             ) : (
@@ -130,7 +134,8 @@ export default function Navbar() {
               onClick={() => setIsOpen(!isOpen)}
               className={clsx(
                 "p-2 rounded-xl backdrop-blur-md transition-colors border relative z-20", // Z-20 per stare sopra
-                isLunaPage ? "text-white bg-white/10 hover:text-amber-400 border-white/20" : "text-slate-800 bg-white/20 hover:text-brand-cyan border-white/20 shadow-sm"
+                // Adattato al tema chiaro
+                isLunaPage ? "text-slate-800 bg-[#FAF8F5]/80 hover:text-[#7A0018] border-[#E8E1D9]" : "text-slate-800 bg-white/20 hover:text-brand-cyan border-white/20 shadow-sm"
               )}
             >
               {isOpen ? <X size={26} /> : <Menu size={26} />}
@@ -148,7 +153,7 @@ export default function Navbar() {
                   "rounded-[30px] border",
                   "backdrop-blur-lg backdrop-saturate-150", 
                   isLunaPage 
-                    ? "bg-slate-900/40 border-white/10 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.5)]" 
+                    ? "bg-[#FAF8F5]/95 border-[#E8E1D9] shadow-2xl" 
                     : "bg-white/00 border-white/60 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)]" 
                 )}
             >
@@ -159,7 +164,8 @@ export default function Navbar() {
                     onClick={() => setIsOpen(false)}
                     className={clsx(
                         "block rounded-xl px-4 py-3 text-base font-bold transition-all",
-                        isLunaPage ? "text-white hover:bg-white/10 hover:text-amber-400" : "text-slate-900 hover:bg-white/50 hover:text-brand-cyan"
+                        // Stile link mobile chiaro/scuro
+                        isLunaPage ? "text-slate-800 hover:bg-white hover:text-[#7A0018]" : "text-slate-900 hover:bg-white/50 hover:text-brand-cyan"
                     )}
                 >
                     {link.name}
@@ -171,7 +177,7 @@ export default function Navbar() {
                    <a
                      href="#contact"
                      onClick={() => setIsOpen(false)}
-                     className="mt-4 flex items-center justify-center gap-2 w-full text-center rounded-xl bg-amber-400 px-5 py-3 text-base font-bold text-slate-950 shadow-lg hover:bg-amber-300 hover:-translate-y-0.5 transition-all"
+                     className="mt-4 flex items-center justify-center gap-2 w-full text-center rounded-full bg-[#7A0018] px-5 py-3 text-base font-bold text-white shadow-lg hover:bg-[#5C0012] hover:-translate-y-0.5 transition-all"
                    >
                      <Send size={18} /> Richiedi Preventivo
                    </a>

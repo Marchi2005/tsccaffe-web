@@ -13,7 +13,8 @@ import {
   Coffee,
   Archive,
   Megaphone,
-  Ticket // <-- Nuova icona aggiunta per i coupon
+  Ticket,
+  ShieldCheck
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -88,6 +89,17 @@ export default function AdminDashboard() {
       border: "hover:border-emerald-200",
       style: "light"
     },
+    {
+  id: "quick-services",
+  title: "Servizi Rapidi",
+  desc: "Gestisci bollettini, ricariche, titoli, descrizioni e metodi di pagamento accettati.",
+  icon: ShieldCheck,
+  href: "/admin/quick-services",
+  color: "text-cyan-600",
+  bg: "bg-cyan-50",
+  border: "hover:border-cyan-200",
+  style: "light"
+},
     {
       id: "luna",
       title: "Luna Events",

@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link"; // Aggiunto Link per la navigazione interna
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, Calendar, Send, Instagram, MessageCircle, ChevronLeft, ChevronRight, Mail, Clock, Check, ArrowRight, Loader2, ArrowLeft, } from "lucide-react";
+import { Calendar, MessageCircle, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import localFont from 'next/font/local';
 
 // --- CONFIGURAZIONE FONT ---
@@ -62,7 +62,7 @@ const MONTHS = [
     "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
 ];
 
-// --- COMPONENTE DATE PICKER PERSONALIZZATO (Mantenuto per struttura, anche se non usato) ---
+// --- COMPONENTE DATE PICKER PERSONALIZZATO ---
 const CustomDatePicker = ({
     selectedDate,
     onChange
@@ -139,8 +139,8 @@ const CustomDatePicker = ({
                     type="button"
                     onClick={() => handleDayClick(d)}
                     className={`h-8 w-8 rounded-full flex items-center justify-center text-sm transition-all
-            ${isSelected ? 'bg-amber-400 text-slate-950 font-bold shadow-[0_0_10px_rgba(251,191,36,0.5)]' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}
-            ${isToday && !isSelected ? 'border border-amber-400/50 text-amber-400' : ''}
+            ${isSelected ? 'bg-[#7A0018] text-white font-bold shadow-[0_0_10px_rgba(122,0,24,0.5)]' : 'text-slate-600 hover:bg-[#FAF8F5] hover:text-[#7A0018]'}
+            ${isToday && !isSelected ? 'border border-[#7A0018]/50 text-[#7A0018]' : ''}
           `}
                 >
                     {d}
@@ -158,12 +158,12 @@ const CustomDatePicker = ({
         <div className="relative w-full" ref={wrapperRef}>
             <div
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full bg-slate-950 border rounded-lg pl-12 pr-4 py-4 text-white cursor-pointer flex items-center transition-all group
-          ${isOpen ? 'border-amber-400 ring-1 ring-amber-400' : 'border-slate-800 hover:border-slate-600'}
+                className={`w-full bg-white border rounded-lg pl-12 pr-4 py-4 text-slate-800 cursor-pointer flex items-center transition-all group
+          ${isOpen ? 'border-[#7A0018] ring-1 ring-[#7A0018]' : 'border-[#E8E1D9] hover:border-slate-300'}
         `}
             >
-                <Calendar className={`absolute left-4 transition-colors ${isOpen ? 'text-amber-400' : 'text-slate-500 group-hover:text-slate-400'}`} size={20} />
-                <span className={displayDate ? "text-white" : "text-slate-700"}>
+                <Calendar className={`absolute left-4 transition-colors ${isOpen ? 'text-[#7A0018]' : 'text-slate-400 group-hover:text-[#7A0018]'}`} size={20} />
+                <span className={displayDate ? "text-slate-900" : "text-slate-500"}>
                     {displayDate || "Seleziona data..."}
                 </span>
             </div>
@@ -175,23 +175,23 @@ const CustomDatePicker = ({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute z-50 top-full mt-2 left-0 w-full md:w-80 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-4 overflow-hidden"
+                        className="absolute z-50 top-full mt-2 left-0 w-full md:w-80 bg-white border border-[#E8E1D9] rounded-xl shadow-2xl p-4 overflow-hidden"
                     >
-                        <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
-                            <button onClick={handlePrevMonth} className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
+                        <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#E8E1D9]">
+                            <button onClick={handlePrevMonth} className="p-1 hover:bg-[#FAF8F5] rounded-full text-slate-400 hover:text-[#7A0018] transition-colors">
                                 <ChevronLeft size={20} />
                             </button>
-                            <span className="text-white font-serif text-lg capitalize">
-                                {MONTHS[currentDate.getMonth()]} <span className="text-amber-400 font-luna ml-1">{currentDate.getFullYear()}</span>
+                            <span className="text-slate-800 font-serif text-lg capitalize">
+                                {MONTHS[currentDate.getMonth()]} <span className="text-[#7A0018] font-luna ml-1">{currentDate.getFullYear()}</span>
                             </span>
-                            <button onClick={handleNextMonth} className="p-1 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
+                            <button onClick={handleNextMonth} className="p-1 hover:bg-[#FAF8F5] rounded-full text-slate-400 hover:text-[#7A0018] transition-colors">
                                 <ChevronRight size={20} />
                             </button>
                         </div>
 
                         <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                            {['L', 'M', 'M', 'G', 'V', 'S', 'D'].map(day => (
-                                <span key={day} className="text-xs font-bold text-slate-500">{day}</span>
+                            {['L', 'M', 'M', 'G', 'V', 'S', 'D'].map((day, index) => (
+                                <span key={`${day}-${index}`} className="text-xs font-bold text-slate-400">{day}</span>
                             ))}
                         </div>
 
@@ -205,7 +205,7 @@ const CustomDatePicker = ({
     );
 };
 
-// --- COMPONENTE LOADING (Mantenuto Invariato) ---
+// --- COMPONENTE LOADING ---
 const LunaLoader = ({ onComplete }: { onComplete: () => void }) => {
     const [stars, setStars] = useState<StarData[]>([]);
 
@@ -215,7 +215,7 @@ const LunaLoader = ({ onComplete }: { onComplete: () => void }) => {
 
     return (
         <motion.div
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950 overflow-hidden"
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#FAF8F5] overflow-hidden"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 1, ease: "easeInOut" } }}
         >
@@ -223,8 +223,8 @@ const LunaLoader = ({ onComplete }: { onComplete: () => void }) => {
                 {stars.map((star) => (
                     <div
                         key={star.id}
-                        className={`absolute rounded-full animate-pulse ${star.type === 'bright' ? "bg-amber-200 blur-[0.5px]" :
-                            star.type === 'medium' ? "bg-amber-400/80" : "bg-slate-300/40"
+                        className={`absolute rounded-full animate-pulse ${star.type === 'bright' ? "bg-[#7A0018]/30 blur-[0.5px]" :
+                            star.type === 'medium' ? "bg-[#D4AF37]/40" : "bg-slate-300/40"
                             }`}
                         style={{
                             top: `${star.top}%`,
@@ -244,12 +244,14 @@ const LunaLoader = ({ onComplete }: { onComplete: () => void }) => {
                 transition={{ duration: 1.5, ease: "easeOut" }}
                 className="absolute z-0 flex items-center justify-center"
             >
+                {/* Immagine originale intatta, aggiornato solo il colore dell'ombra per il bordeaux */}
                 <Image
                     src="/icons/moon.svg"
                     alt="Luna Sfondo"
                     width={800}
                     height={800}
-                    className="w-[400px] h-[400px] md:w-[700px] md:h-[700px] object-contain opacity-40 drop-shadow-[0_0_60px_rgba(251,191,36,0.15)]"
+                    priority={true}
+                    className="w-[400px] h-[400px] md:w-[700px] md:h-[700px] object-contain opacity-40 drop-shadow-[0_0_60px_rgba(122,0,24,0.15)] pointer-events-none"
                 />
             </motion.div>
 
@@ -258,7 +260,7 @@ const LunaLoader = ({ onComplete }: { onComplete: () => void }) => {
                     initial={{ opacity: 0, y: 50, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-                    className="font-luna text-[9rem] md:text-[13rem] leading-none text-amber-400 drop-shadow-2xl"
+                    className="font-luna text-[9rem] md:text-[13rem] leading-none text-[#7A0018] drop-shadow-sm"
                     style={{ fontFeatureSettings: '"liga" 1, "calt" 1' }}
                 >
                     Luna
@@ -269,7 +271,7 @@ const LunaLoader = ({ onComplete }: { onComplete: () => void }) => {
                     animate={{ opacity: 1, letterSpacing: "0.6em", y: 0 }}
                     transition={{ delay: 1, duration: 1.5, ease: "easeOut" }}
                     onAnimationComplete={() => setTimeout(onComplete, 1000)}
-                    className="text-white font-serif uppercase text-sm md:text-xl font-light tracking-widest relative -top-4 md:-top-8"
+                    className="text-slate-500 font-serif uppercase text-sm md:text-xl font-light tracking-widest relative -top-4 md:-top-8"
                 >
                     Events
                 </motion.span>
@@ -278,7 +280,7 @@ const LunaLoader = ({ onComplete }: { onComplete: () => void }) => {
     );
 };
 
-export default function LunaEventsPage() {
+export default function ComingSoon() {
     const [loading, setLoading] = useState(true);
     const [stars, setStars] = useState<StarData[]>([]);
 
@@ -291,14 +293,13 @@ export default function LunaEventsPage() {
         setStars(generateStars(150));
     }, [loading]);
 
-    // Dati form mantenuti ma non usati per non rompere il codice
     const [formData, setFormData] = useState({
         name: "", email: "", phone: "", type: "Matrimonio", message: "", specificDate: "", periodYear: "", periodMonth: "", periodTime: ""
     });
 
     return (
         <>
-            <main className={`${lunaFont.variable} min-h-screen bg-slate-950 text-slate-200 selection:bg-amber-400 selection:text-slate-950`}>
+            <main className={`${lunaFont.variable} min-h-screen bg-[#FAF8F5] text-slate-800 selection:bg-[#7A0018]/20 selection:text-[#7A0018]`}>
 
                 <AnimatePresence>
                     {loading && <LunaLoader onComplete={() => setLoading(false)} />}
@@ -306,16 +307,16 @@ export default function LunaEventsPage() {
 
                 {/* HERO SECTION */}
                 <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black z-0" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#FAF8F5] via-[#F4EFE6] to-[#FAF8F5] z-0" />
 
                     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                         {stars.map((star) => (
                             <div
                                 key={star.id}
                                 className={`absolute rounded-full animate-pulse transition-all ${star.type === 'bright'
-                                    ? "bg-amber-200 shadow-[0_0_25px_rgba(251,191,36,1)] blur-[0.5px] z-10"
+                                    ? "bg-[#7A0018]/20 shadow-[0_0_25px_rgba(122,0,24,0.3)] blur-[0.5px] z-10"
                                     : star.type === 'medium'
-                                        ? "bg-amber-400/80 shadow-[0_0_10px_rgba(251,191,36,0.6)] blur-[0px]"
+                                        ? "bg-[#D4AF37]/40 shadow-[0_0_10px_rgba(212,175,55,0.2)] blur-[0px]"
                                         : "bg-slate-300/40"
                                     }`}
                                 style={{
@@ -337,40 +338,37 @@ export default function LunaEventsPage() {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.2 }}
                         >
-                            {/* --- MODIFICA 1: TITOLO --- */}
-                            <h1 className="text-4xl md:text-6xl font-serif text-white mb-6 tracking-tight leading-tight">
+                            <h1 className="text-4xl md:text-6xl font-serif text-slate-900 mb-6 tracking-tight leading-tight">
                                 Qualcosa di Magico <br />
                                 <span
-                                    className="text-amber-400 font-luna text-7xl md:text-9xl block mt-4"
+                                    className="text-[#7A0018] font-luna text-7xl md:text-9xl block mt-4"
                                     style={{ fontFeatureSettings: '"liga" 1, "calt" 1' }}
                                 >
                                     Sta Arrivando
                                 </span>
                             </h1>
 
-                            {/* --- MODIFICA 2: DESCRIZIONE --- */}
-                            <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
+                            <p className="text-lg md:text-xl text-slate-600 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
                                 Stiamo lavorando per portare online un'esperienza esclusiva.
-                                <br className="hidden md:block"/>
+                                <br className="hidden md:block" />
                                 Il nuovo sito di Luna Events sarà presto disponibile.
                             </p>
 
-                            {/* --- MODIFICA 3: PULSANTI --- */}
                             <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
                                 {/* Tasto WhatsApp */}
                                 <a
                                     href="https://wa.me/393715428345"
                                     target="_blank"
-                                    className="w-full sm:w-auto px-10 py-4 bg-amber-400 text-slate-950 font-bold rounded-full hover:bg-amber-300 transition-all duration-300 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_35px_rgba(251,191,36,0.5)] transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                                    className="w-full sm:w-auto px-10 py-4 bg-[#7A0018] text-white font-bold rounded-full hover:bg-[#5C0012] transition-all duration-300 shadow-[0_0_20px_rgba(122,0,24,0.3)] hover:shadow-[0_0_35px_rgba(122,0,24,0.5)] transform hover:-translate-y-1 flex items-center justify-center gap-2"
                                 >
                                     <MessageCircle size={20} />
                                     Scrivici su WhatsApp
                                 </a>
-                                
+
                                 {/* Tasto Torna a TSC */}
                                 <Link
                                     href="/"
-                                    className="w-full sm:w-auto px-10 py-4 border border-slate-700 text-slate-300 rounded-full hover:border-amber-400 hover:text-amber-400 transition-colors duration-300 backdrop-blur-sm flex items-center justify-center gap-2"
+                                    className="w-full sm:w-auto px-10 py-4 border border-[#7A0018] text-[#7A0018] rounded-full hover:bg-[#7A0018] hover:text-white transition-colors duration-300 backdrop-blur-sm flex items-center justify-center gap-2"
                                 >
                                     <ArrowLeft size={20} />
                                     Torna a TSC Caffè
@@ -378,22 +376,24 @@ export default function LunaEventsPage() {
                             </div>
 
                             <div className="relative flex flex-col items-center justify-center mt-24 md:mt-32">
+                                {/* Immagine originale e div originali intatti! Solo aggiornato shadow a rosso */}
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-30 pointer-events-none">
                                     <Image
                                         src="/icons/moon.svg"
                                         alt=""
                                         width={300}
                                         height={300}
-                                        className="w-64 h-64 md:w-80 md:h-80 object-contain drop-shadow-[0_0_30px_rgba(251,191,36,0.2)]"
+                                        priority={true}
+                                        className="w-64 h-64 md:w-80 md:h-80 object-contain drop-shadow-[0_0_30px_rgba(122,0,24,0.2)]"
                                     />
                                 </div>
                                 <h2
-                                    className="font-luna text-6xl md:text-8xl text-amber-400 relative z-10 leading-none drop-shadow-lg"
+                                    className="font-luna text-6xl md:text-8xl text-[#7A0018] relative z-10 leading-none drop-shadow-sm"
                                     style={{ fontFeatureSettings: '"liga" 1, "calt" 1' }}
                                 >
                                     Luna
                                 </h2>
-                                <span className="text-white font-serif uppercase text-xs md:text-sm tracking-[0.5em] relative z-10 mt-[-5px] md:mt-[-10px] pl-2">
+                                <span className="text-slate-500 font-serif uppercase text-xs md:text-sm tracking-[0.5em] relative z-10 mt-[-5px] md:mt-[-10px] pl-2">
                                     Events
                                 </span>
                             </div>

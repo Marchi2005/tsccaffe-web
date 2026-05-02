@@ -3,15 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Lock, Shield, UserCheck, FileText, Mail, MapPin } from "lucide-react";
+import { ArrowLeft, Lock, Shield } from "lucide-react";
 import localFont from 'next/font/local';
-import { usePathname } from "next/navigation";
 
 // --- CONFIGURAZIONE FONT LUNA ---
 const lunaFont = localFont({
     src: [
         {
-            path: '../../../fonts/mending.regular.otf', // Assicurati che il percorso relative ai font sia corretto
+            path: '../../fonts/mending.regular.otf', // Verifica che il percorso per risalire sia corretto dal nuovo path
             weight: '400',
             style: 'normal',
         },
@@ -31,24 +30,39 @@ type StarData = {
 };
 
 export default function PrivacyPolicy() {
-    const pathname = usePathname();
     const [isLuna, setIsLuna] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [stars, setStars] = useState<StarData[]>([]);
+    const [homeUrl, setHomeUrl] = useState("/");
 
     useEffect(() => {
         setMounted(true);
-        // LOGICA DI ROUTER INTERNO
+        
         if (typeof window !== "undefined") {
             const hostname = window.location.hostname;
-            if (hostname.includes("lunaevents") || pathname.includes("site-luna")) {
-                setIsLuna(true);
-                setStars(generateStars(80));
+            // Leggiamo i parametri dall'URL (es: ?site=luna)
+            const searchParams = new URLSearchParams(window.location.search);
+            const isLunaQuery = searchParams.get("site") === "luna";
+            
+            // È Luna se siamo sul dominio in produzione, o se l'URL ha ?site=luna, o se il percorso precedente era site-luna
+            const lunaActive = hostname.includes("lunaevents") || isLunaQuery;
+            setIsLuna(lunaActive);
+
+            // GESTIONE INTELLIGENTE TASTO INDIETRO
+            if (hostname.includes("lunaevents")) {
+                setHomeUrl("/"); // In produzione il dominio lunaevents.it ha la home alla root
+            } else if (isLunaQuery) {
+                setHomeUrl("/site-luna"); // In locale, se abbiamo cliccato da luna, torniamo alla sottocartella
             } else {
-                setIsLuna(false);
+                setHomeUrl("/"); // Di default torna alla home di TSC
+            }
+
+            // Genera le particelle eleganti se siamo su Luna
+            if (lunaActive) {
+                setStars(generateStars(60));
             }
         }
-    }, [pathname]);
+    }, []);
 
     const generateStars = (count: number): StarData[] => {
         return Array.from({ length: count }).map((_, i) => {
@@ -64,19 +78,21 @@ export default function PrivacyPolicy() {
         });
     };
 
-    if (!mounted) return null;
+    // Previene il flickering durante il caricamento client-side
+    if (!mounted) return <div className="min-h-screen bg-[#FAF8F5]"></div>;
 
     // ------------------------------------------------------------------
-    // LAYOUT 1: VERSIONE LUNA EVENTS (Dark, Stelle, Elegante)
+    // LAYOUT 1: VERSIONE LUNA EVENTS (Nuovo Tema Chiaro ed Elegante)
     // ------------------------------------------------------------------
     if (isLuna) {
         return (
-            <main className={`${lunaFont.variable} min-h-screen bg-slate-950 text-slate-200 relative overflow-hidden selection:bg-amber-400 selection:text-slate-950`}>
-                {/* Sfondo Stelle */}
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black z-0 pointer-events-none" />
+            <main className={`${lunaFont.variable} min-h-screen bg-[#FAF8F5] text-slate-800 relative overflow-hidden selection:bg-[#7A0018] selection:text-white`}>
+                
+                {/* Sfondo Animato Panna/Oro/Rosso */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#FAF8F5] via-[#F4EFE6] to-[#FAF8F5] z-0 pointer-events-none" />
                 <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                     {stars.map((star) => (
-                        <div key={star.id} className={`absolute rounded-full animate-pulse ${star.type === 'bright' ? "bg-amber-200 blur-[0.5px]" : "bg-slate-400/40"}`}
+                        <div key={star.id} className={`absolute rounded-full animate-pulse transition-all ${star.type === 'bright' ? "bg-[#7A0018]/20 blur-[1px]" : star.type === 'medium' ? "bg-[#D4AF37]/30 blur-[0.5px]" : "bg-slate-300/50"}`}
                             style={{ top: `${star.top}%`, left: `${star.left}%`, width: `${star.size}px`, height: `${star.size}px`, animationDelay: `${star.delay}s`, animationDuration: `${star.duration}s` }} />
                     ))}
                 </div>
@@ -84,18 +100,19 @@ export default function PrivacyPolicy() {
                 <div className="relative z-10 pt-32 pb-20 px-4 sm:px-6">
                     <div className="max-w-3xl mx-auto">
                         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-8">
-                            <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-amber-400 transition-colors duration-300 group">
+                            <Link href={homeUrl} className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#7A0018] transition-colors duration-300 group">
                                 <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Torna alla Home
                             </Link>
                         </motion.div>
 
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-slate-900/60 backdrop-blur-md p-8 sm:p-12 rounded-3xl border border-slate-800 shadow-2xl relative overflow-hidden">
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-400/5 rounded-full blur-3xl pointer-events-none"></div>
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white/90 backdrop-blur-md p-8 sm:p-12 rounded-3xl border border-[#E8E1D9] shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#7A0018] to-transparent opacity-30" />
+                            
                             <div className="flex items-center gap-4 mb-2">
-                                <Lock className="text-amber-400" size={32} />
-                                <h1 className="text-3xl md:text-4xl font-serif text-white tracking-wide">Privacy Policy</h1>
+                                <Lock className="text-[#7A0018]" size={32} />
+                                <h1 className="text-3xl md:text-4xl font-serif text-slate-900 tracking-wide">Privacy Policy</h1>
                             </div>
-                            <p className="text-amber-400/80 text-sm mb-8 font-mono tracking-widest uppercase">Luna Events • Aggiornamento Febbraio 2026</p>
+                            <p className="text-slate-400 text-sm mb-8 font-serif italic tracking-wide">Luna Events • Aggiornamento Febbraio 2026</p>
                             
                             <PolicyContent theme="luna" />
                         </motion.div>
@@ -106,14 +123,14 @@ export default function PrivacyPolicy() {
     }
 
     // ------------------------------------------------------------------
-    // LAYOUT 2: VERSIONE TSC CAFFÈ (Light, Pulita, Brand)
+    // LAYOUT 2: VERSIONE TSC CAFFÈ (Invariata)
     // ------------------------------------------------------------------
     return (
         <main className="min-h-screen bg-slate-50 font-sans text-slate-700">
             <div className="pt-32 pb-20 px-4 sm:px-6">
                 <div className="max-w-3xl mx-auto">
                     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-8">
-                        <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors duration-300 group">
+                        <Link href={homeUrl} className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors duration-300 group">
                             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Torna alla Home
                         </Link>
                     </motion.div>
@@ -141,27 +158,27 @@ export default function PrivacyPolicy() {
 function PolicyContent({ theme }: { theme: 'luna' | 'tsc' }) {
     const isLuna = theme === 'luna';
 
-    // Stili CSS dinamici
+    // Stili CSS dinamici aggiornati per il nuovo tema chiaro di Luna
     const titleClass = isLuna 
-        ? "text-xl font-luna text-amber-400 mt-8 mb-4" 
+        ? "text-2xl font-serif text-[#7A0018] mt-10 mb-4" 
         : "text-lg font-bold text-slate-900 mt-8 mb-3";
     
     const textClass = isLuna 
-        ? "text-slate-300 leading-relaxed font-light" 
+        ? "text-slate-600 leading-relaxed font-light text-lg" 
         : "text-slate-700 leading-relaxed";
 
     const dividerClass = isLuna
-        ? "h-px w-full bg-slate-800/50 my-6"
+        ? "h-px w-full bg-[#E8E1D9] my-8"
         : "h-px w-full bg-slate-100 my-6";
 
-    const strongClass = isLuna ? "text-white font-medium" : "text-slate-900 font-bold";
-    const listMarkerClass = isLuna ? "marker:text-amber-400" : "marker:text-brand-red";
+    const strongClass = isLuna ? "text-slate-900 font-medium" : "text-slate-900 font-bold";
+    const listMarkerClass = isLuna ? "marker:text-[#7A0018]" : "marker:text-brand-red";
 
     return (
         <div className="text-sm sm:text-base">
             
             <section>
-                <h2 className={titleClass} style={isLuna ? { fontFeatureSettings: '"liga" 1, "calt" 1' } : {}}>
+                <h2 className={titleClass}>
                     1. Titolare del Trattamento
                 </h2>
                 <p className={textClass}>
@@ -176,7 +193,7 @@ function PolicyContent({ theme }: { theme: 'luna' | 'tsc' }) {
             <div className={dividerClass}></div>
 
             <section>
-                <h2 className={titleClass} style={isLuna ? { fontFeatureSettings: '"liga" 1, "calt" 1' } : {}}>
+                <h2 className={titleClass}>
                     2. Tipologia di dati raccolti
                 </h2>
                 <p className={textClass}>
@@ -198,13 +215,13 @@ function PolicyContent({ theme }: { theme: 'luna' | 'tsc' }) {
             <div className={dividerClass}></div>
 
             <section>
-                <h2 className={titleClass} style={isLuna ? { fontFeatureSettings: '"liga" 1, "calt" 1' } : {}}>
+                <h2 className={titleClass}>
                     3. Finalità del trattamento
                 </h2>
                 <p className={textClass}>
                     I dati raccolti, sia tramite il sito TSC che Luna Events, vengono trattati esclusivamente per:
                 </p>
-                <ul className={`list-disc pl-5 mt-2 space-y-1 ${listMarkerClass}`}>
+                <ul className={`list-disc pl-5 mt-4 space-y-2 ${listMarkerClass}`}>
                     <li className={textClass}>Gestione ed evasione dell'ordine o elaborazione del preventivo richiesto.</li>
                     <li className={textClass}>Ricontatto telefonico o via email per conferme, dettagli logistici o appuntamenti.</li>
                     <li className={textClass}>Adempimenti fiscali, amministrativi e obblighi di legge (es. fatturazione).</li>
@@ -214,7 +231,7 @@ function PolicyContent({ theme }: { theme: 'luna' | 'tsc' }) {
             <div className={dividerClass}></div>
 
             <section>
-                <h2 className={titleClass} style={isLuna ? { fontFeatureSettings: '"liga" 1, "calt" 1' } : {}}>
+                <h2 className={titleClass}>
                     4. Modalità e conservazione
                 </h2>
                 <p className={textClass}>
@@ -225,7 +242,7 @@ function PolicyContent({ theme }: { theme: 'luna' | 'tsc' }) {
             <div className={dividerClass}></div>
 
             <section>
-                <h2 className={titleClass} style={isLuna ? { fontFeatureSettings: '"liga" 1, "calt" 1' } : {}}>
+                <h2 className={titleClass}>
                     5. Comunicazione a terzi
                 </h2>
                 <p className={textClass}>
@@ -236,7 +253,7 @@ function PolicyContent({ theme }: { theme: 'luna' | 'tsc' }) {
             <div className={dividerClass}></div>
 
             <section>
-                <h2 className={titleClass} style={isLuna ? { fontFeatureSettings: '"liga" 1, "calt" 1' } : {}}>
+                <h2 className={titleClass}>
                     6. Diritti dell'interessato
                 </h2>
                 <p className={textClass}>
@@ -245,8 +262,8 @@ function PolicyContent({ theme }: { theme: 'luna' | 'tsc' }) {
             </section>
 
             {/* Footer interno della policy */}
-            <div className={`mt-12 pt-6 border-t text-center ${isLuna ? "border-slate-800" : "border-slate-100"}`}>
-                <p className={`text-xs uppercase tracking-widest ${isLuna ? "text-slate-500" : "text-slate-400"}`}>
+            <div className={`mt-12 pt-6 border-t text-center ${isLuna ? "border-[#E8E1D9]" : "border-slate-100"}`}>
+                <p className={`text-xs uppercase tracking-widest ${isLuna ? "text-slate-400" : "text-slate-400"}`}>
                     Tabacchi San Clemente di Ianniello Gianpaolo
                 </p>
             </div>
