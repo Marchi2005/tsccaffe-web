@@ -90,7 +90,7 @@ export const BOX_TYPES = [
 export const DRINKS_DATA = [
   { id: "nessuno", label: "NO GRAZIE", icon: "❌", price: 0, hasCoffeeVariant: false, hasMilkVariant: false },
   { id: "espresso", label: "Espresso", icon: "☕", price: 1.20, hasCoffeeVariant: true, hasMilkVariant: false },
-  { id: "cappuccino", label: "Cappuccino", icon: "🥛", price: 1.60, hasCoffeeVariant: true, hasMilkVariant: true },
+  { id: "cappuccino", label: "Cappuccino", icon: "🥛", price: 1.50, hasCoffeeVariant: true, hasMilkVariant: true },
   { id: "latte", label: "Latte Bianco", icon: "🥛", price: 1.50, hasCoffeeVariant: false, hasMilkVariant: true },
   { id: "latte_macchiato", label: "Latte Macchiato", icon: "🥛", price: 1.80, hasCoffeeVariant: true, hasMilkVariant: true },
   { id: "ginseng", label: "Ginseng", icon: "🟤", price: 1.50, hasSub: true, hasSize: true, subOptions: ["Dolce", "Amaro"] }
@@ -102,18 +102,18 @@ export const PASTRIES_DATA = [
   { id: "vuoto", label: "Vuoto", price: 1.20, category: "Cornetto", bg: "#fff7ed", border: "#fdba74" },
   { id: "nutella", label: "Nutella®", price: 1.50, category: "Cornetto", isBrand: true, bg: "#ffedd5", border: "#ea580c" },
   { id: "cioccolato_bianco", label: "Cioccolato Bianco", price: 1.50, category: "Cornetto", bg: "#fefce8", border: "#eab308" },
-  { id: "pistacchio", label: "Pistacchio", price: 1.60, category: "Cornetto", bg: "#dcfce7", border: "#16a34a" },
+  { id: "pistacchio", label: "Pistacchio", price: 1.50, category: "Cornetto", bg: "#dcfce7", border: "#16a34a" },
   { id: "bosco", label: "Frutti di Bosco", price: 1.30, category: "Cornetto", bg: "#ffe4e6", border: "#e11d48" },
   { id: "albicocca", label: "Albicocca", price: 1.30, category: "Cornetto", bg: "#ffedd5", border: "#f97316" },
-  { id: "pasticciotto", label: "Pasticciotto", price: 1.60, category: "Speciale", desc: "Crema e Amarena", bg: "#fef3c7", border: "#d97706" },
-  { id: "polacca", label: "Polacca", price: 1.60, category: "Speciale", desc: "Crema e Amarena", bg: "#fffbeb", border: "#b45309" },
-  { id: "graffa", label: "Graffa", price: 1.60, category: "Speciale", bg: "#f3f4f6", border: "#4b5563" },
-  { id: "bomba_cioccolato", label: "Bomba Cioccolato", price: 1.60, category: "Bomba", bg: "#3f2c22", border: "#271c19", text: "white" },
-  { id: "bomba_crema", label: "Bomba Crema", price: 1.60, category: "Bomba", bg: "#fff7ed", border: "#fed7aa" },
-  { id: "confezione_regalo", label: "Confezione Regalo", price: 6.50, category: "Regalo", bg: "#fdf2f8", border: "#db2777" },
+  { id: "pasticciotto", label: "Pasticciotto", price: 1.50, category: "Speciale", desc: "Crema e Amarena", bg: "#fef3c7", border: "#d97706" },
+  { id: "polacca", label: "Polacca", price: 1.50, category: "Speciale", desc: "Crema e Amarena", bg: "#fffbeb", border: "#b45309" },
+  { id: "graffa", label: "Graffa", price: 1.20, category: "Speciale", bg: "#f3f4f6", border: "#4b5563" },
+  { id: "bomba_cioccolato", label: "Bomba Cioccolato", price: 1.50, category: "Bomba", bg: "#3f2c22", border: "#271c19", text: "white" },
+  { id: "bomba_crema", label: "Bomba Crema", price: 1.50, category: "Bomba", bg: "#fff7ed", border: "#fed7aa" },
 ];
 
 // --- 4. ORARI ---
+// Usiamo orari puntuali per permettere la validazione di sicurezza (ritardo max 15min)
 export const TIMES = [
   "07:30", 
   "08:00", 
