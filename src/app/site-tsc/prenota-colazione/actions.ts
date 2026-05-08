@@ -98,12 +98,11 @@ export async function submitOrder(prevState: any, formData: FormData) {
     const now = new Date();
     const nowInMinutes = now.getHours() * 60 + now.getMinutes();
     
-    // Gestione formato "08:30" o "08:00 - 09:00" (prende il primo orario utile)
     const timePart = preferredTime.includes("-") ? preferredTime.split(" - ")[0] : preferredTime;
     const [h, m] = timePart.split(':').map(Number);
     const chosenInMinutes = h * 60 + m;
 
-    const LEAD_TIME = 45; // 45 minuti minimi di preparazione/consegna
+    const LEAD_TIME = 45; 
 
     if (chosenInMinutes < (nowInMinutes + LEAD_TIME)) {
       return { 
@@ -125,12 +124,10 @@ export async function submitOrder(prevState: any, formData: FormData) {
     }
   });
 
-  // Commissioni Stripe
   if (paymentMethod === 'card') {
     serverPrice += Math.round(((serverPrice * 0.015) + 0.25) * 100) / 100;
   }
 
-  // Verifica Coupon reale sul DB
   let serverDiscount = 0;
   if (promoCodeId) {
     const { data: promo } = await supabase.from('promo_codes').select('*').eq('id', promoCodeId).single();
@@ -144,10 +141,8 @@ export async function submitOrder(prevState: any, formData: FormData) {
     }
   }
 
-  // Arrotondamento finale (stessa logica frontend)
   const finalServerTotal = Math.floor(serverPrice * 10) / 10;
 
-  // Check finale: se lo scarto è > 0.50€ blocchiamo per sospetta manomissione
   if (Math.abs(finalServerTotal - clientTotalPrice) > 0.50) {
     return { success: false, message: "Errore validazione prezzi." };
   }
@@ -170,7 +165,7 @@ export async function submitOrder(prevState: any, formData: FormData) {
     box_type: formData.get("boxType") || "Colazione", 
     notes: finalNotes,
     quantity: Number(formData.get("quantity") || 1),
-    total_price: finalServerTotal, // Salviamo il prezzo calcolato dal server
+    total_price: finalServerTotal, 
     status: paymentMethod === 'card' ? 'bozza_in_attesa' : 'da_pagare_in_sede',
     promo_code_id: promoCodeId || null,
     discount_applied: serverDiscount,
@@ -186,6 +181,8 @@ export async function submitOrder(prevState: any, formData: FormData) {
   await sendTelegramNotification(orderData, orderSummary, isTomorrow);
 
   // --- 4. GESTIONE STRIPE ---
+  let stripeSessionUrl = "";
+
   if (paymentMethod === 'card') {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://tsccaffe.it";
     try {
@@ -206,11 +203,19 @@ export async function submitOrder(prevState: any, formData: FormData) {
         success_url: `${baseUrl}/success-colazione?order_id=${orderData.id}`,
         cancel_url: `${baseUrl}/prenota-colazione`, 
       });
-      if (session.url) redirect(session.url);
+      
+      if (session.url) {
+        stripeSessionUrl = session.url;
+      }
     } catch (e) {
       console.error("Stripe error:", e);
       return { success: false, message: "Errore Stripe." };
     }
+  }
+
+  // Eseguiamo il redirect FUORI dal try/catch per evitare l'errore NEXT_REDIRECT
+  if (stripeSessionUrl) {
+    redirect(stripeSessionUrl);
   }
 
   revalidatePath("/admin"); 
