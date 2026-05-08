@@ -11,8 +11,8 @@ import OrderQRSection from "@/components/OrderQRSection";
 import Script from "next/script";
 import { useState, useEffect, useActionState, useRef, Fragment, useMemo } from "react";
 import { useFormStatus } from "react-dom";
-import { DRINKS_DATA, PASTRIES_DATA, TIMES } from "@/lib/schemas";
-import { supabase } from "@/lib/supabase"; // 🆕 Importiamo supabase per il check codici
+import { DRINKS_DATA, PASTRIES_DATA, TIMES, PRICE_CONFEZIONE_REGALO } from "@/lib/schemas";
+import { supabase } from "@/lib/supabase";
 import clsx from "clsx";
 
 // ... (Costanti e funzioni getDrinkPrice/getPastryPrice rimangono IDENTICHE) ...
@@ -22,36 +22,46 @@ const SHOP_LNG = 14.36849096600742;
 const MAX_DELIVERY_KM = 8.50;
 
 const SUCCHI_FLAVORS = [
-  "Ace", "Albicocca", "Ananas", "Arancia",
+  "Ace", "Albicocca", "Ananas",
   "Arancia Rossa", "Frutti di Bosco", "Mango Passion",
-  "Mela", "Mirtillo", "Multifrutti", "Pera", "Pesca", "Pompelmo"
+  "Mela Limpida", "Mirtillo", "Pesca"
 ].sort();
 
 const PRICE_SPREMUTA = 2.50;
 const PRICE_SUCCO = 2.50;
 
 const getDrinkPrice = (drinkStr: string) => {
-  if (!drinkStr) return 0;
-  const str = drinkStr.toLowerCase();
-  if (str.includes("grazie") || str.includes("nessun")) return 0;
-  let base = 1.50;
-  if (str.includes("espresso") && !str.includes("ginseng") && !str.includes("latte")) base = 1.20;
-  if (str.includes("latte macchiato")) base = 1.80;
-  if (str.includes("latte bianco") || str === "latte") base = 1.50;
+  if (!drinkStr || drinkStr.toLowerCase().includes("grazie") || drinkStr.toLowerCase().includes("nessun")) return 0;
+
+  // 1. Estrapola il nome base senza le opzioni tra parentesi (es. "Espresso" da "Espresso (Deca)")
+  const baseName = drinkStr.split(" (")[0];
+
+  // 2. Trova la bevanda in schemas.ts
+  const drinkDef = DRINKS_DATA.find(d => d.label === baseName);
+
+  // 3. Prendi il prezzo dallo schema (o usa un fallback)
+  let base = drinkDef?.price || 1.50;
+
+  // 4. Calcola l'extra (se la logica degli extra non è nello schema)
   let extra = 0;
-  if (str.includes("grande")) { extra = str.includes("ginseng") ? 0.30 : 0.20; }
+  if (drinkStr.toLowerCase().includes("grande")) {
+    extra = drinkStr.toLowerCase().includes("ginseng") ? 0.30 : 0.20;
+  }
+
   return base + extra;
 };
 
 const getPastryPrice = (pastryStr: string) => {
-  if (!pastryStr) return 0;
-  const str = pastryStr.toLowerCase();
-  if (str.includes("nessun") || str.includes("grazie")) return 0;
-  let base = 1.30;
-  if (str.includes("vuoto")) base = 1.20;
-  if (str.includes("nutella")) base = 1.50;
-  if (str.includes("senza glutine") && str.includes("vuoto")) base = 1.30;
-  return base;
+  if (!pastryStr || pastryStr.toLowerCase().includes("nessun") || pastryStr.toLowerCase().includes("grazie")) return 0;
+
+  // Rimuovi eventuali tag vegano/senza glutine per matchare il nome base
+  const cleanName = pastryStr.replace(" (Vegano)", "").replace(" (Senza Glutine)", "");
+
+  // Trova il dolce in schemas.ts
+  const pastryDef = PASTRIES_DATA.find(p => p.label === cleanName);
+
+  // Ritorna il prezzo dallo schema (o usa un fallback)
+  return pastryDef?.price || 1.30;
 };
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -305,61 +315,17 @@ export default function PrenotaColazionePage() {
   const [tempDrinkSelection, setTempDrinkSelection] = useState<string>("");
 
   const [delivery, setDelivery] = useState("domicilio");
-  // Inizializziamo vuoto, verrà gestito dagli useEffect sotto
-  const [time, setTime] = useState(""); 
+  const [time, setTime] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("instore");
   const [notes, setNotes] = useState("");
 
   const [isTomorrow, setIsTomorrow] = useState(false);
 
-  // --- 🆕 1. LOGICA ORARI DISPONIBILI (Lead Time 45 Minuti) ---
-  const availableTimes = useMemo(() => {
-    // Se è domani, tutti gli orari in TIMES sono validi
-    if (isTomorrow) return TIMES;
-
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    
-    // Impostiamo 45 minuti di preavviso minimo per preparazione e rider
-    const LEAD_TIME = 45; 
-    const nowInMinutes = currentHour * 60 + currentMinute + LEAD_TIME;
-
-    return TIMES.filter(t => {
-      // Gestiamo sia il formato "08:30" che "08:00 - 09:00" prendendo il primo orario
-      const timePart = t.includes(" - ") ? t.split(" - ")[0] : t;
-      const [h, m] = timePart.split(':').map(Number);
-      const slotInMinutes = h * 60 + m;
-      
-      return slotInMinutes >= nowInMinutes;
-    });
-  }, [isTomorrow]);
-
-  // --- 🆕 2. AUTO-SWITCH SU DOMANI SE OGGI È CHIUSO ---
-  useEffect(() => {
-    // Se oggi non ci sono più slot disponibili (es. sono le 10:30) 
-    // e siamo ancora su "Oggi", attiviamo automaticamente "Domani"
-    if (!isTomorrow && availableTimes.length === 0) {
-      setIsTomorrow(true);
-    }
-  }, [availableTimes.length, isTomorrow]);
-
-  // --- 🆕 3. RESET E AUTO-SELECT ORARIO ---
-  useEffect(() => {
-    // Se l'orario scelto non è tra quelli disponibili (perché è passato il tempo o abbiamo cambiato giorno)
-    if (time && !availableTimes.includes(time)) {
-      setTime("");
-    }
-
-    // Se non abbiamo un orario selezionato e ci sono orari disponibili, 
-    // preselezioniamo il primo per aiutare l'utente
-    if (!time && availableTimes.length > 0) {
-       setTime(availableTimes[0]);
-    }
-  }, [availableTimes, time]);
-
   const [spremuteCount, setSpremuteCount] = useState(0);
   const [succhiCounters, setSucchiCounters] = useState<Record<string, number>>({});
+
+  // 🆕 STATO GIFT BOX
+  const [giftBoxSelected, setGiftBoxSelected] = useState(false);
 
   // 🆕 STATI PER CODICI SCONTO / CARD B&B
   const [promoCodeInput, setPromoCodeInput] = useState("");
@@ -373,6 +339,44 @@ export default function PrenotaColazionePage() {
   const addressInputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
   const [isMapsLoaded, setIsMapsLoaded] = useState(false);
+
+  // --- 🆕 1. LOGICA ORARI DISPONIBILI (Lead Time 45 Minuti) ---
+  const availableTimes = useMemo(() => {
+    if (isTomorrow) return TIMES;
+
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    const LEAD_TIME = 45;
+    const nowInMinutes = currentHour * 60 + currentMinute + LEAD_TIME;
+
+    return TIMES.filter(t => {
+      const timePart = t.includes(" - ") ? t.split(" - ")[0] : t;
+      const [h, m] = timePart.split(':').map(Number);
+      const slotInMinutes = h * 60 + m;
+      
+      return slotInMinutes >= nowInMinutes;
+    });
+  }, [isTomorrow]);
+
+  // --- 🆕 2. AUTO-SWITCH SU DOMANI SE OGGI È CHIUSO ---
+  useEffect(() => {
+    if (!isTomorrow && availableTimes.length === 0) {
+      setIsTomorrow(true);
+    }
+  }, [availableTimes.length, isTomorrow]);
+
+  // --- 🆕 3. RESET E AUTO-SELECT ORARIO ---
+  useEffect(() => {
+    if (time && !availableTimes.includes(time)) {
+      setTime("");
+    }
+
+    if (!time && availableTimes.length > 0) {
+       setTime(availableTimes[0]);
+    }
+  }, [availableTimes, time]);
 
   useEffect(() => {
     const google = (window as any).google;
@@ -451,68 +455,90 @@ export default function PrenotaColazionePage() {
     return false;
   };
 
-  // 💰 CALCOLO CARRELLO & PREZZI (AGGIORNATO)
-  const cartData = useMemo(() => {
+ const cartData = useMemo(() => {
     let items: Array<{ name: string, qty: number, price: number }> = [];
-    let total = 0;
+    let subtotal = 0;
 
     if (peopleCount === '5+') {
       Object.entries(bulkDrinks).forEach(([name, qty]) => {
         const price = getDrinkPrice(name);
-        if (qty > 0 && price > 0) { items.push({ name, qty, price }); total += price * qty; }
+        if (qty > 0 && price > 0) { items.push({ name, qty, price }); subtotal += price * qty; }
       });
       Object.entries(bulkPastries).forEach(([name, qty]) => {
         const price = getPastryPrice(name);
-        if (qty > 0 && price > 0) { items.push({ name, qty, price }); total += price * qty; }
+        if (qty > 0 && price > 0) { items.push({ name, qty, price }); subtotal += price * qty; }
       });
     } else {
       for (let i = 0; i < Number(peopleCount); i++) {
         const dPrice = getDrinkPrice(menus[i].drink);
-        if (dPrice > 0) { items.push({ name: `P${i + 1} - ${menus[i].drink}`, qty: 1, price: dPrice }); total += dPrice; }
+        if (dPrice > 0) { items.push({ name: `P${i + 1} - ${menus[i].drink}`, qty: 1, price: dPrice }); subtotal += dPrice; }
         const pPrice = getPastryPrice(menus[i].pastry);
-        if (pPrice > 0) { items.push({ name: `P${i + 1} - ${menus[i].pastry}`, qty: 1, price: pPrice }); total += pPrice; }
+        if (pPrice > 0) { items.push({ name: `P${i + 1} - ${menus[i].pastry}`, qty: 1, price: pPrice }); subtotal += pPrice; }
       }
     }
 
-    if (spremuteCount > 0) { items.push({ name: "Spremuta d'Arancia", qty: spremuteCount, price: PRICE_SPREMUTA }); total += PRICE_SPREMUTA * spremuteCount; }
+    // 🆕 GIFT BOX - AGGIUNTA PRIMA DELLA SPREMUTA
+    if (giftBoxSelected) {
+      items.push({ name: "🎁 Confezione Regalo", qty: 1, price: PRICE_CONFEZIONE_REGALO });
+      subtotal += PRICE_CONFEZIONE_REGALO;
+    }
+
+    if (spremuteCount > 0) { items.push({ name: "Spremuta d'Arancia", qty: spremuteCount, price: PRICE_SPREMUTA }); subtotal += PRICE_SPREMUTA * spremuteCount; }
     Object.entries(succhiCounters).forEach(([flavor, qty]) => {
-      if (qty > 0) { items.push({ name: `Succo (${flavor})`, qty, price: PRICE_SUCCO }); total += PRICE_SUCCO * qty; }
+      if (qty > 0) { items.push({ name: `Succo (${flavor})`, qty, price: PRICE_SUCCO }); subtotal += PRICE_SUCCO * qty; }
     });
 
-    if (paymentMethod === 'card') {
-      const stripeFee = Math.round(((total * 0.015) + 0.25) * 100) / 100;
-      items.push({ name: "Commissioni Stripe", qty: 1, price: stripeFee });
-      total += stripeFee;
-    }
-
-    // 🆕 APPLICAZIONE SCONTO PROMO / CARD B&B
     let promoDiscountValue = 0;
     if (appliedPromo) {
-      if (appliedPromo.discount_type === 'percentage') {
-        promoDiscountValue = Math.round((total * (appliedPromo.discount_value / 100)) * 100) / 100;
-      } else {
-        promoDiscountValue = Number(appliedPromo.discount_value);
-      }
-
-      // Non andare mai sotto zero
-      promoDiscountValue = Math.min(total, promoDiscountValue);
-
+      if (appliedPromo.discount_type === 'percentage') promoDiscountValue = Math.round((subtotal * (appliedPromo.discount_value / 100)) * 100) / 100;
+      else promoDiscountValue = Number(appliedPromo.discount_value);
+      promoDiscountValue = Math.min(subtotal, promoDiscountValue);
       if (promoDiscountValue > 0) {
         items.push({ name: `🎟️ Codice: ${appliedPromo.code}`, qty: 1, price: -promoDiscountValue });
-        total -= promoDiscountValue;
+        subtotal -= promoDiscountValue;
       }
     }
 
-    const finalTotal = Math.floor(total * 10) / 10;
-    const roundingDiscount = Math.round((total - finalTotal) * 100) / 100;
-
-    if (roundingDiscount > 0) {
-      items.push({ name: "🎁 Sconto Arrotondamento", qty: 1, price: -roundingDiscount });
-      total = finalTotal;
+    // --- LOGICA ARROTONDAMENTO E STRIPE FEE ---
+    let stripeFeeValue = 0;
+    if (paymentMethod === 'card') {
+      stripeFeeValue = Math.round(((subtotal * 0.015) + 0.25) * 100) / 100;
     }
 
+    const totalBeforeRounding = subtotal + stripeFeeValue;
+    const remainder = Math.round((totalBeforeRounding % 0.10) * 100);
+    
+    let finalTotal = totalBeforeRounding;
+    let roundingDiscountValue = 0;
+    let showRoundingRow = false;
+
+    if (remainder >= 7) {
+      finalTotal = Math.ceil(totalBeforeRounding * 10) / 10;
+      if (paymentMethod === 'card') {
+        stripeFeeValue += (finalTotal - totalBeforeRounding);
+      }
+    } else if (remainder >= 1 && remainder <= 3) {
+      finalTotal = Math.floor(totalBeforeRounding * 10) / 10;
+      if (paymentMethod === 'card') {
+        stripeFeeValue += (finalTotal - totalBeforeRounding);
+      }
+    } else if (remainder >= 4 && remainder <= 6) {
+      finalTotal = Math.floor(totalBeforeRounding * 10) / 10;
+      roundingDiscountValue = Math.round((totalBeforeRounding - finalTotal) * 100) / 100;
+      showRoundingRow = true;
+    }
+
+    if (paymentMethod === 'card') {
+      items.push({ name: "Commissioni Stripe", qty: 1, price: Math.round(stripeFeeValue * 100) / 100 });
+    }
+
+    if (showRoundingRow && roundingDiscountValue > 0) {
+      items.push({ name: "🎁 Sconto Arrotondamento", qty: 1, price: -roundingDiscountValue });
+    }
+
+    const total = Math.round(finalTotal * 100) / 100;
     return { items, total, promoDiscountApplied: promoDiscountValue };
-  }, [peopleCount, menus, bulkDrinks, bulkPastries, spremuteCount, succhiCounters, paymentMethod, appliedPromo]);
+  }, [peopleCount, menus, bulkDrinks, bulkPastries, spremuteCount, succhiCounters, paymentMethod, appliedPromo, giftBoxSelected]);
 
   const hasGlutenFreeNutella = cartData.items.some(i => i.name.toLowerCase().includes('senza glutine') && i.name.toLowerCase().includes('nutella'));
 
@@ -752,55 +778,80 @@ export default function PrenotaColazionePage() {
 
                 <hr className="border-slate-200/60" />
 
-                {/* --- 3. EXTRA --- */}
-                <section>
-                  <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-amber-900 text-white text-[10px] flex items-center justify-center font-bold">3</span>
-                    Aggiungi un tocco in più
-                  </h3>
-                  <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 space-y-3 w-full">
-                    <div className={clsx("relative rounded-xl p-3 border-2 transition-all w-full flex items-center justify-between", spremuteCount > 0 ? "bg-orange-50 border-orange-400" : "bg-white border-slate-100")}>
-                      <div className="flex items-center gap-3">
-                        <div className={clsx("p-2 rounded-full shrink-0", spremuteCount > 0 ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-500")}><Citrus size={16} /></div>
-                        <div>
-                          <h4 className="font-extrabold text-slate-800 text-xs">Spremuta d'Arancia</h4>
-                          <p className="text-[10px] font-bold text-orange-600 mt-0.5">+{PRICE_SPREMUTA.toFixed(2)}€ cad.</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
-                        <button type="button" onClick={() => setSpremuteCount(Math.max(0, spremuteCount - 1))} className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-slate-700 bg-slate-50 rounded"><Minus size={14} /></button>
-                        <span className="font-bold text-sm w-3 text-center">{spremuteCount}</span>
-                        <button type="button" onClick={() => setSpremuteCount(spremuteCount + 1)} className="w-6 h-6 flex items-center justify-center text-orange-500 hover:text-orange-700 bg-orange-100 rounded"><Plus size={14} /></button>
-                      </div>
-                    </div>
-                    <div className="relative rounded-xl p-3 border-2 transition-all w-full bg-white border-slate-100">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="p-2 rounded-full shrink-0 bg-yellow-100 text-yellow-600"><GlassWater size={16} /></div>
-                        <div>
-                          <h4 className="font-extrabold text-slate-800 text-xs">Succhi di Frutta</h4>
-                          <p className="text-[10px] font-bold text-yellow-700 mt-0.5">+{PRICE_SUCCO.toFixed(2)}€ cad.</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
-                        {SUCCHI_FLAVORS.map(gusto => {
-                          const qty = succhiCounters[gusto] || 0;
-                          return (
-                            <div key={gusto} className={clsx("flex justify-between items-center p-2 border rounded-lg", qty > 0 ? "bg-yellow-50 border-yellow-300" : "bg-white border-slate-100 hover:bg-slate-50")}>
-                              <span className="text-[10px] font-bold text-slate-700">{gusto}</span>
-                              <div className="flex items-center gap-2">
-                                <button type="button" onClick={() => updateSucco(gusto, -1)} className="w-5 h-5 flex justify-center items-center bg-white border rounded shadow-sm text-slate-600"><Minus size={12} /></button>
-                                <span className="w-3 text-center font-bold text-[10px]">{qty}</span>
-                                <button type="button" onClick={() => updateSucco(gusto, 1)} className="w-5 h-5 flex justify-center items-center bg-yellow-400 rounded shadow-sm text-slate-900"><Plus size={12} /></button>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </section>
+{/* --- 3. EXTRA --- */}
+<section>
+  <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+    <span className="w-5 h-5 rounded-full bg-amber-900 text-white text-[10px] flex items-center justify-center font-bold">3</span>
+    Aggiungi un tocco in più
+  </h3>
+  <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 space-y-3 w-full">
+    
+    {/* GIFT BOX */}
+    <button
+      type="button"
+      onClick={() => setGiftBoxSelected(!giftBoxSelected)}
+      className={clsx(
+        "relative rounded-xl p-3 border-2 transition-all w-full flex items-center justify-between",
+        giftBoxSelected ? "bg-purple-50 border-purple-400" : "bg-white border-slate-100 hover:border-purple-200"
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <div className={clsx("p-2 rounded-full shrink-0", giftBoxSelected ? "bg-purple-500 text-white" : "bg-purple-100 text-purple-500")}>
+          🎁
+        </div>
+        <div className="text-left">
+          <h4 className="font-extrabold text-slate-800 text-xs">Confezione Regalo</h4>
+          <p className="text-[10px] font-bold text-purple-600 mt-0.5">+{PRICE_CONFEZIONE_REGALO.toFixed(2)}€</p>
+        </div>
+      </div>
+      <div className={clsx("w-5 h-5 rounded border-2 flex items-center justify-center transition-colors", giftBoxSelected ? "bg-purple-500 border-purple-500" : "border-slate-300")}>
+        {giftBoxSelected && <Check size={16} className="text-white" />}
+      </div>
+    </button>
 
-                <hr className="border-slate-200/60" />
+    <div className={clsx("relative rounded-xl p-3 border-2 transition-all w-full flex items-center justify-between", spremuteCount > 0 ? "bg-orange-50 border-orange-400" : "bg-white border-slate-100")}>
+      <div className="flex items-center gap-3">
+        <div className={clsx("p-2 rounded-full shrink-0", spremuteCount > 0 ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-500")}><Citrus size={16} /></div>
+        <div>
+          <h4 className="font-extrabold text-slate-800 text-xs">Spremuta d'Arancia</h4>
+          <p className="text-[10px] font-bold text-orange-600 mt-0.5">+{PRICE_SPREMUTA.toFixed(2)}€ cad.</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-3 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+        <button type="button" onClick={() => setSpremuteCount(Math.max(0, spremuteCount - 1))} className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-slate-700 bg-slate-50 rounded"><Minus size={14} /></button>
+        <span className="font-bold text-sm w-3 text-center">{spremuteCount}</span>
+        <button type="button" onClick={() => setSpremuteCount(spremuteCount + 1)} className="w-6 h-6 flex items-center justify-center text-orange-500 hover:text-orange-700 bg-orange-100 rounded"><Plus size={14} /></button>
+      </div>
+    </div>
+
+    <div className="relative rounded-xl p-3 border-2 transition-all w-full bg-white border-slate-100">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="p-2 rounded-full shrink-0 bg-yellow-100 text-yellow-600"><GlassWater size={16} /></div>
+        <div>
+          <h4 className="font-extrabold text-slate-800 text-xs">Succhi di Frutta</h4>
+          <p className="text-[10px] font-bold text-yellow-700 mt-0.5">+{PRICE_SUCCO.toFixed(2)}€ cad.</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
+        {SUCCHI_FLAVORS.map(gusto => {
+          const qty = succhiCounters[gusto] || 0;
+          return (
+            <div key={gusto} className={clsx("flex justify-between items-center p-2 border rounded-lg", qty > 0 ? "bg-yellow-50 border-yellow-300" : "bg-white border-slate-100 hover:bg-slate-50")}>
+              <span className="text-[10px] font-bold text-slate-700">{gusto}</span>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => updateSucco(gusto, -1)} className="w-5 h-5 flex justify-center items-center bg-white border rounded shadow-sm text-slate-600"><Minus size={12} /></button>
+                <span className="w-3 text-center font-bold text-[10px]">{qty}</span>
+                <button type="button" onClick={() => updateSucco(gusto, 1)} className="w-5 h-5 flex justify-center items-center bg-yellow-400 rounded shadow-sm text-slate-900"><Plus size={12} /></button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr className="border-slate-200/60" />
 
                 {/* --- 🆕 SECTION: CODICE SCONTO / CARD B&B --- */}
                 <section>
@@ -922,7 +973,7 @@ export default function PrenotaColazionePage() {
                       </div>
                     </div>
 
-                    {/* SELETTORE DOMICILIO/RITIRO */}
+{/* SELETTORE DOMICILIO/RITIRO */}
                     <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-xl w-full">
                       <button type="button" onClick={() => setDelivery('domicilio')} className={clsx("py-2.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-2 transition-all w-full", delivery === 'domicilio' ? "bg-white shadow-sm text-amber-900" : "text-slate-500")}><Bike size={14} /> Domicilio</button>
                       <button type="button" onClick={() => setDelivery('ritiro')} className={clsx("py-2.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-2 transition-all w-full", delivery === 'ritiro' ? "bg-white shadow-sm text-amber-900" : "text-slate-500")}><Store size={14} /> Ritiro</button>
@@ -969,7 +1020,16 @@ export default function PrenotaColazionePage() {
                       <input type="tel" name="phone" placeholder="Telefono" className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:bg-white outline-none focus:border-amber-300 transition-colors" required />
                       {delivery === 'domicilio' ? (
                         <div className="space-y-2">
-                          <input ref={addressInputRef} type="text" name="address" autoComplete="off" placeholder="Indirizzo (Inizia a digitare...)" className={clsx("w-full px-4 py-3 rounded-xl border bg-amber-50/50 text-sm focus:bg-white outline-none transition-colors", addressError ? "border-red-500 text-red-600" : "border-amber-200 focus:border-amber-400")} required onChange={(e) => setAddress(e.target.value)} />
+                          <input
+                            type="text"
+                            name="address"
+                            placeholder="Indirizzo"
+                            className={clsx("w-full px-4 py-3 rounded-xl border bg-amber-50/50 text-sm focus:bg-white outline-none transition-colors",
+                              addressError ? "border-red-500 text-red-600" : "border-amber-200 focus:border-amber-400"
+                            )}
+                            required
+                            onChange={(e) => setAddress(e.target.value)}
+                          />
                           {addressError && <div className="flex items-center gap-2 text-[10px] font-bold text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-100 animate-pulse"><AlertTriangle size={14} /> {addressError}</div>}
                         </div>
                       ) : <input type="hidden" name="address" value="RITIRO IN SEDE" />}
@@ -1027,6 +1087,7 @@ export default function PrenotaColazionePage() {
                 <input type="hidden" name="promoCodeId" value={appliedPromo?.id || ""} />
                 <input type="hidden" name="discountApplied" value={cartData.promoDiscountApplied || 0} />
                 <input type="hidden" name="isTomorrow" value={isTomorrow ? "si" : "no"} />
+                <input type="hidden" name="giftBoxSelected" value={giftBoxSelected ? "si" : "no"} />
               </form>
             )}
           </div>

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
-import { DRINKS_DATA, PASTRIES_DATA, PRICE_SPREMUTA, PRICE_SUCCO } from "@/lib/schemas";
+import { DRINKS_DATA, PASTRIES_DATA, PRICE_SPREMUTA, PRICE_SUCCO, PRICE_CONFEZIONE_REGALO } from "@/lib/schemas";
 
 // --- 1. FUNZIONI DI SUPPORTO SERVER ---
 
@@ -85,6 +85,7 @@ export async function submitOrder(prevState: any, formData: FormData) {
   const preferredTime = formData.get("preferredTime") as string;
   const cartDetailsStr = formData.get("cartDetails") as string;
   const clientTotalPrice = parseFloat(formData.get("totalPrice") as string);
+  const giftBoxSelected = formData.get("giftBoxSelected") === "si";
   
   let parsedCart = [];
   try {
@@ -119,6 +120,8 @@ export async function submitOrder(prevState: any, formData: FormData) {
       serverPrice += PRICE_SPREMUTA * item.qty;
     } else if (item.name.includes("Succo")) {
       serverPrice += PRICE_SUCCO * item.qty;
+    } else if (item.name.includes("🎁 Confezione Regalo")) {
+      serverPrice += PRICE_CONFEZIONE_REGALO * item.qty;
     } else if (!item.name.startsWith("🎟️") && !item.name.startsWith("🎁") && !item.name.includes("Stripe")) {
       serverPrice += getPriceServer(item.name) * item.qty;
     }
@@ -154,6 +157,7 @@ export async function submitOrder(prevState: any, formData: FormData) {
 
   let finalNotes = `--- DETTAGLI SCONTRINO ---\n${orderSummary}\n\n--- NOTE CLIENTE ---\n${formData.get("notes") || 'Nessuna'}`;
   if (isTomorrow) finalNotes = `🚨 ORDINE PER DOMANI 🚨\n\n` + finalNotes;
+  if (giftBoxSelected) finalNotes += `\n\n🎁 *CONFEZIONE REGALO RICHIESTA*`;
 
   const { data: orderData, error } = await supabase.from("web_orders").insert({
     full_name: formData.get("fullName"),
