@@ -55,9 +55,10 @@ export default function Hero() {
                         </span>
                     </h1>
 
+                    {/* CORRETTO: rimosso il tag <p> annidato e inserito <br /> */}
                     <p className="text-lg md:text-xl text-slate-600 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
-                        Portiamo l'eleganza del TSC Caffè ovunque tu voglia.
-                        Il nostro allestimento Apecar esclusivo per rendere i tuoi eventi indimenticabili.
+                        Portiamo l'eleganza ovunque tu voglia. <br />
+                        L'allestimento Apecar più chic per i tuoi momenti speciali.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
@@ -68,7 +69,7 @@ export default function Hero() {
                             Richiedi Preventivo
                         </a>
                         <a
-                            href="#gallery"
+                            href="#concept"
                             className="w-full sm:w-auto px-10 py-4 border border-[#7A0018] text-[#7A0018] rounded-full hover:bg-[#7A0018] hover:text-white transition-colors duration-300 backdrop-blur-sm"
                         >
                             Guarda le Foto
@@ -91,7 +92,6 @@ export default function Hero() {
                         >
                             Luna
                         </h2>
-                        {/* COLORE EVENT: Uniformato al brand #7A0018 */}
                         <span className="text-[#7A0018] font-serif uppercase text-xs md:text-sm tracking-[0.5em] relative z-10 mt-[-5px] md:mt-[-10px] pl-2 opacity-80">
                             Events
                         </span>

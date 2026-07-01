@@ -44,7 +44,6 @@ export default function LunaEventsPage() {
 
             <Hero />
             <Concept />
-            <Gallery />
             <Contact />
 
         </main>

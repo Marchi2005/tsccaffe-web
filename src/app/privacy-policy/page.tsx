@@ -112,7 +112,7 @@ export default function PrivacyPolicy() {
                                 <Lock className="text-[#7A0018]" size={32} />
                                 <h1 className="text-3xl md:text-4xl font-serif text-slate-900 tracking-wide">Privacy Policy</h1>
                             </div>
-                            <p className="text-slate-400 text-sm mb-8 font-serif italic tracking-wide">Luna Events • Aggiornamento Febbraio 2026</p>
+                            <p className="text-slate-400 text-sm mb-8 font-serif italic tracking-wide">Luna Events • Aggiornamento Giugno 2026</p>
                             
                             <PolicyContent theme="luna" />
                         </motion.div>
@@ -258,6 +258,20 @@ function PolicyContent({ theme }: { theme: 'luna' | 'tsc' }) {
                 </h2>
                 <p className={textClass}>
                     Ai sensi del GDPR, l'utente ha diritto di chiedere al Titolare l'accesso ai propri dati, la rettifica, la cancellazione degli stessi ("diritto all'oblio") o la limitazione del trattamento. Le richieste possono essere indirizzate all'email del Titolare indicata al punto 1.
+                </p>
+            </section>
+
+            <div className={dividerClass}></div>
+
+            <section>
+                <h2 className={titleClass}>
+                    7. Proprietà Intellettuale e Note sulle Immagini
+                </h2>
+                <p className={textClass}>
+                    Il marchio "Illy" e i relativi loghi sono di proprietà esclusiva di illycaffè S.p.A. e dei rispettivi aventi diritto. Il presente sito web utilizza tali riferimenti a scopo puramente descrittivo dell'offerta commerciale dell'esercizio, senza alcuna affiliazione ufficiale, sponsorizzazione o legame societario diretto con i titolari del marchio.
+                </p>
+                <p className={`${textClass} mt-4`}>
+                    Le immagini dei prodotti presenti sul sito hanno scopo illustrativo. Gli elementi di sfondo e l'ambientazione circostante sono stati ottimizzati digitalmente tramite tecnologie di intelligenza artificiale, ferma restando l'assoluta autenticità e l'integrità del prodotto reale commercializzato.
                 </p>
             </section>
 

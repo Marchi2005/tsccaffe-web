@@ -99,67 +99,63 @@ export default function Services() {
             </div>
           </div>
 
-          {/* Card 3: LUNA EVENTS SPOILER (RIDISEGNATA E ARMONIZZATA) */}
-          <div className="group relative overflow-hidden rounded-3xl bg-[#FAF8F5] border border-[#E8E1D9] p-6 sm:p-8 shadow-lg flex flex-col transition-all duration-500 hover:shadow-2xl hover:shadow-[#7A0018]/15 lg:hover:-translate-y-2 cursor-default z-10">
+          {/* Card 3: LUNA EVENTS (Con Logo PNG e Ape Car Super-Size e Dinamica) */}
+          <div className="group relative overflow-hidden rounded-3xl bg-[#FAF8F5] border border-[#E8E1D9] p-6 sm:p-8 shadow-lg flex flex-col transition-all duration-500 hover:shadow-2xl hover:shadow-[#7A0018]/15 lg:hover:-translate-y-2 cursor-pointer z-10">
             
-            {/* Effetti di luce Sfondo - Sincronizzati con le altre card */}
+            {/* Effetti di luce Sfondo */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#7A0018]/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
             <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#7A0018]/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700 pointer-events-none"></div>
             <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#D4AF37]/5 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700 pointer-events-none" style={{ animationDelay: '1s' }}></div>
 
-            {/* Badge In Arrivo */}
-            <div className="flex justify-center mb-4 z-10 relative">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#7A0018]/20 bg-white/70 backdrop-blur-sm shadow-sm group-hover:scale-105 transition-transform duration-300">
-                    <Sparkles size={12} className="text-[#7A0018]" />
-                    <span className="text-[9px] uppercase tracking-widest font-extrabold text-[#7A0018]">In Arrivo</span>
+            {/* Badge Novità */}
+            <div className="flex justify-center mb-4 z-20 relative">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#7A0018]/30 bg-white/90 backdrop-blur-sm shadow-sm group-hover:scale-105 transition-transform duration-300">
+                    <Sparkles size={12} className="text-[#7A0018] animate-pulse" />
+                    <span className="text-[9px] uppercase tracking-widest font-extrabold text-[#7A0018]">Novità</span>
                 </div>
             </div>
 
-            {/* AREA SPOILER: Logo Luna Interattivo */}
-            <div className="relative flex flex-col items-center justify-center py-6 mb-2 lg:group-hover:scale-105 lg:group-hover:-translate-y-1 transition-all duration-700">
-                
-                {/* Watermark Logo SVG - Animazione opacità all'hover */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-40 group-hover:opacity-50 transition-opacity duration-500 pointer-events-none">
-                    <Image
-                        src="/icons/moon.svg"
-                        alt="Sfondo Luna"
-                        width={220}
-                        height={220}
-                        className="w-48 h-48 sm:w-52 sm:h-52 object-contain"
-                    />
-                </div>
-                
-                {/* Testi Logo */}
-                <h2
-                    className="font-luna text-5xl md:text-6xl text-[#7A0018] relative z-10 leading-none drop-shadow-sm group-hover:drop-shadow-lg transition-all duration-500"
-                    style={{ fontFeatureSettings: '"liga" 1, "calt" 1' }}
-                >
-                    Luna
-                </h2>
-                <span className="text-[#7A0018] font-serif uppercase text-[0.6rem] md:text-xs tracking-[0.5em] relative z-10 mt-[-3px] pl-1 opacity-90 block text-center font-bold">
-                    Events
-                </span>
+            {/* AREA LOGO: Immagine PNG */}
+            <div className="relative flex flex-col items-center justify-center py-6 mb-2 lg:group-hover:scale-105 lg:group-hover:-translate-y-1 transition-all duration-700 z-20">
+                <Image
+                    src="/icons/logo_luna.png"
+                    alt="Logo Luna Events"
+                    width={180}
+                    height={80}
+                    className="object-contain drop-shadow-sm group-hover:drop-shadow-lg transition-all duration-500"
+                />
             </div>
 
             {/* Descrizione Servizio */}
-            <div className="relative text-center mb-8 z-10 flex-grow">
+            <div className="relative text-center mb-8 z-20 flex-grow">
               <p className="text-slate-600 text-[15px] leading-relaxed font-medium">
-                L'eleganza incontra la magia. <br className="hidden sm:block"/>
-                Un'esperienza esclusiva e curata nei minimi dettagli per i tuoi eventi.
+                 L'eleganza incontra la magia. <br className="hidden sm:block"/>
+                 Un'esperienza esclusiva e curata nei minimi dettagli per i tuoi eventi.
               </p>
             </div>
 
-            {/* Area Azione: Bottone Premium Armonizzato */}
-            <div className="relative mt-auto z-10 flex justify-center w-full">
+            {/* Area Azione: Il bottone ora si sposta di più a sinistra (-translate-x-6) e scala a 0.92 per fare spazio all'Ape Car gigante */}
+            <div className="relative mt-auto z-20 flex justify-center w-full transition-all duration-500 ease-out group-hover:scale-[0.92] group-hover:-translate-x-6">
                <Link 
                   href="/site-luna" 
-                  className="relative w-full flex items-center justify-center gap-2 px-6 py-4 bg-[#7A0018] text-white rounded-xl shadow-md hover:bg-[#5C0012] hover:shadow-lg hover:shadow-[#7A0018]/20 transition-all duration-300 active:scale-95 group/item-btn"
+                  className="relative w-full flex items-center justify-center gap-2 px-6 py-4 bg-[#7A0018] text-white rounded-xl shadow-md hover:bg-[#5C0012] hover:shadow-lg hover:shadow-[#7A0018]/20 transition-all duration-300 active:scale-[0.98] group/item-btn"
                >
                   <span className="text-xs sm:text-sm uppercase tracking-widest font-bold">
                      Scopri l'anteprima
                   </span>
                   <ArrowRight size={18} className="group-hover/item-btn:translate-x-1 transition-transform duration-300" />
                </Link>
+            </div>
+
+            {/* APE CAR GIGANTE: Dimensioni aumentate a w-48 h-48 (e w-56 h-56 su desktop) */}
+            <div className="absolute -bottom-4 -right-4 w-48 h-48 sm:w-56 sm:h-56 z-30 pointer-events-none transform translate-x-28 translate-y-28 opacity-0 group-hover:translate-x-2 group-hover:translate-y-2 group-hover:opacity-100 transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]">
+              <Image
+                src="/images/apecar.png" 
+                alt="Apecar Luna Events"
+                width={300}
+                height={300}
+                className="w-full h-full object-contain select-none drop-shadow-[0_25px_25px_rgba(0,0,0,0.35)]"
+              />
             </div>
 
           </div>

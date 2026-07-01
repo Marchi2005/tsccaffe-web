@@ -53,7 +53,7 @@ export default function CustomDatePicker({
         setIsOpen(false);
     };
 
-    const renderCalendar = () => {
+const renderCalendar = () => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         const daysInMonth = getDaysInMonth(year, month);
@@ -74,17 +74,24 @@ export default function CustomDatePicker({
             const isSelected = selectedDate === dateString;
 
             const now = new Date();
-            const isToday = now.getDate() === d && now.getMonth() === month && now.getFullYear() === year;
+            // Azzeriamo le ore per confrontare solo i giorni puliti
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            // Controlla se il giorno nel ciclo è precedente a oggi
+            const isPast = checkDate < today;
+            const isToday = today.getTime() === checkDate.getTime();
 
             days.push(
                 <button
                     key={d}
                     type="button"
-                    onClick={() => handleDayClick(d)}
+                    disabled={isPast}
+                    onClick={() => !isPast && handleDayClick(d)}
                     className={`h-8 w-8 rounded-full flex items-center justify-center text-sm transition-all
-            ${isSelected ? 'bg-[#7A0018] text-white font-bold shadow-md' : 'text-slate-600 hover:bg-[#FAF8F5] hover:text-[#7A0018]'}
-            ${isToday && !isSelected ? 'border border-[#7A0018]/50 text-[#7A0018]' : ''}
-          `}
+                        ${isSelected ? 'bg-[#7A0018] text-white font-bold shadow-md' : ''}
+                        ${isPast ? 'text-slate-300 cursor-not-allowed opacity-50' : !isSelected ? 'text-slate-600 hover:bg-[#FAF8F5] hover:text-[#7A0018]' : ''}
+                        ${isToday && !isSelected ? 'border border-[#7A0018]/50 text-[#7A0018]' : ''}
+                    `}
                 >
                     {d}
                 </button>
