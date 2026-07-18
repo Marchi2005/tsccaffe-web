@@ -4,12 +4,10 @@ import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
-// Inizializzazione Supabase (Usa la Role Key per bypassare RLS nelle operazioni di Admin)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Validazione robusta (Fix per Vercel Build su Zod Enum)
 const AnnouncementSchema = z.object({
   title: z.string().min(3, "Il titolo deve avere almeno 3 caratteri").max(150, "Titolo troppo lungo"),
   description: z.string().min(10, "La descrizione deve essere chiara (min 10 car)").max(600, "Descrizione troppo lunga"),
@@ -21,14 +19,13 @@ const AnnouncementSchema = z.object({
     'Promo Colazione',
     'Promo Aperitivo',
     'Guasto Servizi Tabacchi',
-    'Variazione Orari' // <-- Aggiunta nuova categoria
+    'Variazione Orari'
   ], { 
-    // Usiamo ESATTAMENTE la proprietà "message" come richiesto dai tipi di Zod per l'enum
     message: "Devi selezionare una categoria valida"
   }),
   start_at: z.string().min(1, "Inserisci la data e l'ora di inizio"),
   end_at: z.string().min(1, "Inserisci la data e l'ora di fine"),
-  schedule: z.string().optional() // <-- Aggiunto campo per JSON stringificato
+  schedule: z.string().optional()
 }).refine((data) => {
   const start = new Date(data.start_at);
   const end = new Date(data.end_at);
@@ -40,27 +37,23 @@ const AnnouncementSchema = z.object({
 
 export async function createAnnouncement(prevState: any, formData: FormData) {
   try {
-    // 1. Estrazione SICURA dei dati. Evitiamo i null di FormData.
     const rawData = {
       title: formData.get("title")?.toString() || "",
       description: formData.get("description")?.toString() || "",
       category: formData.get("category")?.toString() || "",
       start_at: formData.get("start_at")?.toString() || "",
       end_at: formData.get("end_at")?.toString() || "",
-      schedule: formData.get("schedule")?.toString() || "", // <-- Estrazione orari
+      schedule: formData.get("schedule")?.toString() || "",
     };
 
-    // 2. Parsiamo con Zod
     const validatedData = AnnouncementSchema.safeParse(rawData);
 
-    // 3. Gestione Errori di Form/Zod
     if (!validatedData.success) {
-      // Uso .issues per massima compatibilità con Zod (invece di .errors)
       const errorMessage = validatedData.error.issues?.[0]?.message || "Per favore, compila tutti i campi correttamente.";
       return { error: errorMessage, status: 400 };
     }
 
-    // 4. Prevenzione crash Date "Invalid Date" prima di toccare Supabase
+    // Le date arrivano già formattate in ISO dal client (es. "2026-07-18T16:26:00.000Z")
     const startDate = new Date(validatedData.data.start_at);
     const endDate = new Date(validatedData.data.end_at);
 
@@ -68,19 +61,16 @@ export async function createAnnouncement(prevState: any, formData: FormData) {
        return { error: "Formato data/ora non valido.", status: 400 };
     }
 
-    // Parsing degli orari se presenti e se la categoria è Variazione Orari
     let scheduleData = null;
     if (validatedData.data.category === 'Variazione Orari' && validatedData.data.schedule) {
       try {
         scheduleData = JSON.parse(validatedData.data.schedule);
-        // Filtra eventuali righe vuote inserite per errore
         scheduleData = scheduleData.filter((s: any) => s.day.trim() !== "" && s.hours.trim() !== "");
       } catch (e) {
         return { error: "Errore nel formato degli orari forniti.", status: 400 };
       }
     }
 
-    // 5. Inserimento a Database
     const { error } = await supabase
       .from("site_announcements")
       .insert([{
@@ -89,20 +79,18 @@ export async function createAnnouncement(prevState: any, formData: FormData) {
         category: validatedData.data.category,
         start_at: startDate.toISOString(),
         end_at: endDate.toISOString(),
-        schedule: scheduleData, // <-- Salvataggio in colonna JSONB
+        schedule: scheduleData,
         is_active: true
       }]);
 
     if (error) {
       console.error("Supabase Insert Error:", error);
-      // Catturiamo l'errore del Trigger custom creato in precedenza su Postgres
       if (error.message.includes('più di 2 annunci attivi')) {
         return { error: "Impossibile pubblicare: hai già raggiunto il limite di 2 popup programmati e sovrapposti in questo arco di tempo.", status: 409 };
       }
       return { error: `Errore Database: ${error.message}`, status: 500 };
     }
 
-    // 6. Aggiorna la cache per far apparire istantaneamente il popup a schermo
     revalidatePath("/", "layout");
     revalidatePath("/admin/announcements");
 

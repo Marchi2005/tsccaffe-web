@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useActionState } from "react";
+import React, { useState, useEffect, useActionState } from "react";
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import { 
@@ -24,13 +24,21 @@ import {
 import { createClient } from "@supabase/supabase-js";
 import { createAnnouncement, deactivateAnnouncement } from "./actions";
 
+// Inizializzazione di Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// --- CONFIGURAZIONE STILI PER CATEGORIA ---
-const CATEGORY_CONFIG: Record<string, { bg: string; text: string; border: string; icon: any }> = {
+// Tipi migliorati per evitare "any"
+type CategoryConfig = {
+  bg: string;
+  text: string;
+  border: string;
+  icon: React.ElementType;
+};
+
+const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
   "Chiusura Straordinaria": { bg: "bg-red-100", text: "text-red-700", border: "border-red-200", icon: AlertCircle },
   "Ferie": { bg: "bg-sky-100", text: "text-sky-700", border: "border-sky-200", icon: Sun },
   "Offerta Momento": { bg: "bg-orange-100", text: "text-orange-700", border: "border-orange-200", icon: Flame },
@@ -55,6 +63,8 @@ function SubmitButton() {
 }
 
 export default function AnnouncementsAdminPage() {
+  // Nota: useActionState è disponibile in React 19 / Next.js 15. 
+  // Se usi Next.js 14, potresti dover usare useFormState importato da "react-dom"
   const [state, formAction] = useActionState(createAnnouncement, null);
   const [activeAnnouncements, setActiveAnnouncements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,15 +73,24 @@ export default function AnnouncementsAdminPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [scheduleEntries, setScheduleEntries] = useState([{ day: "", hours: "" }]);
 
+  // Stati per salvare le date già convertite in ISO/UTC dal browser client
+  const [startISO, setStartISO] = useState<string>("");
+  const [endISO, setEndISO] = useState<string>("");
+
   useEffect(() => {
     async function fetchAnnouncements() {
-      const { data } = await supabase
+      setIsLoading(true);
+      const { data, error } = await supabase
         .from('site_announcements')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (data) setActiveAnnouncements(data);
+      if (error) {
+        console.error("Errore recupero annunci:", error);
+      } else if (data) {
+        setActiveAnnouncements(data);
+      }
       setIsLoading(false);
     }
     
@@ -183,7 +202,10 @@ export default function AnnouncementsAdminPage() {
               
               <form action={formAction} className="space-y-5">
                 
+                {/* Campi hidden per passare i dati strutturati e le date corrette in UTC */}
                 <input type="hidden" name="schedule" value={JSON.stringify(scheduleEntries)} />
+                <input type="hidden" name="start_at" value={startISO} />
+                <input type="hidden" name="end_at" value={endISO} />
 
                 {state?.error && (
                   <div className="bg-red-50 text-red-600 p-4 rounded-xl flex items-start gap-3 border border-red-100 text-sm">
@@ -281,11 +303,21 @@ export default function AnnouncementsAdminPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">Data e Ora Inizio</label>
-                    <input type="datetime-local" name="start_at" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-slate-900 transition-all"/>
+                    <input 
+                      type="datetime-local" 
+                      required 
+                      onChange={(e) => setStartISO(e.target.value ? new Date(e.target.value).toISOString() : "")}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-slate-900 transition-all"
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">Data e Ora Fine</label>
-                    <input type="datetime-local" name="end_at" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-slate-900 transition-all"/>
+                    <input 
+                      type="datetime-local" 
+                      required 
+                      onChange={(e) => setEndISO(e.target.value ? new Date(e.target.value).toISOString() : "")}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-slate-900 transition-all"
+                    />
                   </div>
                 </div>
 
