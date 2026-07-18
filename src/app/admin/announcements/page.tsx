@@ -1,4 +1,3 @@
-// src/app/admin/announcements/page.tsx
 "use client";
 
 import { useState, useEffect, useActionState } from "react";
@@ -17,7 +16,10 @@ import {
   PartyPopper,
   Coffee,
   Wine,
-  Wrench
+  Wrench,
+  Plus,
+  Minus,
+  Download
 } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { createAnnouncement, deactivateAnnouncement } from "./actions";
@@ -29,27 +31,14 @@ const supabase = createClient(
 
 // --- CONFIGURAZIONE STILI PER CATEGORIA ---
 const CATEGORY_CONFIG: Record<string, { bg: string; text: string; border: string; icon: any }> = {
-  "Chiusura Straordinaria": { 
-    bg: "bg-red-100", text: "text-red-700", border: "border-red-200", icon: AlertCircle 
-  },
-  "Ferie": { 
-    bg: "bg-sky-100", text: "text-sky-700", border: "border-sky-200", icon: Sun 
-  },
-  "Offerta Momento": { // Rimosso "del"
-    bg: "bg-orange-100", text: "text-orange-700", border: "border-orange-200", icon: Flame 
-  },
-  "Evento": { // Rimosso "Speciale"
-    bg: "bg-violet-100", text: "text-violet-700", border: "border-violet-200", icon: PartyPopper 
-  },
-  "Promo Colazione": { 
-    bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200", icon: Coffee 
-  },
-  "Promo Aperitivo": { 
-    bg: "bg-pink-100", text: "text-pink-700", border: "border-pink-200", icon: Wine 
-  },
-  "Guasto Servizi Tabacchi": { 
-    bg: "bg-yellow-100", text: "text-yellow-800", border: "border-yellow-200", icon: Wrench 
-  }
+  "Chiusura Straordinaria": { bg: "bg-red-100", text: "text-red-700", border: "border-red-200", icon: AlertCircle },
+  "Ferie": { bg: "bg-sky-100", text: "text-sky-700", border: "border-sky-200", icon: Sun },
+  "Offerta Momento": { bg: "bg-orange-100", text: "text-orange-700", border: "border-orange-200", icon: Flame },
+  "Evento": { bg: "bg-violet-100", text: "text-violet-700", border: "border-violet-200", icon: PartyPopper },
+  "Promo Colazione": { bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200", icon: Coffee },
+  "Promo Aperitivo": { bg: "bg-pink-100", text: "text-pink-700", border: "border-pink-200", icon: Wine },
+  "Guasto Servizi Tabacchi": { bg: "bg-yellow-100", text: "text-yellow-800", border: "border-yellow-200", icon: Wrench },
+  "Variazione Orari": { bg: "bg-indigo-100", text: "text-indigo-700", border: "border-indigo-200", icon: Clock }
 };
 
 function SubmitButton() {
@@ -69,6 +58,10 @@ export default function AnnouncementsAdminPage() {
   const [state, formAction] = useActionState(createAnnouncement, null);
   const [activeAnnouncements, setActiveAnnouncements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isImporting, setIsImporting] = useState(false);
+
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [scheduleEntries, setScheduleEntries] = useState([{ day: "", hours: "" }]);
 
   useEffect(() => {
     async function fetchAnnouncements() {
@@ -84,6 +77,79 @@ export default function AnnouncementsAdminPage() {
     
     fetchAnnouncements();
   }, [state]); 
+
+  const handleAddScheduleRow = () => {
+    setScheduleEntries([...scheduleEntries, { day: "", hours: "" }]);
+  };
+
+  const handleRemoveScheduleRow = (index: number) => {
+    setScheduleEntries(scheduleEntries.filter((_, i) => i !== index));
+  };
+
+  const handleScheduleChange = (index: number, field: 'day' | 'hours', value: string) => {
+    const newEntries = [...scheduleEntries];
+    newEntries[index][field] = value;
+    setScheduleEntries(newEntries);
+  };
+
+  const handleImportCurrentHours = async () => {
+    setIsImporting(true);
+    try {
+      const { data, error } = await supabase
+        .from('weekly_hours') 
+        .select('*')
+        .order('day_of_week', { ascending: true });
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const daysMap = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
+
+        const formattedSchedule = data.map((row: any) => {
+          let hoursString = "Chiuso";
+          
+          if (!row.is_closed) {
+            const morningOpen = row.morning_open ? row.morning_open.slice(0, 5) : "";
+            const morningClose = row.morning_close ? row.morning_close.slice(0, 5) : "";
+            
+            const afternoonOpen = row.afternoon_open ? row.afternoon_open.slice(0, 5) : "";
+            const afternoonClose = row.afternoon_close ? row.afternoon_close.slice(0, 5) : "";
+
+            const morning = (morningOpen && morningClose) ? `${morningOpen} - ${morningClose}` : "";
+            const afternoon = (afternoonOpen && afternoonClose) ? `${afternoonOpen} - ${afternoonClose}` : "";
+
+            if (morning && afternoon) {
+              hoursString = `${morning} / ${afternoon}`;
+            } else if (morning) {
+              hoursString = morning;
+            } else if (afternoon) {
+              hoursString = afternoon;
+            } else {
+              hoursString = "Aperto"; 
+            }
+          }
+
+          const dayName = row.day_of_week !== null && row.day_of_week !== undefined 
+                          ? daysMap[row.day_of_week] 
+                          : "Giorno";
+
+          return {
+            day: dayName,
+            hours: hoursString
+          };
+        });
+
+        setScheduleEntries(formattedSchedule);
+      } else {
+        alert("Nessun orario trovato nel database.");
+      }
+    } catch (error: any) {
+      console.error("Errore importazione orari:", error.message || JSON.stringify(error, null, 2));
+      alert(`Si è verificato un errore: ${error.message || 'Controlla la console'}`);
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   const handleDeactivate = async (id: string) => {
     if(!confirm("Sei sicuro di voler disattivare questo avviso?")) return;
@@ -111,13 +177,14 @@ export default function AnnouncementsAdminPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* --- FORM DI CREAZIONE --- */}
           <div className="lg:col-span-3">
             <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
               <h2 className="text-xl font-bold text-slate-900 mb-6 border-b border-slate-100 pb-4">Nuovo Avviso</h2>
               
               <form action={formAction} className="space-y-5">
                 
+                <input type="hidden" name="schedule" value={JSON.stringify(scheduleEntries)} />
+
                 {state?.error && (
                   <div className="bg-red-50 text-red-600 p-4 rounded-xl flex items-start gap-3 border border-red-100 text-sm">
                     <AlertCircle size={18} className="mt-0.5 shrink-0" />
@@ -138,7 +205,13 @@ export default function AnnouncementsAdminPage() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">Categoria</label>
-                  <select name="category" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all appearance-none cursor-pointer">
+                  <select 
+                    name="category" 
+                    required 
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all appearance-none cursor-pointer"
+                  >
                     <option value="">Seleziona una categoria...</option>
                     {Object.keys(CATEGORY_CONFIG).map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
@@ -150,6 +223,60 @@ export default function AnnouncementsAdminPage() {
                   <label className="text-sm font-bold text-slate-700">Descrizione</label>
                   <textarea name="description" required rows={4} placeholder="Scrivi qui i dettagli..." className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all resize-none"/>
                 </div>
+
+                {selectedCategory === "Variazione Orari" && (
+                  <div className="p-5 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-4">
+                    <div className="flex justify-between items-center pb-2 border-b border-indigo-100">
+                      <label className="text-sm font-bold text-indigo-900 flex items-center gap-2">
+                        <Clock size={16} /> Tabella Nuovi Orari
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleImportCurrentHours}
+                        disabled={isImporting}
+                        className="text-xs font-bold bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-indigo-50 hover:text-indigo-800 transition-colors shadow-sm disabled:opacity-50"
+                      >
+                        <Download size={14} />
+                        {isImporting ? "Importazione..." : "Importa Orari Attuali"}
+                      </button>
+                    </div>
+                    
+                    {scheduleEntries.map((entry, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <input 
+                          type="text" 
+                          placeholder="Es. Lunedì" 
+                          value={entry.day}
+                          onChange={(e) => handleScheduleChange(index, 'day', e.target.value)}
+                          className="w-1/2 bg-white border border-indigo-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500 text-sm font-medium"
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="Es. 06:00 - 13:00 / Chiuso" 
+                          value={entry.hours}
+                          onChange={(e) => handleScheduleChange(index, 'hours', e.target.value)}
+                          className="w-1/2 bg-white border border-indigo-200 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500 text-sm"
+                        />
+                        {scheduleEntries.length > 1 && (
+                          <button 
+                            type="button" 
+                            onClick={() => handleRemoveScheduleRow(index)}
+                            className="p-2.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                          >
+                            <Minus size={16} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button 
+                      type="button" 
+                      onClick={handleAddScheduleRow}
+                      className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:text-indigo-800 py-1"
+                    >
+                      <Plus size={14} /> Aggiungi giorno vuoto
+                    </button>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -169,7 +296,6 @@ export default function AnnouncementsAdminPage() {
             </div>
           </div>
 
-          {/* --- LISTA AVVISI --- */}
           <div className="lg:col-span-2 space-y-6">
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -189,7 +315,6 @@ export default function AnnouncementsAdminPage() {
                   const end = new Date(announcement.end_at);
                   const isCurrentlyLive = start <= new Date() && end >= new Date();
                   
-                  // Recupero config basata sulla categoria
                   const config = CATEGORY_CONFIG[announcement.category] || { 
                     bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-200", icon: Megaphone 
                   };
@@ -198,7 +323,6 @@ export default function AnnouncementsAdminPage() {
                   return (
                     <div key={announcement.id} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative group flex flex-col h-full">
                       
-                      {/* Badge Stato (Live/Programmato) */}
                       <div className="absolute -top-2.5 -right-2.5 z-10">
                         {isCurrentlyLive ? (
                           <span className="bg-green-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-md">Live</span>
@@ -207,7 +331,6 @@ export default function AnnouncementsAdminPage() {
                         )}
                       </div>
 
-                      {/* Header Card con Icona e Categoria */}
                       <div className="flex items-center gap-3 mb-3">
                         <div className={`p-2 rounded-lg ${config.bg} ${config.text} border ${config.border}`}>
                           <CategoryIcon size={18} />

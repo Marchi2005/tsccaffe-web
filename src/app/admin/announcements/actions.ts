@@ -1,4 +1,3 @@
-// src/app/admin/announcements/actions.ts
 "use server";
 
 import { z } from "zod";
@@ -21,13 +20,15 @@ const AnnouncementSchema = z.object({
     'Evento',
     'Promo Colazione',
     'Promo Aperitivo',
-    'Guasto Servizi Tabacchi'
+    'Guasto Servizi Tabacchi',
+    'Variazione Orari' // <-- Aggiunta nuova categoria
   ], { 
     // Usiamo ESATTAMENTE la proprietà "message" come richiesto dai tipi di Zod per l'enum
     message: "Devi selezionare una categoria valida"
   }),
   start_at: z.string().min(1, "Inserisci la data e l'ora di inizio"),
   end_at: z.string().min(1, "Inserisci la data e l'ora di fine"),
+  schedule: z.string().optional() // <-- Aggiunto campo per JSON stringificato
 }).refine((data) => {
   const start = new Date(data.start_at);
   const end = new Date(data.end_at);
@@ -46,6 +47,7 @@ export async function createAnnouncement(prevState: any, formData: FormData) {
       category: formData.get("category")?.toString() || "",
       start_at: formData.get("start_at")?.toString() || "",
       end_at: formData.get("end_at")?.toString() || "",
+      schedule: formData.get("schedule")?.toString() || "", // <-- Estrazione orari
     };
 
     // 2. Parsiamo con Zod
@@ -66,6 +68,18 @@ export async function createAnnouncement(prevState: any, formData: FormData) {
        return { error: "Formato data/ora non valido.", status: 400 };
     }
 
+    // Parsing degli orari se presenti e se la categoria è Variazione Orari
+    let scheduleData = null;
+    if (validatedData.data.category === 'Variazione Orari' && validatedData.data.schedule) {
+      try {
+        scheduleData = JSON.parse(validatedData.data.schedule);
+        // Filtra eventuali righe vuote inserite per errore
+        scheduleData = scheduleData.filter((s: any) => s.day.trim() !== "" && s.hours.trim() !== "");
+      } catch (e) {
+        return { error: "Errore nel formato degli orari forniti.", status: 400 };
+      }
+    }
+
     // 5. Inserimento a Database
     const { error } = await supabase
       .from("site_announcements")
@@ -75,6 +89,7 @@ export async function createAnnouncement(prevState: any, formData: FormData) {
         category: validatedData.data.category,
         start_at: startDate.toISOString(),
         end_at: endDate.toISOString(),
+        schedule: scheduleData, // <-- Salvataggio in colonna JSONB
         is_active: true
       }]);
 

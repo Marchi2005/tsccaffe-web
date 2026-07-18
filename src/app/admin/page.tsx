@@ -14,7 +14,8 @@ import {
   Archive,
   Megaphone,
   Ticket,
-  ShieldCheck
+  ShieldCheck,
+  Clock
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -107,6 +108,17 @@ export default function AdminDashboard() {
       icon: Moon, 
       href: "/admin/luna-events/preventivi", // REINDIRIZZA DIRETTAMENTE ALLA LISTA PREVENTIVI
       style: "luna-brand" // Identificatore per la nuova card
+    },
+    {
+      id: "orari",
+      title: "Gestione Orari",
+      desc: "Modifica gli orari settimanali del locale e aggiungi chiusure straordinarie (ferie, festività).",
+      icon: Clock,
+      href: "/admin/orari",
+      color: "text-indigo-600",
+      bg: "bg-indigo-50",
+      border: "hover:border-indigo-200",
+      style: "light"
     }
   ];
 

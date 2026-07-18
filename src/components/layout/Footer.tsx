@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 import { Facebook, Instagram, MapPin, Phone, MessageCircle, Send, Coffee } from "lucide-react";
 import clsx from "clsx";
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
-// Icona TikTok personalizzata stile Lucide
 const TikTokIcon = ({ size = 18 }: { size?: number }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -24,27 +24,199 @@ const TikTokIcon = ({ size = 18 }: { size?: number }) => (
   </svg>
 );
 
+// --- FUNZIONE MAGICA DI RAGGRUPPAMENTO ---
+function getGroupedSchedule(weekly: any[], special: any[]) {
+  // 1. Generiamo i 7 giorni a partire da Lunedì della settimana corrente
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 = Dom, 1 = Lun...
+  const diffToMonday = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(diffToMonday);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const weekDays = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(startOfWeek);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+
+  // 2. Mappiamo ogni giorno: se c'è un evento speciale vince lui, altrimenti orario standard
+  const scheduleSequence = weekDays.map(date => {
+    // Formattiamo la data manualmente per essere sicuri di avere YYYY-MM-DD corretto nel fuso locale
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const dStr = String(date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${dStr}`;
+    
+    // Controlla se c'è una data speciale per questo giorno
+    const specialMatch = special.find(s => s.closure_date === dateString);
+    
+    if (specialMatch) {
+      return { type: 'special', date, reason: specialMatch.reason, data: null };
+    }
+
+    // Altrimenti, prendi l'orario settimanale standard
+    const jsDay = date.getDay();
+    const standardMatch = weekly.find(w => w.day_of_week === jsDay) || { is_closed: true };
+    
+    return { type: 'standard', date, reason: null, data: standardMatch };
+  });
+
+  // 3. Raggruppiamo i giorni consecutivi identici
+  const grouped: any[] = [];
+  if (scheduleSequence.length === 0) return grouped;
+
+  let currentGroup = {
+    type: scheduleSequence[0].type,
+    startDay: scheduleSequence[0].date,
+    endDay: scheduleSequence[0].date,
+    reason: scheduleSequence[0].reason,
+    data: scheduleSequence[0].data
+  };
+
+  for (let i = 1; i < scheduleSequence.length; i++) {
+    const curr = scheduleSequence[i];
+    let canGroup = false;
+    
+    if (curr.type === 'special' && currentGroup.type === 'special') {
+      if (curr.reason === currentGroup.reason) canGroup = true;
+    } 
+    else if (curr.type === 'standard' && currentGroup.type === 'standard') {
+      const c = curr.data;
+      const g = currentGroup.data;
+      if (c && g && c.is_closed === g.is_closed && c.morning_open === g.morning_open && c.morning_close === g.morning_close && c.afternoon_open === g.afternoon_open && c.afternoon_close === g.afternoon_close) {
+        canGroup = true;
+      }
+    }
+
+    if (canGroup) {
+      currentGroup.endDay = curr.date; // Estendi il range
+    } else {
+      grouped.push(currentGroup);
+      currentGroup = { type: curr.type, startDay: curr.date, endDay: curr.date, reason: curr.reason, data: curr.data };
+    }
+  }
+  grouped.push(currentGroup);
+
+  return grouped;
+}
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
   
-  // --- FIX DOMINIO LUNA ---
   const [isLunaDomain, setIsLunaDomain] = useState(false);
+  
+  // STATI PER LA LOGICA DEGLI ORARI DINAMICI
+  const [weeklyHours, setWeeklyHours] = useState<any[]>([]);
+  const [specialClosures, setSpecialClosures] = useState<any[]>([]);
+  const [scheduleGroups, setScheduleGroups] = useState<any[]>([]);
   const [shopStatus, setShopStatus] = useState({ text: "VERIFICA...", classes: "bg-slate-300" });
 
+  // 1. VERIFICA DOMINIO
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hostname.includes("lunaevents")) {
       setIsLunaDomain(true);
     }
+  }, []);
 
-    // LOGICA ORARI APERTURA AVANZATA
+  // 2. FETCH DATI DA SUPABASE (E CREAZIONE GRUPPI INTELLIGENTI)
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      try {
+        // 1. Chiamata a Supabase
+        const { data: dbWeeklyData, error: weeklyError } = await supabase.from('weekly_hours').select('*');
+        const { data: dbSpecialData, error: specialError } = await supabase.from('special_closures').select('*');
+
+        if (weeklyError) console.error("Errore fetch weekly_hours:", weeklyError);
+        if (specialError) console.error("Errore fetch special_closures:", specialError);
+
+        // 2. DATI DI DEFAULT (di sicurezza)
+        const defaultWeeklyData = [
+          { day_of_week: 1, is_closed: false, morning_open: '06:30', morning_close: '13:30', afternoon_open: '15:30', afternoon_close: '20:00' },
+          { day_of_week: 2, is_closed: false, morning_open: '06:30', morning_close: '13:30', afternoon_open: '15:30', afternoon_close: '20:00' },
+          { day_of_week: 3, is_closed: false, morning_open: '06:30', morning_close: '13:30', afternoon_open: '15:30', afternoon_close: '20:00' },
+          { day_of_week: 4, is_closed: false, morning_open: '06:30', morning_close: '13:30', afternoon_open: '15:30', afternoon_close: '20:00' },
+          { day_of_week: 5, is_closed: false, morning_open: '06:30', morning_close: '13:30', afternoon_open: '15:30', afternoon_close: '20:00' },
+          { day_of_week: 6, is_closed: false, morning_open: '06:30', morning_close: '13:30', afternoon_open: '15:30', afternoon_close: '20:00' },
+          { day_of_week: 0, is_closed: false, morning_open: '07:30', morning_close: '14:30', afternoon_open: null, afternoon_close: null },
+        ];
+        const defaultSpecialData: any[] = []; 
+
+        // 3. Usa i dati DB se esistono, altrimenti usa i default
+        const activeWeeklyData = (dbWeeklyData && dbWeeklyData.length > 0) ? dbWeeklyData : defaultWeeklyData;
+        const activeSpecialData = (dbSpecialData && dbSpecialData.length > 0) ? dbSpecialData : defaultSpecialData;
+
+        setWeeklyHours(activeWeeklyData);
+        setSpecialClosures(activeSpecialData);
+
+        // --- APPLICAZIONE DELLA LOGICA MAGICA ---
+        const groupedRaw = getGroupedSchedule(activeWeeklyData, activeSpecialData);
+
+        // Helper per formattare le etichette dei giorni
+        const formatRange = (start: Date, end: Date, type: string) => {
+          const formatSpecial = (d: Date) => d.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+          const formatStd = (d: Date) => d.toLocaleDateString('it-IT', { weekday: 'short' });
+          
+          const formatter = type === 'special' ? formatSpecial : formatStd;
+          
+          if (start.getTime() === end.getTime()) return formatter(start);
+          return `${formatter(start)} - ${formatter(end)}`;
+        };
+
+        const formatTime = (t: string) => t ? t.substring(0, 5) : null;
+
+        // Trasformiamo i dati nel formato perfetto per la UI del Footer
+        const finalGroups = groupedRaw.map(g => {
+          let label = formatRange(g.startDay, g.endDay, g.type);
+          // Capitalizziamo per estetica
+          label = label.charAt(0).toUpperCase() + label.slice(1);
+          
+          const isSpecial = g.type === 'special';
+          const hours: string[] = [];
+
+          if (isSpecial) {
+            hours.push(g.reason || "CHIUSI");
+          } else if (g.data?.is_closed) {
+            hours.push("CHIUSO");
+          } else {
+             const mOpen = formatTime(g.data?.morning_open);
+             const mClose = formatTime(g.data?.morning_close);
+             const aOpen = formatTime(g.data?.afternoon_open);
+             const aClose = formatTime(g.data?.afternoon_close);
+
+             if (mOpen && mClose) hours.push(`${mOpen} - ${mClose}`);
+             if (aOpen && aClose) hours.push(`${aOpen} - ${aClose}`);
+          }
+
+          return { label, hours, isSpecial };
+        });
+
+        setScheduleGroups(finalGroups);
+      } catch (error) {
+        console.error("Errore fetch orari:", error);
+      }
+    };
+
+    fetchSchedules();
+  }, []);
+
+  // 3. LOGICA BADGE STATUS DINAMICO (Intatta)
+  useEffect(() => {
+    if (weeklyHours.length === 0) return;
+
     const updateShopStatus = () => {
       const now = new Date();
       const itTimeStr = now.toLocaleString("en-US", { timeZone: "Europe/Rome" });
       const itDate = new Date(itTimeStr);
 
       const day = itDate.getDay(); 
-      const minutes = itDate.getHours() * 60 + itDate.getMinutes();
+      const currentMins = itDate.getHours() * 60 + itDate.getMinutes();
+      
+      const year = itDate.getFullYear();
+      const month = String(itDate.getMonth() + 1).padStart(2, '0');
+      const d = String(itDate.getDate()).padStart(2, '0');
+      const localDateStr = `${year}-${month}-${d}`;
 
       const statusStyles = {
         open: { text: "APERTO ORA", classes: "bg-emerald-500 shadow-emerald-500/40" },
@@ -53,21 +225,44 @@ export default function Footer() {
         opening: { text: "APRE TRA POCO", classes: "bg-blue-500 shadow-blue-500/40" }   
       };
 
-      if (day === 0) {
-        if (minutes >= 435 && minutes < 450) return statusStyles.opening;
-        if (minutes >= 840 && minutes < 870) return statusStyles.closing;
-        if (minutes >= 450 && minutes < 870) return statusStyles.open;
-        return statusStyles.closed;
+      // 1. Verifica se oggi c'è una chiusura speciale
+      const isSpecialClosed = specialClosures.some(sc => sc.closure_date === localDateStr);
+      if (isSpecialClosed) return statusStyles.closed;
+
+      // 2. Prendi orario base del giorno
+      const todaySchedule = weeklyHours.find(w => w.day_of_week === day);
+      if (!todaySchedule || todaySchedule.is_closed) return statusStyles.closed;
+
+      const timeToMins = (timeStr: string) => {
+        if (!timeStr) return null;
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+      };
+
+      let isOpen = false;
+      let isClosing = false;
+      let isOpening = false;
+
+      const checkPeriod = (openStr: string, closeStr: string) => {
+        if (!openStr || !closeStr) return;
+        const open = timeToMins(openStr);
+        const close = timeToMins(closeStr);
+        
+        if (open && close) {
+            if (currentMins >= open - 15 && currentMins < open) isOpening = true;
+            if (currentMins >= close - 30 && currentMins < close) isClosing = true;
+            if (currentMins >= open && currentMins < close) isOpen = true;
+        }
+      };
+
+      checkPeriod(todaySchedule.morning_open, todaySchedule.morning_close);
+      checkPeriod(todaySchedule.afternoon_open, todaySchedule.afternoon_close);
+
+      if (isOpen) {
+        if (isClosing) return statusStyles.closing;
+        return statusStyles.open;
       }
-
-      if (minutes >= 375 && minutes < 390) return statusStyles.opening;
-      if (minutes >= 780 && minutes < 810) return statusStyles.closing;
-      if (minutes >= 390 && minutes < 810) return statusStyles.open;
-
-      if (minutes >= 915 && minutes < 930) return statusStyles.opening;
-      if (minutes >= 1170 && minutes < 1200) return statusStyles.closing;
-      if (minutes >= 930 && minutes < 1200) return statusStyles.open;
-
+      if (isOpening) return statusStyles.opening;
       return statusStyles.closed;
     };
 
@@ -77,7 +272,7 @@ export default function Footer() {
     }, 60000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [weeklyHours, specialClosures]);
 
   const isLunaPage = pathname.startsWith("/site-luna") || isLunaDomain;
 
@@ -105,7 +300,6 @@ export default function Footer() {
                     <div className="flex flex-col leading-none">
                         <span className={clsx(
                             "font-bold text-sm uppercase tracking-wide transition-colors",
-                            // Testo Scuro per Luna, Bianco per TSC
                             isLunaPage ? "text-slate-800 group-hover:text-[#7A0018]" : "text-white group-hover:text-brand-coffee"
                         )}>
                             Tabacchi San Clemente
@@ -235,7 +429,7 @@ export default function Footer() {
             </ul>
           </div>
 
-           {/* COLONNA 4: ORARI */}
+           {/* COLONNA 4: ORARI DINAMICI */}
           <div>
             <h3 className={clsx("text-sm font-bold uppercase tracking-wider mb-6", isLunaPage ? "text-[#7A0018]" : "text-white")}>Orari Apertura</h3>
             <div className={clsx(
@@ -243,17 +437,23 @@ export default function Footer() {
                 isLunaPage ? "bg-white border border-[#E8E1D9] shadow-sm" : "bg-slate-50 border border-slate-200/10 shadow-lg"
             )}>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-start pb-3 border-b border-slate-200">
-                  <span className="font-bold text-slate-800">Lun - Sab</span>
-                  <div className="text-right space-y-1 text-slate-600 font-medium">
-                    <p>06:30 - 13:30</p>
-                    <p>15:30 - 20:00</p>
+                
+                {/* RENDER DINAMICO DEI GRUPPI */}
+                {scheduleGroups.length > 0 ? scheduleGroups.map((group, idx) => (
+                  <div key={idx} className={clsx("flex justify-between items-start", idx < scheduleGroups.length - 1 ? "pb-3 border-b border-slate-200" : "pt-1")}>
+                    <span className={clsx("font-bold", group.isSpecial ? "text-rose-600" : "text-slate-800")}>
+                      {group.label}
+                    </span>
+                    <div className="text-right space-y-1 font-medium text-slate-600">
+                      {group.hours.map((line: string, i: number) => (
+                        <p key={i} className={group.isSpecial ? "text-rose-500 font-bold" : ""}>{line}</p>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="flex justify-between items-center pt-1">
-                  <span className="font-bold text-slate-800">Domenica</span>
-                  <span className="text-slate-600 font-medium">07:30 - 14:30</span>
-                </div>
+                )) : (
+                  <div className="text-center text-slate-500 text-xs py-2">Caricamento orari...</div>
+                )}
+
               </div>
               
               {/* STATUS BADGE DINAMICO */}
@@ -296,7 +496,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* QUI I LINK AGGIORNATI CON IL PARAMETRO ?site= */}
           <div className="flex justify-center items-center gap-4 text-slate-500 text-xs uppercase tracking-widest font-medium">
               <Link 
                 href={isLunaPage ? "/privacy-policy?site=luna" : "/privacy-policy?site=tsc"} 

@@ -51,7 +51,7 @@ async function getActiveAnnouncements(): Promise<Announcement[]> {
   // Non fidarti solo della RLS: aggiungiamo i filtri espliciti nel codice
   const { data, error } = await supabase
     .from('site_announcements')
-    .select('id, title, description, category')
+    .select('id, title, description, category, schedule') // ✅ AGGIUNTO SCHEDULE QUI!
     .eq('is_active', true)             // Solo quelli attivi
     .lte('start_at', oraAttuale)        // Iniziati prima o adesso
     .gte('end_at', oraAttuale);          // Che finiscono dopo adesso
