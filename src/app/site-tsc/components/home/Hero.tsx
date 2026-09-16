@@ -24,7 +24,7 @@ const TikTokIcon = ({ size = 20 }: { size?: number }) => (
 );
 
 export default function Hero() {
-  const [socialHandle, setSocialHandle] = useState("@tabacchisanclementecaffe");
+  const [socialHandle, setSocialHandle] = useState("@tsccaffe");
   const [isTikTokHovered, setIsTikTokHovered] = useState(false);
 
   return (
@@ -83,12 +83,12 @@ export default function Hero() {
                   
                   {/* Instagram */}
                   <a 
-                    href="https://instagram.com/tabacchisanclementecaffe" 
+                    href="https://instagram.com/tsccaffe" 
                     target="_blank"
                     className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 hover:bg-gradient-to-tr hover:from-purple-500 hover:to-orange-500 hover:text-white transition-all text-slate-600"
                     title="Instagram"
                     onMouseEnter={() => {
-                        setSocialHandle("@tabacchisanclementecaffe");
+                        setSocialHandle("@tsccaffe");
                         setIsTikTokHovered(false);
                     }}
                   >
@@ -106,7 +106,7 @@ export default function Hero() {
                         setIsTikTokHovered(true);
                     }}
                     onMouseLeave={() => {
-                        setSocialHandle("@tabacchisanclementecaffe");
+                        setSocialHandle("@tsccaffe");
                         setIsTikTokHovered(false);
                     }}
                   >
@@ -120,7 +120,7 @@ export default function Hero() {
                     className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 hover:bg-blue-600 hover:text-white transition-all text-slate-600"
                     title="Facebook"
                      onMouseEnter={() => {
-                        setSocialHandle("@tabacchisanclementecaffe");
+                        setSocialHandle("@tsccaffe");
                         setIsTikTokHovered(false);
                     }}
                   >
