@@ -7,6 +7,17 @@ import { LunaQuoteTemplate } from '@/components/emails/LunaQuoteTemplate';
 const resend = new Resend(process.env.RESEND_API_KEY_LUNAEVENTS);
 
 const USA_DOMINIO_VERIFICATO = true; 
+function sanitizeFilenamePart(value: string): string {
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, '')
+    .trim()
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 80);
+}
 
 export async function POST(request: Request) {
   try {
@@ -40,7 +51,7 @@ export async function POST(request: Request) {
     const attachments = [];
     if (pdfBase64) {
       attachments.push({
-        filename: `Preventivo_LunaEvents_${quoteNumber}.pdf`,
+        filename: `${sanitizeFilenamePart(quoteNumber || 'Preventivo')}_${sanitizeFilenamePart(name || 'Cliente')}_LunaEvents.pdf`,
         content: pdfBase64, // Resend accetta nativamente stringhe base64 come contenuto
       });
     }

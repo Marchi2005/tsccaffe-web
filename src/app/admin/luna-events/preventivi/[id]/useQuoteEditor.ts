@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
 
 // --- TIPI ---
 export type OrderItem = {
@@ -14,6 +13,7 @@ export type QuoteData = {
     customerHonorific: string;
     customerName: string;
     customerPhone: string;
+    customerEmail: string;
     eventDate: string;
     location: string;
     guestCount: number;
@@ -25,6 +25,8 @@ export type QuoteData = {
     quoteNumber: string;
     showUnitPrices: boolean;
     lockedTotal: number | null;
+    discountMode: 'fixed' | 'final_price' | null;
+    discountValue: number;
 };
 
 // --- SUPABASE CLIENT ---
@@ -46,14 +48,15 @@ const parseCustomerName = (fullName: string) => {
 
 // --- CUSTOM HOOK ---
 export function useQuoteEditor(id: string) {
-    const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
     const [editTotalMode, setEditTotalMode] = useState(false);
     const [data, setData] = useState<QuoteData>({
         customerHonorific: "Sig.",
         customerName: "",
         customerPhone: "",
+        customerEmail: "",
         eventDate: new Date().toISOString().split('T')[0],
         location: "",
         guestCount: 0,
@@ -64,7 +67,9 @@ export function useQuoteEditor(id: string) {
         notes: "",
         items: [],
         showUnitPrices: true,
-        lockedTotal: null
+        lockedTotal: null,
+        discountMode: null,
+        discountValue: 0
     });
 
     useEffect(() => {
@@ -82,12 +87,14 @@ export function useQuoteEditor(id: string) {
                 if (quote) {
                     const { honorific, name } = parseCustomerName(quote.customer_name);
                     const calculated = (quote.guest_count * quote.price_per_person) + (quote.setup_cost || 0);
-                    const isManualTotal = Math.abs(calculated - quote.total_amount) > 0.1;
+                    const originalTotal = Number(quote.original_total ?? quote.total_amount ?? calculated);
+                    const isManualTotal = Math.abs(calculated - originalTotal) > 0.1;
 
                     setData({
                         customerHonorific: honorific,
                         customerName: name,
                         customerPhone: quote.customer_phone || "",
+                        customerEmail: quote.customer_email || "",
                         eventDate: quote.event_date,
                         location: quote.location || "",
                         guestCount: quote.guest_count,
@@ -98,25 +105,33 @@ export function useQuoteEditor(id: string) {
                         notes: quote.notes || "",
                         items: (quote.items as OrderItem[]) || [],
                         showUnitPrices: quote.show_unit_prices ?? true,
-                        lockedTotal: isManualTotal ? quote.total_amount : null
+                        lockedTotal: isManualTotal ? originalTotal : null,
+                        discountMode: quote.discount_mode === 'fixed' || quote.discount_mode === 'final_price' ? quote.discount_mode : null,
+                        discountValue: Number(quote.discount_value || 0)
                     });
 
                     if (isManualTotal) setEditTotalMode(true);
                 }
             } catch (err) {
                 console.error("Errore caricamento:", err);
-                alert("Impossibile caricare il preventivo.");
-                router.push("/admin/luna-events/preventivi");
+                setLoadError("Impossibile caricare il preventivo. Controlla la connessione e riprova.");
             } finally {
                 setLoading(false);
             }
         };
         fetchQuote();
-    }, [id, router]);
+    }, [id]);
 
-    const finalTotal = data.lockedTotal !== null 
+    const baseTotal = data.lockedTotal !== null
         ? data.lockedTotal 
         : (data.guestCount * data.pricePerPerson) + data.setupCost;
+    const hasDiscount = data.discountMode !== null && data.discountValue > 0;
+    const finalTotal = hasDiscount
+        ? data.discountMode === 'fixed'
+            ? Math.max(0, baseTotal - Math.min(baseTotal, data.discountValue))
+            : Math.min(baseTotal, Math.max(0, data.discountValue))
+        : baseTotal;
+    const discountAmount = Math.max(0, baseTotal - finalTotal);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -175,6 +190,7 @@ export function useQuoteEditor(id: string) {
                 .update({
                     customer_name: fullName,
                     customer_phone: data.customerPhone,
+                    customer_email: data.customerEmail,
                     event_date: data.eventDate,
                     location: data.location,
                     guest_count: data.guestCount,
@@ -182,6 +198,9 @@ export function useQuoteEditor(id: string) {
                     setup_cost: data.setupCost,
                     vat_rate: data.vatRate,
                     total_amount: finalTotal,
+                    original_total: baseTotal,
+                    discount_mode: hasDiscount ? data.discountMode : null,
+                    discount_value: hasDiscount ? Math.min(baseTotal, data.discountValue) : 0,
                     items: data.items,
                     notes: data.notes,
                     show_unit_prices: data.showUnitPrices
@@ -191,10 +210,12 @@ export function useQuoteEditor(id: string) {
             if (error) throw error;
             setSaveStatus('success');
             setTimeout(() => setSaveStatus('idle'), 3000); 
+            return true;
         } catch (err: any) {
             console.error("Errore aggiornamento:", err);
             setSaveStatus('error');
             setTimeout(() => setSaveStatus('idle'), 3000);
+            return false;
         }
     };
 
@@ -202,9 +223,12 @@ export function useQuoteEditor(id: string) {
         data,
         setData,
         loading,
+        loadError,
         saveStatus,
         editTotalMode,
         finalTotal,
+        baseTotal,
+        discountAmount,
         handleInputChange,
         handleTotalChange,
         handlePricePaxChange,

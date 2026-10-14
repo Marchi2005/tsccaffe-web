@@ -26,6 +26,8 @@ export type QuoteData = {
     quoteNumber: string;
     showUnitPrices: boolean;
     lockedTotal: number | null;
+    discountMode: 'fixed' | 'final_price' | null;
+    discountValue: number;
 };
 
 // --- PRESETS ---
@@ -94,7 +96,9 @@ export function useNewQuoteCreator() {
         notes: "Validità offerta: 15 giorni.\nAcconto 30% alla conferma.",
         items: PRESET_OPTION_1.items || [],
         showUnitPrices: true,
-        lockedTotal: null
+        lockedTotal: null,
+        discountMode: null,
+        discountValue: 0
     });
 
     useEffect(() => {
@@ -145,7 +149,14 @@ export function useNewQuoteCreator() {
         fetchNextQuoteNumber();
     }, []); 
 
-    const finalTotal = data.lockedTotal !== null ? data.lockedTotal : (data.guestCount * data.pricePerPerson) + data.setupCost;
+    const baseTotal = data.lockedTotal !== null ? data.lockedTotal : (data.guestCount * data.pricePerPerson) + data.setupCost;
+    const hasDiscount = data.discountMode !== null && data.discountValue > 0;
+    const finalTotal = hasDiscount
+        ? data.discountMode === 'fixed'
+            ? Math.max(0, baseTotal - Math.min(baseTotal, data.discountValue))
+            : Math.min(baseTotal, Math.max(0, data.discountValue))
+        : baseTotal;
+    const discountAmount = Math.max(0, baseTotal - finalTotal);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -169,7 +180,7 @@ export function useNewQuoteCreator() {
     };
 
     const toggleEditMode = () => setEditTotalMode(!editTotalMode);
-    const loadPreset = (preset: Partial<QuoteData>) => { setData(prev => ({ ...prev, pricePerPerson: preset.pricePerPerson || 0, setupCost: preset.setupCost || 0, lockedTotal: null, items: preset.items || [] })); };
+    const loadPreset = (preset: Partial<QuoteData>) => { setData(prev => ({ ...prev, pricePerPerson: preset.pricePerPerson || 0, setupCost: preset.setupCost || 0, lockedTotal: null, discountMode: null, discountValue: 0, items: preset.items || [] })); };
     const addItem = (category: 'food' | 'beverage' | 'setup') => { setData(prev => ({ ...prev, items: [...prev.items, { id: Math.random().toString(36).substr(2, 9), category, name: "Nuova Voce", description: "" }] })); };
     const updateItem = (id: string, field: keyof OrderItem, value: string) => { setData(prev => ({ ...prev, items: prev.items.map(item => item.id === id ? { ...item, [field]: value } : item) })); };
     const removeItem = (id: string) => { setData(prev => ({ ...prev, items: prev.items.filter(item => item.id !== id) })); };
@@ -187,6 +198,7 @@ export function useNewQuoteCreator() {
         const quotePayload = {
             customer_name: data.customerName,
             customer_phone: data.customerPhone,
+            customer_email: data.customerEmail,
             event_date: data.eventDate,
             location: data.location || "",
             guest_count: data.guestCount,
@@ -197,7 +209,13 @@ export function useNewQuoteCreator() {
             notes: data.notes,
             quote_number: finalQuoteNumber,
             show_unit_prices: data.showUnitPrices,
-            total_amount: finalTotal
+            original_total: baseTotal,
+            discount_mode: hasDiscount ? data.discountMode : null,
+            discount_value: hasDiscount ? Math.min(baseTotal, data.discountValue) : 0,
+            total_amount: finalTotal,
+            // Se nasce da una richiesta, il preventivo viene creato come inviato;
+            // un preventivo manuale parte invece da "da leggere".
+            status: leadId ? 'preventivo_inviato' : 'nuovo'
         };
 
         // 3. Salva nella tabella quotes
@@ -272,7 +290,7 @@ export function useNewQuoteCreator() {
 };
 
     return {
-        data, setData, saveStatus, editTotalMode, finalTotal, leadId,
+        data, setData, saveStatus, editTotalMode, baseTotal, finalTotal, discountAmount, leadId,
         handleInputChange, handleTotalChange, handlePricePaxChange,
         toggleEditMode, loadPreset, addItem, updateItem, removeItem, handleSaveDB
     };
